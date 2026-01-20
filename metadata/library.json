@@ -1,0 +1,77 @@
+{
+  "library": "Tchaikovsky Sampler Library",
+  "version": "1.0.0",
+  "created": "2026-01-20",
+  "curator": "Parksy",
+  "composer": {
+    "name": "Pyotr Ilyich Tchaikovsky",
+    "birth": 1840,
+    "death": 1893,
+    "nationality": "Russian"
+  },
+  "samples": [
+    {
+      "id": "pc1-opening",
+      "title": "Piano Concerto No.1 - Opening Theme",
+      "opus": "Op.23",
+      "key": "B-flat minor",
+      "year": 1875,
+      "duration_seconds": 90,
+      "files": {
+        "mp3": "trimmed/pc1-opening-theme-90s.mp3",
+        "midi": "midi/pc1-opening-theme.mid"
+      },
+      "performer": "Martha Argerich",
+      "tags": ["piano", "concerto", "romantic", "famous"]
+    },
+    {
+      "id": "vc1-opening",
+      "title": "Violin Concerto - Opening Theme",
+      "opus": "Op.35",
+      "key": "D major",
+      "year": 1878,
+      "duration_seconds": 120,
+      "files": {
+        "mp3": "trimmed/vc1-opening-theme-120s.mp3",
+        "midi": "midi/vc1-opening-theme.mid"
+      },
+      "performer": "Jascha Heifetz",
+      "tags": ["violin", "concerto", "romantic", "virtuoso"]
+    },
+    {
+      "id": "pc2-opening",
+      "title": "Piano Concerto No.2 - Opening Theme",
+      "opus": "Op.44",
+      "key": "G major",
+      "year": 1880,
+      "duration_seconds": 90,
+      "files": {
+        "mp3": "trimmed/pc2-opening-theme-90s.mp3",
+        "midi": "midi/pc2-opening-theme.mid"
+      },
+      "tags": ["piano", "concerto", "romantic"]
+    },
+    {
+      "id": "rococo-theme",
+      "title": "Rococo Variations - Main Theme",
+      "opus": "Op.33",
+      "key": "A major",
+      "year": 1877,
+      "duration_seconds": 60,
+      "files": {
+        "mp3": "trimmed/rococo-main-theme-60s.mp3",
+        "midi": "midi/rococo-main-theme.mid"
+      },
+      "tags": ["cello", "variations", "rococo", "elegant"]
+    }
+  ],
+  "tools": {
+    "audio_extraction": "yt-dlp",
+    "audio_processing": "FFmpeg 8.0.1",
+    "midi_conversion": "basic-pitch (Cloud Run API)"
+  },
+  "related": {
+    "parksy_audio": "https://dtslib1979.github.io/parksy-audio/",
+    "midi_api": "https://midi-converter-v2-498465562814.us-central1.run.app"
+  }
+}

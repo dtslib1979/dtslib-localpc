@@ -1,0 +1,13 @@
+# Large original audio files (not for git)
+samples/**/*.mp3
+samples/**/*.wav
+samples/**/*.m4a
+
+# Keep trimmed and midi
+!trimmed/
+!midi/
+
+# System files
+.DS_Store
+Thumbs.db
+*.tmp
