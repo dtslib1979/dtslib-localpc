@@ -117,8 +117,7 @@ dtslib-localpc/
 ├── snapshots/                   ← 자동 생성 스냅샷
 │   ├── drive-d.txt              ← D드라이브 디렉토리 트리
 │   ├── installed-software.json  ← 설치된 소프트웨어
-│   ├── env-versions.json        ← 개발도구 버전
-│   └── vscode-extensions.json   ← VSCode 확장
+│   └── env-versions.json        ← 개발도구 버전
 │
 ├── repos/                       ← 크로스레포 상태 (핵심)
 │   ├── status.json              ← 3개 레포 현황 요약

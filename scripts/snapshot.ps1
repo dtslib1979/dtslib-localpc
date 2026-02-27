@@ -27,7 +27,7 @@ $timestamp = Get-Date -Format "yyyy-MM-ddTHH:mm:sszzz"
 # ─────────────────────────────────────
 # 1. D: Drive Tree (depth 3, dirs only)
 # ─────────────────────────────────────
-Write-Host "[1/5] D: Drive Tree..." -ForegroundColor Yellow
+Write-Host "[1/4] D: Drive Tree..." -ForegroundColor Yellow
 $tree = @()
 Get-ChildItem -Path 'D:\' -Directory -ErrorAction SilentlyContinue | ForEach-Object {
     $tree += "D:\$($_.Name)\"
@@ -44,7 +44,7 @@ Write-Host "  OK: $($tree.Count) entries" -ForegroundColor Green
 # ─────────────────────────────────────
 # 2. Environment Versions
 # ─────────────────────────────────────
-Write-Host "[2/5] Environment Versions..." -ForegroundColor Yellow
+Write-Host "[2/4] Environment Versions..." -ForegroundColor Yellow
 $nodeVer = try { (& node --version 2>&1).ToString() -replace '^v','' } catch { "not installed" }
 $npmVer = try { (& npm --version 2>&1).ToString() } catch { "not installed" }
 $pyVer = try { (& python --version 2>&1).ToString() -replace '^Python ','' } catch { "not installed" }
@@ -71,24 +71,9 @@ $envData | ConvertTo-Json -Depth 3 | Out-File -FilePath (Join-Path $snapshotDir 
 Write-Host "  OK: $($envData.Count) tools" -ForegroundColor Green
 
 # ─────────────────────────────────────
-# 3. VSCode Extensions
+# 3. Installed Software (winget)
 # ─────────────────────────────────────
-Write-Host "[3/5] VSCode Extensions..." -ForegroundColor Yellow
-$extensions = @()
-try {
-    $extList = & code --list-extensions 2>&1
-    if ($extList) {
-        $extensions = @($extList | Where-Object { $_.ToString() -match '\.' })
-    }
-} catch {}
-$extObj = @{ "collected" = $timestamp; "count" = $extensions.Count; "extensions" = $extensions }
-$extObj | ConvertTo-Json -Depth 3 | Out-File -FilePath (Join-Path $snapshotDir "vscode-extensions.json") -Encoding UTF8
-Write-Host "  OK: $($extensions.Count) extensions" -ForegroundColor Green
-
-# ─────────────────────────────────────
-# 4. Installed Software (winget)
-# ─────────────────────────────────────
-Write-Host "[4/5] Installed Software..." -ForegroundColor Yellow
+Write-Host "[3/4] Installed Software..." -ForegroundColor Yellow
 $software = @()
 try {
     $rawOutput = & winget list --accept-source-agreements 2>&1
@@ -108,7 +93,7 @@ Write-Host "  OK: $($software.Count) packages" -ForegroundColor Green
 # ─────────────────────────────────────
 # 5. Cross-Repo Status (3 production repos)
 # ─────────────────────────────────────
-Write-Host "[5/5] Cross-Repo Status..." -ForegroundColor Yellow
+Write-Host "[4/4] Cross-Repo Status..." -ForegroundColor Yellow
 
 $repoPaths = @{
     "parksy-audio" = "D:\PARKSY\parksy-audio"

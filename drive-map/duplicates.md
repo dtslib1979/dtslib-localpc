@@ -1,51 +1,40 @@
-# 중복 클론 목록 + 정리 권고
+# 중복 클론 정리 기록
 
-> **주의**: 이 문서는 현황 파악용. 실제 삭제는 별도 세션에서 확인 후 진행.
+> 정리 완료: 2026-02-28
 
-## 확인된 중복
+## 정리 결과
 
-### parksy-audio (3개 클론)
-| 경로 | 용도 | 권고 |
+### 삭제 완료
+
+| 경로 | 상태 | 조치 |
 |------|------|------|
-| `D:\PARKSY\parksy-audio` | Claude Code 워킹 카피 | **Canonical** (유지) |
-| `D:\1_GITHUB\parksy-audio` | sync.bat 클론 | 삭제 권고 |
-| `D:\parksy-audio` | 독립 클론 (이전) | 삭제 권고 |
+| `D:\parksy-audio` | divergent commit `3b50d25` 발견 | canonical에 cherry-pick 후 삭제 |
+| `D:\1_GITHUB\parksy-audio` | 빈 레포 (git init만) | 즉시 삭제 |
+| `D:\parksy-image-fresh` | behind canonical + untracked 4파일 | 파일 구출 후 삭제 |
+| `D:\1_GITHUB\parksy-image` | canonical과 HEAD 동일 | 즉시 삭제 |
 
-### parksy-image (2개)
-| 경로 | 용도 | 권고 |
+### 구출된 작업물
+
+**D:\parksy-audio → D:\PARKSY\parksy-audio:**
+- commit `3b50d25` (원클릭 풀 파이프라인 v2, 10개 모듈) cherry-pick
+- dirty files: `full_pipeline.py`, `humanize_preset.py`
+- untracked: `session-logs/` (3건)
+
+**D:\parksy-image-fresh → D:\parksy-image:**
+- `scripts/telegram/__init__.py`, `bot.py`, `config.py`
+- `start_bot.bat`
+
+### 미정리 (별도 확인 필요)
+
+| 경로 | 상태 | 비고 |
 |------|------|------|
-| `D:\parksy-image` | Claude Code 워킹 카피 | **Canonical** (유지) |
-| `D:\parksy-image-fresh` | 용도 불명 (fresh copy?) | 확인 후 삭제 |
+| `C:\Users\dtsli\dtslib-apk-lab` | C드라이브 클론 | D로 통합 권고, 사용자 확인 필요 |
 
-### dtslib-apk-lab (2개)
-| 경로 | 용도 | 권고 |
-|------|------|------|
-| `D:\1_GITHUB\dtslib-apk-lab` | sync.bat 클론 | **Canonical** (유지) |
-| `C:\Users\dtsli\dtslib-apk-lab` | C드라이브 클론 | D로 통합 권고 |
+## Canonical 경로 (최종)
 
-### dtslib-localpc (2개)
-| 경로 | 용도 | 권고 |
-|------|------|------|
-| `D:\PARKSY\dtslib-localpc` | Claude Code 워킹 카피 | **Canonical** (유지) |
-| `D:\1_GITHUB\dtslib-localpc` | sync.bat 클론 | 자동 동기화 유지 |
-
-## 정리 원칙
-
-1. **Canonical = PARKSY/ 또는 루트** — Claude Code 세션이 직접 작업하는 경로
-2. **1_GITHUB/ = 백업 미러** — sync.bat이 자동 관리, 직접 작업 금지
-3. **C 드라이브 클론 = D로 통합** — WD Passport 이동성 유지
-
-## 예상 절약 용량
-
-| 삭제 대상 | 예상 크기 |
-|-----------|----------|
-| `D:\parksy-audio` | ~500MB |
-| `D:\parksy-image-fresh` | ~200MB |
-| `C:\Users\dtsli\dtslib-apk-lab` | ~300MB |
-| **합계** | **~1GB** |
-
-## 실행 시 체크리스트
-
-- [ ] 각 삭제 대상에 uncommitted 변경 없는지 `git status` 확인
-- [ ] 삭제 전 `git log -1` 비교하여 canonical과 동일 커밋인지 확인
-- [ ] 삭제 후 1_GITHUB/ sync.bat 실행하여 정상 동작 확인
+| 레포 | Canonical 경로 |
+|------|---------------|
+| parksy-audio | `D:\PARKSY\parksy-audio` |
+| parksy-image | `D:\parksy-image` |
+| dtslib-apk-lab | `D:\1_GITHUB\dtslib-apk-lab` |
+| dtslib-localpc | `D:\PARKSY\dtslib-localpc` |
