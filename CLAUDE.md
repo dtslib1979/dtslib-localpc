@@ -184,6 +184,38 @@ dtslib-localpc/
 
 ---
 
-*Version: 2.0 — Control Tower*
+## 10. 세션 종료 프로토콜 (필수)
+
+> **어떤 프로덕션 레포에서든 커밋 전에 반드시 실행해야 하는 절차**
+
+### 의무 사항
+
+모든 프로덕션 레포(parksy-audio, parksy-image, dtslib-apk-lab) 세션에서 커밋을 생성할 때:
+
+1. **`repos/status.json` 갱신** — 해당 레포의 last_commit, last_commit_msg, dirty_files, phase 등 갱신
+2. **`repos/{레포}.md` 저널 갱신** — 이번 세션에서 수행한 작업 내용을 해당 저널에 추가
+   - 새로운 Phase 진입, 도구 생성, 설정 변경, 버그 수정 등 모든 유의미한 작업
+   - "큰 변경"만이 아니라 **모든 커밋 대상 작업**을 기록
+3. **dtslib-localpc 커밋** — status.json / 저널 변경사항을 dtslib-localpc에도 커밋+푸시
+
+### 저널 작성 기준
+
+repos/*.md는 단순 상태 대시보드가 아니라 **개발 일지**다:
+- 새 Claude 세션이 이 파일만 읽고도 작업을 즉시 이어받을 수 있어야 한다
+- 설정값, 경로, 파라미터 등 구체적 수치를 포함해야 한다
+- "뭘 했는지"가 아니라 "어떻게 했고, 왜 그렇게 했는지"를 써야 한다
+
+### 순서
+
+```
+1. 작업 레포에서 git add + commit
+2. dtslib-localpc/repos/status.json 갱신 (커밋 해시, 메시지, phase 등)
+3. dtslib-localpc/repos/{레포}.md 저널 갱신 (이번 세션 작업 내용)
+4. dtslib-localpc에서 git add + commit + push
+```
+
+---
+
+*Version: 2.1 — Control Tower + Journal Protocol*
 *Updated: 2026-02-28*
 *Built with: Claude Code (Claude Opus 4.6)*

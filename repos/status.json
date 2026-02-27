@@ -1,14 +1,14 @@
 {
-  "updated": "2026-02-28T00:15:00+09:00",
-  "description": "3개 프로덕션 레포 크로스레포 상태 요약",
+  "updated": "2026-02-28T14:30:00+09:00",
+  "description": "3개 프로덕션 레포 크로스레포 상태 요약 — 세션 종료 시 자동 갱신",
   "repos": {
     "parksy-audio": {
       "local_path": "D:\\PARKSY\\parksy-audio",
       "github": "dtslib1979/parksy-audio",
       "branch": "main",
-      "last_commit": "76a3131",
-      "last_commit_msg": "docs: 마스터링 파이프라인 개발일지 + 자체 강평",
-      "dirty_files": 1,
+      "last_commit": "b89ff41",
+      "last_commit_msg": "docs: 세션 종료 프로토콜 추가 — 커밋 시 status.json 자동 갱신 의무화",
+      "dirty_files": 0,
       "phase": "Phase 8 Complete (Mastery Pipeline Optimization)",
       "next_phase": "Phase 9 — YouTube 배포 + Score Engine 고도화",
       "piano_score": {
@@ -35,15 +35,16 @@
         "YouTube upload execution",
         "Score Engine refinement",
         "AI Velocity Generation"
-      ]
+      ],
+      "journal": "repos/parksy-audio.md"
     },
     "parksy-image": {
       "local_path": "D:\\parksy-image",
       "github": "dtslib1979/parksy-image",
       "branch": "main",
-      "last_commit": "cfb5897",
-      "last_commit_msg": "chore: update image index [skip ci]",
-      "dirty_files": 28,
+      "last_commit": "c1dadcf",
+      "last_commit_msg": "docs: 세션 종료 프로토콜 추가 — 커밋 시 status.json 자동 갱신 의무화",
+      "dirty_files": 30,
       "phase": "Phase 2 — PSE Korean expansion",
       "pse_status": {
         "glyphs": 86,
@@ -63,14 +64,15 @@
         "YouTube upload automation test",
         "Naver Blog distribution",
         "PC session: validate pse.build metrics"
-      ]
+      ],
+      "journal": "repos/parksy-image.md"
     },
     "dtslib-apk-lab": {
       "local_path": "D:\\1_GITHUB\\dtslib-apk-lab",
       "github": "dtslib1979/dtslib-apk-lab",
       "branch": "main",
-      "last_commit": "c8b7e3d",
-      "last_commit_msg": "fix(wavesy): resolve libc++_shared.so conflict",
+      "last_commit": "dd4b102",
+      "last_commit_msg": "docs: 세션 종료 프로토콜 추가 — 커밋 시 status.json 자동 갱신 의무화",
       "dirty_files": 0,
       "phase": "Active (5 apps, 1 building)",
       "store_url": "https://dtslib-apk-lab.vercel.app/",
@@ -92,7 +94,8 @@
         "ChronoCall: flutter create + build + device test",
         "ChronoCall: APK signing + release",
         "Wavesy: libc++_shared.so conflict resolved, needs rebuild"
-      ]
+      ],
+      "journal": "repos/dtslib-apk-lab.md"
     }
   },
   "cross_links": [
