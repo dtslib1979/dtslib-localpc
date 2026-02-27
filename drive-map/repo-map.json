@@ -1,0 +1,94 @@
+{
+  "version": "2.0",
+  "updated": "2026-02-28",
+  "migrated_from": "D:\\_SYSTEM\\repo-map.json (v1.0, 2025-01-17)",
+  "description": "DTSLIB GitHub 레포지토리 의존성 맵 + 로컬 경로",
+  "clusters": {
+    "PRODUCTION_LOCAL": {
+      "description": "로컬 PC 작업이 필요한 프로덕션 레포 (핵심 3개)",
+      "repos": {
+        "parksy-audio": {
+          "github": "dtslib1979/parksy-audio",
+          "canonical_local": "D:\\PARKSY\\parksy-audio",
+          "purpose": "클래식 음악 자동화 파이프라인",
+          "local_work": "FluidSynth 렌더링, 마스터링, YouTube 비디오 생성"
+        },
+        "parksy-image": {
+          "github": "dtslib1979/parksy-image",
+          "canonical_local": "D:\\parksy-image",
+          "purpose": "이미지/웹툰 생산 시스템 + PSE 폰트 엔진",
+          "local_work": "Python 파이프라인, face decomposition, photo2drawing"
+        },
+        "dtslib-apk-lab": {
+          "github": "dtslib1979/dtslib-apk-lab",
+          "canonical_local": "D:\\1_GITHUB\\dtslib-apk-lab",
+          "purpose": "5개 Flutter Android 앱 포트폴리오",
+          "local_work": "Flutter 빌드, APK 서명, 디바이스 테스트"
+        }
+      }
+    },
+    "CORE_PLATFORMS": {
+      "description": "메인 웹 플랫폼 (GitHub Pages 배포)",
+      "repos": ["parksy.kr", "eae.kr", "dtslib.kr"],
+      "deploy": "GitHub Pages"
+    },
+    "FAMILY_SITES": {
+      "description": "가족/친구 사이트",
+      "repos": ["buddies.kr", "koosy", "gohsy", "papafly"],
+      "deploy": "GitHub Pages"
+    },
+    "MEDIA_PIPELINE": {
+      "description": "미디어 자산 관리 (parksy.kr 참조)",
+      "repos": ["parksy-image", "parksy-audio", "parksy-logs"],
+      "note": "parksy-logs 7GB (가장 큰 레포)"
+    },
+    "DEV_TOOLS": {
+      "description": "개발 도구 및 자동화",
+      "repos": ["playwright-bot", "OrbitPrompt", "dtslib-branch"]
+    },
+    "MOBILE_APK": {
+      "description": "모바일 앱 개발",
+      "repos": ["dtslib-apk-lab", "mobile-baptism", "dtslib-cloud-appstore"],
+      "workspace": "3_APK"
+    },
+    "CONTENT_ARCHIVE": {
+      "description": "콘텐츠 아카이브",
+      "repos": ["dtslib-papyrus", "phoneparis"]
+    },
+    "INFRA": {
+      "description": "인프라 및 복원",
+      "repos": ["dtslib-localpc"],
+      "note": "이 레포 — 크로스레포 관제탑"
+    }
+  },
+  "dependencies": {
+    "parksy.kr": {
+      "references": ["parksy-image", "parksy-audio"],
+      "workflow_triggers": ["parksy-logs"]
+    },
+    "parksy-audio": {
+      "sfz_sflib": ["D:\\VST\\SGM-V2.01.sf2", "D:\\VST\\SSO\\", "D:\\VST\\VSCO2\\"],
+      "tools": ["D:\\VST\\fluidsynth\\bin\\fluidsynth.exe"],
+      "work_dir": "D:\\tmp"
+    },
+    "parksy-image": {
+      "pse_font": "tools/pse/output/parksy-hand.ttf",
+      "telegram": "@parksy_bridge_bot"
+    },
+    "dtslib-apk-lab": {
+      "build_output": "3_APK/builds/",
+      "store": "https://dtslib-apk-lab.vercel.app/"
+    }
+  },
+  "endpoints": {
+    "github": {
+      "account": "dtslib1979",
+      "plan": "Pro (무제한)",
+      "total_repos": 20
+    },
+    "youtube": {
+      "channels": 8,
+      "staging": "5_YOUTUBE"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "version": "3.0",
+  "updated": "2026-02-28",
+  "migrated_from": "D:\\_SYSTEM\\structure.json (v2.0, 2026-01-17)",
+  "name": "DTSLIB Drive Map",
+  "philosophy": {
+    "endpoints": ["GitHub Pro (무제한)", "YouTube (8채널)", "Vercel (APK Store)"],
+    "principle": "엔드포인트 이전 데이터만 로컬 관리. 엔드포인트는 불멸.",
+    "primary_driver": "Claude Code (2026~ 주력 작업 드라이버)"
+  },
+  "drive_d": {
+    "type": "WD Passport 외장 HDD",
+    "use_case": "이동식 작업 환경 — 어디서든 PC에 꽂으면 개발환경 구축",
+    "structure": {
+      "PARKSY": {
+        "purpose": "프로덕션 워킹 카피 (Claude Code 세션 작업 디렉토리)",
+        "contents": {
+          "parksy-audio": "음악 파이프라인 (canonical working copy)",
+          "parksy-image": "NOTE: D:\\parksy-image에 별도 존재",
+          "dtslib-localpc": "이 레포 (관제탑)",
+          "parksy-axis-test": "테스트 레포"
+        }
+      },
+      "1_GITHUB": {
+        "purpose": "모든 GitHub 레포 클론 (sync.bat 자동 동기화)",
+        "sync": "D:\\_SYSTEM\\sync.bat",
+        "repos": 20,
+        "note": "PARKSY/ 폴더와 일부 중복 — duplicates.md 참조"
+      },
+      "2_WORKSPACE": {
+        "purpose": "PC 작업용 (비Git, 임시 작업)",
+        "subdirs": ["python-batch", "midi-cubase", "temp"]
+      },
+      "3_APK": {
+        "purpose": "APK 개발/빌드 환경",
+        "source": "128G USB PaidApp 정리본"
+      },
+      "4_ARCHIVE": {
+        "purpose": "GitHub/YouTube 이전 백업 데이터",
+        "source": "The same old story 정리본"
+      },
+      "5_YOUTUBE": {
+        "purpose": "YouTube 업로드 스테이징",
+        "subdirs": ["templates", "uploads", "channel-assets"]
+      },
+      "_SYSTEM": {
+        "purpose": "시스템 관리 — 얇은 래퍼 (핵심은 dtslib-localpc로 이관)",
+        "retained": ["sync.bat", "dashboard/", "autorun.inf"],
+        "migrated_to_repo": ["repo-map.json", "structure.json", "scripts/"]
+      },
+      "_TOOLS": {
+        "purpose": "유틸리티 및 자동화 도구"
+      },
+      "VST": {
+        "purpose": "SoundFont/SFZ/VSTi 라이브러리",
+        "contents": ["SGM-V2.01.sf2", "SSO/", "VSCO2/", "fluidsynth/", "ambient/"]
+      },
+      "tmp": {
+        "purpose": "parksy-audio 작업 디렉토리 (optimizer, score_engine 등)"
+      }
+    }
+  },
+  "drive_c_dev": {
+    "paths": {
+      "C:\\Users\\dtsli\\.claude": "Claude Code 설정 + 메모리",
+      "C:\\Users\\dtsli\\dtslib-apk-lab": "APK Lab 클론 (D:\\1_GITHUB로 통합 권고)",
+      "C:\\Users\\dtsli\\AppData\\Local\\Android\\Sdk": "Android SDK (미확인)"
+    }
+  }
+}

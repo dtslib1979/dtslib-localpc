@@ -1,0 +1,103 @@
+{
+  "updated": "2026-02-28T00:15:00+09:00",
+  "description": "3개 프로덕션 레포 크로스레포 상태 요약",
+  "repos": {
+    "parksy-audio": {
+      "local_path": "D:\\PARKSY\\parksy-audio",
+      "github": "dtslib1979/parksy-audio",
+      "branch": "main",
+      "last_commit": "76a3131",
+      "last_commit_msg": "docs: 마스터링 파이프라인 개발일지 + 자체 강평",
+      "dirty_files": 1,
+      "phase": "Phase 8 Complete (Mastery Pipeline Optimization)",
+      "next_phase": "Phase 9 — YouTube 배포 + Score Engine 고도화",
+      "piano_score": {
+        "avg": 96.4,
+        "perfect_count": "15/22 at 100.0"
+      },
+      "orchestral_score": {
+        "avg": 99.9,
+        "min": 99.5,
+        "count": "12/12 >= 99.5"
+      },
+      "work_dir": "D:\\tmp",
+      "key_configs": [
+        "D:\\tmp\\optimal_config.json",
+        "D:\\tmp\\orchestral_optimal_config.json"
+      ],
+      "key_tools": [
+        "D:\\tmp\\optimizer.py",
+        "D:\\tmp\\score_engine.py",
+        "D:\\tmp\\quartet_pipeline.py"
+      ],
+      "videos_produced": 6,
+      "pending": [
+        "YouTube upload execution",
+        "Score Engine refinement",
+        "AI Velocity Generation"
+      ]
+    },
+    "parksy-image": {
+      "local_path": "D:\\parksy-image",
+      "github": "dtslib1979/parksy-image",
+      "branch": "main",
+      "last_commit": "cfb5897",
+      "last_commit_msg": "chore: update image index [skip ci]",
+      "dirty_files": 28,
+      "phase": "Phase 2 — PSE Korean expansion",
+      "pse_status": {
+        "glyphs": 86,
+        "tests": "33/33 passing",
+        "font_output": "tools/pse/output/parksy-hand.ttf"
+      },
+      "pipeline_version": "v3 (8-stage automation)",
+      "distribution": {
+        "youtube": "@visualizer-parksy (configured, upload pending)",
+        "gdrive": "rclone gdrive:parksy-image/ (ready)",
+        "telegram": "@parksy_bridge_bot (SVG only)",
+        "naver_blog": "3-channel format (distribution pending)"
+      },
+      "queue": "_queue/ folder with pending jobs",
+      "pending": [
+        "User handwriting SVG for PSE Phase 2",
+        "YouTube upload automation test",
+        "Naver Blog distribution",
+        "PC session: validate pse.build metrics"
+      ]
+    },
+    "dtslib-apk-lab": {
+      "local_path": "D:\\1_GITHUB\\dtslib-apk-lab",
+      "github": "dtslib1979/dtslib-apk-lab",
+      "branch": "main",
+      "last_commit": "c8b7e3d",
+      "last_commit_msg": "fix(wavesy): resolve libc++_shared.so conflict",
+      "dirty_files": 0,
+      "phase": "Active (5 apps, 1 building)",
+      "store_url": "https://dtslib-apk-lab.vercel.app/",
+      "apps": {
+        "parksy-capture": { "status": "production" },
+        "parksy-pen": { "status": "production" },
+        "parksy-wavesy": { "status": "production" },
+        "parksy-tts": { "status": "production" },
+        "chrono-call": { "status": "code complete, build pending" }
+      },
+      "active_dev": "chrono-call v1.0.0 (flutter create + build needed)",
+      "build_env": {
+        "compileSdk": 34,
+        "minSdk": 26,
+        "targetSdk": 34,
+        "flutter": "required (not in PATH)"
+      },
+      "pending": [
+        "ChronoCall: flutter create + build + device test",
+        "ChronoCall: APK signing + release",
+        "Wavesy: libc++_shared.so conflict resolved, needs rebuild"
+      ]
+    }
+  },
+  "cross_links": [
+    { "from": "parksy-audio", "to": "parksy-image", "type": "YouTube videos → @visualizer-parksy" },
+    { "from": "dtslib-apk-lab", "to": "parksy-image", "type": "ChronoCall → Parksy Capture auto-share" },
+    { "from": "parksy-audio", "to": "dtslib-apk-lab", "type": "Audio → Wavesy editor (potential)" }
+  ]
+}
