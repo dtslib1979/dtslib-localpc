@@ -69,7 +69,31 @@ powershell -ExecutionPolicy Bypass -File D:\PARKSY\dtslib-localpc\scripts\snapsh
 
 ---
 
-## 4. 크로스레포 작업 패턴
+## 4. 자동 갱신 — 이게 핵심
+
+### 너는 아무것도 안 해도 된다. Claude가 알아서 한다.
+
+각 레포의 CLAUDE.md에 **세션 종료 프로토콜**이 박혀있다:
+
+```
+커밋 전에 반드시:
+1. dtslib-localpc/repos/status.json에서 이 레포 항목 갱신
+2. dtslib-localpc/repos/{레포}.md 갱신 (큰 변경 시)
+3. dtslib-localpc에서도 커밋
+```
+
+즉, parksy-audio에서 Phase 9 끝내고 커밋하면:
+1. parksy-audio 커밋
+2. **Claude가 알아서** status.json의 parksy-audio.phase → "Phase 9 Complete" 갱신
+3. **Claude가 알아서** dtslib-localpc도 커밋+푸시
+
+다음에 parksy-image 세션 열면 → status.json 읽으면 → **최신 정보**가 들어있다.
+
+**이게 전부다. 너는 커밋만 시키면 된다.**
+
+---
+
+## 5. 크로스레포 작업 패턴
 
 ### 패턴 A: "다른 레포 참조만"
 
@@ -93,28 +117,6 @@ powershell -ExecutionPolicy Bypass -File D:\PARKSY\dtslib-localpc\scripts\snapsh
 
 ---
 
-## 5. repos/status.json 수동 갱신
-
-스냅샷 스크립트는 git status만 자동 수집한다. **Phase, 스코어, 큐** 같은 의미 있는 정보는 수동 갱신이 필요하다.
-
-### 갱신 방법: 아무 Claude 세션에서
-
-```
-"dtslib-localpc의 status.json에서 parksy-audio Phase를 Phase 10으로 업데이트해줘"
-```
-
-Claude가 JSON 파일을 직접 수정하고 커밋한다.
-
-### 또는: 해당 레포 세션 끝날 때
-
-큰 작업이 끝나면 Claude에게:
-
-```
-"이번 작업 끝. 관제탑 status.json 갱신해줘"
-```
-
----
-
 ## 6. 새 레포 추가하기
 
 미래에 4번째 프로덕션 레포가 생기면:
@@ -130,6 +132,7 @@ Claude에게 "새 레포 XXX를 관제탑에 등록해줘"라고 하면 위 5단
 ---
 
 ## 7. 중복 클론 방지 규칙
+
 
 ### Canonical 경로 (이것만 쓴다)
 
