@@ -1,0 +1,30 @@
+{
+  "capture": {
+    "monitor_number": 1,
+    "interval_seconds": 120,
+    "screenshot_dir": "D:/5_YOUTUBE/raw/shots"
+  },
+  "claude_ai": {
+    "chrome_user_data": "C:/Users/사용자명/AppData/Local/Google/Chrome/User Data",
+    "url": "https://claude.ai/new",
+    "prompt": "이 터미널 스크린샷을 봐. 지금 Claude Code가 무슨 작업을 하고 있는지 한국어로 설명해줘. IT 비전문가도 이해할 수 있게 쉬운 말로, 기술 용어가 나오면 괄호 안에 쉬운 설명 추가, 3~5문장으로 간결하게. 이전 스크린샷과 비교해서 진행 상황 변화도 언급해줘.",
+    "read_aloud": true,
+    "read_aloud_wait_seconds": 30,
+    "max_messages_per_chat": 20
+  },
+  "youtube": {
+    "channel": "https://www.youtube.com/@technician-parksy",
+    "live_enabled": false,
+    "live_stream_key": ""
+  },
+  "obs": {
+    "scene_name": "CCTV",
+    "sources": {
+      "claude_code": "Claude Code Terminal (Monitor 1)",
+      "claude_ai": "Chrome Claude.ai (Monitor 2)"
+    },
+    "layout": "side_by_side",
+    "output_dir": "D:/5_YOUTUBE/raw/recordings",
+    "recording_format": "mp4"
+  }
+}
