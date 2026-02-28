@@ -1,5 +1,5 @@
 ﻿{
-    "collected":  "2026-02-28T13:55:38+09:00",
+    "collected":  "2026-02-28T14:48:12+09:00",
     "packages":  [
                      "KBSKong 2.1.1                            KBS.Kong                                 2.1.1                          winget",
                      "AutoHotkey                               AutoHotkey.AutoHotkey                    2.0.19           2.0.21        winget",
@@ -143,7 +143,7 @@
                      "Windows 녹음기                           MSIX\\Microsoft.WindowsSoundRecorder_1.1… 1.1.86.0",
                      "Microsoft Store                          MSIX\\Microsoft.WindowsStore_22601.1401.… 22601.1401.3.0",
                      "Windows 터미널                           Microsoft.WindowsTerminal                1.23.20211.0                   winget",
-                     "Windows Package Manager Source (winget)… MSIX\\Microsoft.Winget.Source_2026.228.5… 2026.228.531.16",
+                     "Windows Package Manager Source (winget)… MSIX\\Microsoft.Winget.Source_2026.228.6… 2026.228.624.5",
                      "휴대폰과 연결                            MSIX\\Microsoft.YourPhone_1.26011.42.0_x… 1.26011.42.0",
                      "Windows 미디어 플레이어                  MSIX\\Microsoft.ZuneMusic_11.2512.10.0_x… 11.2512.10.0",
                      "Microsoft Family                         MSIX\\MicrosoftCorporationII.MicrosoftFa… 0.2.40.0",
