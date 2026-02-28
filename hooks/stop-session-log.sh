@@ -74,6 +74,9 @@ TODAY=$(date +%Y-%m-%d)
 
 # 저널 파일이 있고, 오늘 날짜의 로그가 있으면 통과
 if [ -f "$JOURNAL" ] && grep -q "^### $TODAY" "$JOURNAL"; then
+    # ── 세션 마커 삭제 (정상 종료) ──
+    MARKER_FILE="$LOCALPC/.sessions/${REPO_NAME}.json"
+    rm -f "$MARKER_FILE" 2>/dev/null
     exit 0
 fi
 
