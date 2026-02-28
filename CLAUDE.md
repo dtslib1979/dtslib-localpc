@@ -143,7 +143,8 @@ dtslib-localpc/
 │   └── duplicates.md            ← 중복 클론 정리 권고
 │
 ├── hooks/                       ← Claude Code 자동화 훅
-│   └── stop-session-log.sh      ← Stop hook: 세션 로그 미작성 시 블록
+│   ├── stop-session-log.sh      ← Stop hook: 세션 로그 미작성 시 블록
+│   └── start-session-recovery.sh ← SessionStart hook: 비정상 종료 감지 + 복구
 │
 ├── scripts/                     ← 자동화 (Task Scheduler 연동)
 │   ├── snapshot.ps1             ← 원클릭 스냅샷 갱신 [8/8]
@@ -208,12 +209,21 @@ dtslib-localpc/
 ### 자동화 구조
 
 ```
+[정상 종료 보호 — Stop hook]
 Claude 세션 종료 시도
   → Stop hook 자동 실행 (hooks/stop-session-log.sh)
   → 프로덕션 레포인가? → 아니면 통과
-  → 오늘 세션 로그 있는가? → 있으면 통과
+  → 오늘 세션 로그 있는가? → 있으면 통과 + 세션 마커 삭제
   → 없으면 → 블록 + Claude에게 포맷/경로 안내
   → Claude가 로그 작성 → 재시도 → 통과
+
+[비정상 종료 복구 — SessionStart hook]
+새 세션 시작
+  → SessionStart hook 실행 (hooks/start-session-recovery.sh)
+  → 이전 세션 마커(.sessions/{repo}.json) 존재?
+  → 마커 있음 + 세션 로그 없음 = 이전 세션 비정상 종료 (서버/PC 다운)
+  → Claude context에 복구 지시 주입 (git log 확인 + catch-up 로그 작성)
+  → 현재 세션 마커 생성
 ```
 
 ### 설치 (최초 1회)
@@ -252,6 +262,8 @@ bash scripts/install-hooks.sh --uninstall
 |------|--------|------|
 | 세션 로그 미작성 감지 + 블록 | **자동** | Stop hook |
 | 세션 로그 포맷 안내 | **자동** | Stop hook (블록 메시지에 포함) |
+| 비정상 종료 감지 | **자동** | SessionStart hook (마커 기반) |
+| crash 후 catch-up 로그 지시 | **자동** | SessionStart hook (Claude context 주입) |
 | 세션 로그 내용 생성 | Claude | Claude가 세션 내용 기반으로 작성 |
 | repos/{레포}.md append | Claude | Stop hook 블록 후 Claude가 실행 |
 | repos/status.json 갱신 | Claude | Stop hook 블록 후 Claude가 실행 |
@@ -282,9 +294,10 @@ bash scripts/install-hooks.sh --uninstall
 | hook이 안 걸림 | 설치 안 됨 | `scripts/install-hooks.ps1` 실행 |
 | dtslib-localpc 경로 못 찾음 | 비표준 경로 | `DTSLIB_LOCALPC` 환경변수 설정 |
 | 단순 질문인데 블록됨 | 정상 (1회만) | Claude가 "작업 없음" 응답 → 자동 통과 |
+| 세션 시작마다 "복구 필요" 뜸 | 이전 세션 비정상 종료 | catch-up 로그 작성하면 해소 |
 
 ---
 
-*Version: 4.0 — 세션 로그 자동 강제 (Stop hook)*
+*Version: 4.1 — 세션 로그 자동 강제 + 비정상 종료 복구 (Stop + SessionStart hook)*
 *Updated: 2026-02-28*
 *Built with: Claude Code (Claude Opus 4.6)*
