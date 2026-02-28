@@ -85,7 +85,7 @@ for repo_name in "${!REPOS[@]}"; do
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "startup|resume",
+        "matcher": "startup",
         "hooks": [
           {
             "type": "command",
