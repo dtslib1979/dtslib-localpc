@@ -142,11 +142,16 @@ dtslib-localpc/
 │   ├── structure.json           ← 폴더 구조 + 용도
 │   └── duplicates.md            ← 중복 클론 정리 권고
 │
+├── hooks/                       ← Claude Code 자동화 훅
+│   └── stop-session-log.sh      ← Stop hook: 세션 로그 미작성 시 블록
+│
 ├── scripts/                     ← 자동화 (Task Scheduler 연동)
 │   ├── snapshot.ps1             ← 원클릭 스냅샷 갱신 [8/8]
 │   ├── sync-all.ps1             ← GitHub 전체 sync (매일 18시)
 │   ├── health-check.ps1         ← 시스템 점검 (매일 09시)
-│   └── register-scheduler.ps1   ← Task Scheduler 등록
+│   ├── register-scheduler.ps1   ← Task Scheduler 등록
+│   ├── install-hooks.ps1        ← 프로덕션 레포에 Stop hook 설치 (Windows)
+│   └── install-hooks.sh         ← 프로덕션 레포에 Stop hook 설치 (Linux)
 │
 └── samples/                     ← Phase 1 유산 (차이콥스키)
     ├── metadata/library.json
@@ -196,16 +201,39 @@ dtslib-localpc/
 
 ---
 
-## 10. 세션 종료 프로토콜 (필수)
+## 10. 세션 종료 프로토콜 (자동 강제)
 
-> **모든 프로덕션 레포 세션 종료 시 반드시 실행. 이걸 빠뜨리면 개발 이력이 유실된다.**
+> **Claude Code Stop hook이 자동으로 강제한다. Claude가 까먹어도 hook이 블록한다.**
 
-### 의무 사항
+### 자동화 구조
 
-1. **`repos/status.json` 갱신** — 해당 레포의 last_commit, phase 등
-2. **`repos/{레포}.md`에 세션 로그 append** — 아래 포맷으로 파일 끝에 추가
+```
+Claude 세션 종료 시도
+  → Stop hook 자동 실행 (hooks/stop-session-log.sh)
+  → 프로덕션 레포인가? → 아니면 통과
+  → 오늘 세션 로그 있는가? → 있으면 통과
+  → 없으면 → 블록 + Claude에게 포맷/경로 안내
+  → Claude가 로그 작성 → 재시도 → 통과
+```
 
-### 세션 로그 포맷
+### 설치 (최초 1회)
+
+```powershell
+# Windows (PowerShell)
+powershell -File scripts/install-hooks.ps1
+
+# Linux / Git Bash
+bash scripts/install-hooks.sh
+
+# 제거
+powershell -File scripts/install-hooks.ps1 -Uninstall
+bash scripts/install-hooks.sh --uninstall
+```
+
+설치하면 각 프로덕션 레포에 `.claude/settings.local.json`이 생성된다.
+이 파일은 gitignore 대상이므로 레포를 오염시키지 않는다.
+
+### 세션 로그 포맷 (hook이 자동 안내)
 
 ```markdown
 ---
@@ -218,13 +246,27 @@ dtslib-localpc/
 ---
 ```
 
+### 자동화 범위
+
+| 항목 | 자동화 | 담당 |
+|------|--------|------|
+| 세션 로그 미작성 감지 + 블록 | **자동** | Stop hook |
+| 세션 로그 포맷 안내 | **자동** | Stop hook (블록 메시지에 포함) |
+| 세션 로그 내용 생성 | Claude | Claude가 세션 내용 기반으로 작성 |
+| repos/{레포}.md append | Claude | Stop hook 블록 후 Claude가 실행 |
+| repos/status.json 갱신 | Claude | Stop hook 블록 후 Claude가 실행 |
+| git commit + push | Claude | 로그 작성 후 Claude가 실행 |
+| 환경 스냅샷 수집 | **자동** | snapshot.ps1 (Task Scheduler) |
+| status.json git 필드 | **자동** | snapshot.ps1 [7/8] |
+| 세션 로그 staleness 경고 | **자동** | snapshot.ps1 [8/8] (7일 초과 시) |
+
 ### 왜 이 포맷인가
 
 - **작업/결정/결과** = 로컬 개발의 git log 대체 (D:\tmp에는 git이 없다)
 - **교훈** = 같은 삽질 반복 방지 (파인튜닝 효과)
 - **재구축 힌트** = D: 유실 시 Claude가 읽고 처음부터 다시 만들 수 있는 인스트럭션
 
-### 순서
+### 순서 (Claude가 자동 실행)
 
 ```
 1. 작업 레포에서 git add + commit
@@ -233,8 +275,16 @@ dtslib-localpc/
 4. dtslib-localpc에서 git add + commit + push
 ```
 
+### 트러블슈팅
+
+| 증상 | 원인 | 해결 |
+|------|------|------|
+| hook이 안 걸림 | 설치 안 됨 | `scripts/install-hooks.ps1` 실행 |
+| dtslib-localpc 경로 못 찾음 | 비표준 경로 | `DTSLIB_LOCALPC` 환경변수 설정 |
+| 단순 질문인데 블록됨 | 정상 (1회만) | Claude가 "작업 없음" 응답 → 자동 통과 |
+
 ---
 
-*Version: 3.0 — 로컬 개발 이력 저장소*
+*Version: 4.0 — 세션 로그 자동 강제 (Stop hook)*
 *Updated: 2026-02-28*
 *Built with: Claude Code (Claude Opus 4.6)*
