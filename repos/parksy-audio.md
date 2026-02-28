@@ -266,12 +266,50 @@ YouTube 업로드
 | Freq Balance | 20% | Hi-Mid -15 ~ -5 dB |
 | Dynamic Variance | 20% | std 1.5 ~ 5.0 (20s window) |
 
-### 5.3 Orchestral Configs (STRING/WOODWIND/BRASS/ORCHESTRAL)
+### 5.3 Orchestral Configs (orchestral_optimal_config.json)
 
-STRING: hpf=28, body=800Hz+3dB, presence=2500Hz+3dB, comp=1.3:1@-15dB,atk=80ms
-WOODWIND: hpf=35, body=700Hz+2dB, presence=2000Hz+3dB, comp=1.8:1@-15dB,atk=40ms
-BRASS: hpf=25, body=500Hz+3dB, presence=1800Hz+2dB, comp=2.0:1@-14dB,atk=30ms
-ORCHESTRAL: hpf=28, body=650Hz+3dB, presence=2200Hz+3dB, comp=1.8:1@-15dB,atk=50ms
+**STRING_CONFIG** (기본값, 대부분의 장르 커버):
+```
+hpf=28, low_shelf=180Hz/-2dB, mid_cut=350Hz/q2/-1dB
+body=800Hz/q1/+3dB, presence=2500Hz/q0.7/+3dB
+bright=5000Hz/q1/+1dB, air_shelf=9000Hz/+1dB
+comp: 1.3:1 @ -15dB, atk=80ms, rel=500ms, makeup=1dB, knee=10
+limiter: 0.84, atk=5ms, rel=80ms
+lufs=-16, tp=-1.5, lra=9
+```
+
+**WOODWIND_CONFIG**:
+```
+hpf=35, body=700Hz/+2dB, presence=2000Hz/+3dB
+bright=4500Hz/+2dB, air=8000Hz/+2dB
+comp: 1.8:1 @ -15dB, atk=40ms
+Warm Variant: body+3dB, presence+2dB, bright=0dB, air=0dB (SGM harshness 제거)
+```
+
+**BRASS_CONFIG**:
+```
+hpf=25, body=500Hz/+3dB, presence=1800Hz/+2dB
+bright=4000Hz/-1dB, air=8000Hz/-1dB (밝은 패치 억제)
+comp: 2.0:1 @ -14dB, atk=30ms
+```
+
+**ORCHESTRAL_CONFIG** (3+ 악기군 동시):
+```
+hpf=28, body=650Hz/+3dB, presence=2200Hz/+3dB
+bright=5000Hz/+1dB, air=9000Hz/+1dB
+comp: 1.8:1 @ -15dB, atk=50ms
+```
+
+### 5.4 Adaptive Rules (v5 — 결합 적용)
+
+| 규칙 | 트리거 | 조치 | 효과 |
+|------|--------|------|------|
+| Phrase Dynamics | s_lra < 100 | CC11 amp=2.0, window=5s | LRA 증가 (자연적 프레이즈 강조) |
+| LUFS Target | s_lufs < 100 | lufs=-17 (뮤지컬=-18) | 방송 표준 라우드니스 |
+| Warm EQ | s_freq < 95 | body+3dB, presence=0, bright-2dB | mid-heavy 피스 다크닝 |
+| Dynaudnorm | LRA > 14 | f=100, g=7, p=0.9, maxgain=20 | 극단적 LRA 압축 (18.7→6.2) |
+
+**핵심**: 4개 규칙은 **결합 적용** (순차 아님). phrase+LUFS를 동시에 적용해야 최적
 
 ---
 
@@ -418,5 +456,23 @@ GCP 프로젝트: parksy-youtube (Account A 소유)
 
 ---
 
-*이 문서는 dtslib-localpc Control Tower의 크로스레포 복원 문서입니다.*
-*parksy-audio 세션 종료 시 반드시 이 문서와 status.json을 갱신해야 합니다.*
+---
+
+## Part 2: 세션 로그 (자동 축적)
+
+> **이 섹션 아래로 세션 로그가 자동 축적된다.**
+> 각 parksy-audio 세션 종료 시 Claude가 아래 포맷으로 append한다.
+> 시간이 지나면 이 로그가 로컬 개발의 전체 이력이 된다.
+> D: 유실 시 → 이 로그를 읽고 Claude가 전부 재구축할 수 있다.
+
+<!--
+포맷:
+### YYYY-MM-DD | 세션 요약 한 줄
+**작업**: 구체적으로 뭘 했는지 (파일명, 함수명, 파라미터 포함)
+**결정**: 왜 그렇게 했는지 (비교 대상, 시도한 대안, 버린 이유)
+**결과**: 수치 포함 (점수, 파일 크기, 에러 메시지 등)
+**교훈**: 다음 세션이 반드시 알아야 할 것
+**재구축 힌트**: D: 유실 시 이걸 다시 만들려면 Claude에게 이렇게 시켜라
+-->
+
+*— 세션 로그 축적 시작점 —*

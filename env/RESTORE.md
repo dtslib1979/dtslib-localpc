@@ -150,14 +150,37 @@ flutter pub get
 flutter build apk --debug
 ```
 
-## Phase 6: 자동화 설정 (5분)
+## Phase 6: Claude Code 설정 복원 (10분)
 
-### 6-1. 스냅샷 테스트
+### 6-1. Claude Code 메모리 디렉토리
+```powershell
+# Claude Code가 자동 생성하지만, 기존 메모리 복원 시:
+mkdir -p C:\Users\dtsli\.claude\projects\D--\memory
+```
+
+### 6-2. CLAUDE.md 배포 확인
+각 레포에 CLAUDE.md가 이미 포함 (git clone 시 자동 복원):
+- `D:\PARKSY\parksy-audio\CLAUDE.md` — 세션 종료 시 dtslib-localpc 자동 갱신 지시 포함
+- `D:\parksy-image\CLAUDE.md` — 동일
+- `D:\1_GITHUB\dtslib-apk-lab\CLAUDE.md` — 동일
+- `D:\PARKSY\dtslib-localpc\CLAUDE.md` — 부트스트랩 프로토콜 + 세션 종료 프로토콜
+
+### 6-3. 재구축 매뉴얼 확인
+```
+D:\PARKSY\dtslib-localpc\repos\parksy-audio.md   ← 파이프라인 재구축 인스트럭션
+D:\PARKSY\dtslib-localpc\repos\parksy-image.md    ← PSE/파이프라인 재구축 인스트럭션
+D:\PARKSY\dtslib-localpc\repos\dtslib-apk-lab.md  ← Flutter 앱 재구축 인스트럭션
+```
+> D:\tmp 작업 파일이 유실되어도, 위 파일들을 읽고 Claude에게 시키면 재구축 가능.
+
+## Phase 7: 자동화 설정 (5분)
+
+### 7-1. 스냅샷 테스트
 ```powershell
 powershell -ExecutionPolicy Bypass -File D:\PARKSY\dtslib-localpc\scripts\snapshot.ps1
 ```
 
-### 6-2. 스케줄러 등록 (선택)
+### 7-2. 스케줄러 등록 (선택)
 ```powershell
 # 매일 자동 스냅샷
 powershell -ExecutionPolicy Bypass -File D:\_SYSTEM\scripts\register-scheduler.ps1
@@ -176,6 +199,9 @@ powershell -ExecutionPolicy Bypass -File D:\_SYSTEM\scripts\register-scheduler.p
 - [ ] `D:\VST\fluidsynth\bin\fluidsynth.exe` 존재
 - [ ] `python -m tools.pse.build --validate` 통과
 - [ ] `snapshot.ps1` 정상 실행
+- [ ] `claude --version` → Claude Code 설치 확인
+- [ ] `D:\PARKSY\dtslib-localpc\repos\status.json` 존재
+- [ ] `D:\PARKSY\dtslib-localpc\repos\parksy-audio.md` 존재
 
 ## 복원 불가 항목 (수동 필요)
 
@@ -187,3 +213,5 @@ powershell -ExecutionPolicy Bypass -File D:\_SYSTEM\scripts\register-scheduler.p
 | VST/SoundFont 파일 | WD Passport 백업에서 복사 |
 | D:\tmp\ 작업 파일 | WD Passport 백업에서 복사 |
 | REAPER 설정 | 재설정 필요 |
+| Claude Code 메모리 | 새 세션에서 자동 재축적 (auto-memory) |
+| Anthropic API Key | claude login으로 재인증 |

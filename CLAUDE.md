@@ -1,4 +1,4 @@
-# dtslib-localpc — Control Tower Protocol
+# dtslib-localpc — 로컬 개발 이력 저장소
 
 ---
 
@@ -14,31 +14,38 @@
 | 항목 | 값 |
 |------|-----|
 | **Tier** | 인프라 (Infrastructure) |
-| **Type** | 크로스레포 관제탑 (Control Tower) |
+| **Type** | 로컬 개발 이력 저장소 |
 | **Owner** | 박씨 100% |
-| **Role** | 어떤 Claude 세션이든 이 레포를 읽으면 전체 PC 상태를 파악 |
+| **Role** | D: 유실 시 Claude가 전부 재구축할 수 있는 지식 보관 |
 
 ---
 
 ## 2. Purpose — 왜 이 레포가 존재하는가
 
-> **3개 프로덕션 레포가 각각 독립된 Claude 세션으로 작업하는 환경에서,
-> 이 레포가 Single Source of Truth 역할을 하여 크로스세션 컨텍스트를 제공한다.**
+> **로컬(D:\tmp 등)에서 개발한 코드는 git이 없다. 이력이 0이다.**
+> **이 레포가 로컬 개발의 git log 역할을 한다.**
+> **코드 자체를 백업하는 게 아니다. 코드를 다시 만들 수 있는 지식을 백업한다.**
 
-### 핵심 문제 (이 레포 이전)
+### 핵심 문제
 ```
-parksy-audio 세션 → D:\tmp 에서 작업 → parksy-image 존재를 모름
-parksy-image 세션 → D:\parksy-image 에서 작업 → apk-lab 존재를 모름
-dtslib-apk-lab 세션 → C:\Users\dtsli\ 에서 작업 → 전부 모름
+D:\tmp\optimizer.py → Claude가 5번 고침 → 마지막 버전만 남음 → 중간 이력 0
+D:\tmp\quartet_pipeline.py → 시행착오 과정 전부 유실
+D: 드라이브 자체가 유실되면 → GitHub clone으로 코드는 복구되지만
+  → 환경 설정, 로컬 도구, 개발 과정은 전부 사라짐
 ```
 
 ### 해결 구조
 ```
-[어떤 Claude 세션이든]
-  → dtslib-localpc/repos/status.json 읽기
-  → 3개 레포 현황 + 로컬 경로 + 대기 작업 전부 파악
-  → 크로스레포 작업 가능
+[각 레포의 Claude 세션]
+  → 세션 종료 시 repos/{레포}.md에 세션 로그 자동 append
+  → 시간이 지나면 로컬 개발의 전체 이력이 자동 축적
+  → D: 유실 시 → clone dtslib-localpc → repos/*.md 읽고 전부 재구축
 ```
+
+### 3가지 보호 계층
+1. **GitHub 레포** = 코드 백업 (git clone으로 복구)
+2. **repos/*.md 세션 로그** = 개발 이력 백업 (사고과정, 시행착오, 재구축 힌트)
+3. **env/RESTORE.md** = 환경 백업 (새 PC에서 개발 환경 재구성)
 
 ---
 
@@ -186,36 +193,43 @@ dtslib-localpc/
 
 ## 10. 세션 종료 프로토콜 (필수)
 
-> **어떤 프로덕션 레포에서든 커밋 전에 반드시 실행해야 하는 절차**
+> **모든 프로덕션 레포 세션 종료 시 반드시 실행. 이걸 빠뜨리면 개발 이력이 유실된다.**
 
 ### 의무 사항
 
-모든 프로덕션 레포(parksy-audio, parksy-image, dtslib-apk-lab) 세션에서 커밋을 생성할 때:
+1. **`repos/status.json` 갱신** — 해당 레포의 last_commit, phase 등
+2. **`repos/{레포}.md`에 세션 로그 append** — 아래 포맷으로 파일 끝에 추가
 
-1. **`repos/status.json` 갱신** — 해당 레포의 last_commit, last_commit_msg, dirty_files, phase 등 갱신
-2. **`repos/{레포}.md` 저널 갱신** — 이번 세션에서 수행한 작업 내용을 해당 저널에 추가
-   - 새로운 Phase 진입, 도구 생성, 설정 변경, 버그 수정 등 모든 유의미한 작업
-   - "큰 변경"만이 아니라 **모든 커밋 대상 작업**을 기록
-3. **dtslib-localpc 커밋** — status.json / 저널 변경사항을 dtslib-localpc에도 커밋+푸시
+### 세션 로그 포맷
 
-### 저널 작성 기준
+```markdown
+---
+### YYYY-MM-DD | 세션 요약 한 줄
+**작업**: 구체적으로 뭘 했는지 (파일명, 함수명, 파라미터 포함)
+**결정**: 왜 그렇게 했는지 (비교 대상, 시도한 대안, 버린 이유)
+**결과**: 수치 포함 (점수, 파일 크기, 에러 메시지 등)
+**교훈**: 다음 세션이 반드시 알아야 할 것
+**재구축 힌트**: D: 유실 시 이걸 다시 만들려면 Claude에게 이렇게 시켜라
+---
+```
 
-repos/*.md는 단순 상태 대시보드가 아니라 **개발 일지**다:
-- 새 Claude 세션이 이 파일만 읽고도 작업을 즉시 이어받을 수 있어야 한다
-- 설정값, 경로, 파라미터 등 구체적 수치를 포함해야 한다
-- "뭘 했는지"가 아니라 "어떻게 했고, 왜 그렇게 했는지"를 써야 한다
+### 왜 이 포맷인가
+
+- **작업/결정/결과** = 로컬 개발의 git log 대체 (D:\tmp에는 git이 없다)
+- **교훈** = 같은 삽질 반복 방지 (파인튜닝 효과)
+- **재구축 힌트** = D: 유실 시 Claude가 읽고 처음부터 다시 만들 수 있는 인스트럭션
 
 ### 순서
 
 ```
 1. 작업 레포에서 git add + commit
-2. dtslib-localpc/repos/status.json 갱신 (커밋 해시, 메시지, phase 등)
-3. dtslib-localpc/repos/{레포}.md 저널 갱신 (이번 세션 작업 내용)
+2. dtslib-localpc/repos/status.json 갱신
+3. dtslib-localpc/repos/{레포}.md 끝에 세션 로그 append
 4. dtslib-localpc에서 git add + commit + push
 ```
 
 ---
 
-*Version: 2.1 — Control Tower + Journal Protocol*
+*Version: 3.0 — 로컬 개발 이력 저장소*
 *Updated: 2026-02-28*
 *Built with: Claude Code (Claude Opus 4.6)*
