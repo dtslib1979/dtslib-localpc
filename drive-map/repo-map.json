@@ -58,7 +58,7 @@
     "INFRA": {
       "description": "인프라 및 복원",
       "repos": ["dtslib-localpc"],
-      "note": "이 레포 — 크로스레포 관제탑"
+      "note": "이 레포 — 로컬 개발 이력 저장소"
     }
   },
   "dependencies": {

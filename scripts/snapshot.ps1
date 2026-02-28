@@ -296,8 +296,8 @@ if ($AutoCommit) {
     Write-Host ""
     Write-Host "[GIT] Auto-committing snapshot..." -ForegroundColor Yellow
     Push-Location $repoRoot
-    & git add snapshots/ repos/status.json
-    & git commit -m "chore: auto-update snapshots $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+    & git add snapshots/ repos/status.json env/path-settings.json env/git-config.md
+    & git commit -m "chore: snapshot auto-update $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
     & git push
     Pop-Location
     Write-Host "  OK: Committed and pushed" -ForegroundColor Green

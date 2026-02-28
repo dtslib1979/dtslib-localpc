@@ -1,6 +1,6 @@
 # parksy-audio 개발 일지 (Development Journal)
 
-> **이 문서는 dtslib-localpc 관제탑의 크로스레포 복원 문서다.**
+> **이 문서는 dtslib-localpc의 크로스레포 복원 문서다.**
 > 새 Claude 세션이 이 파일만 읽으면 parksy-audio의 전체 맥락을 즉시 파악하고 작업을 이어갈 수 있어야 한다.
 > 최종 갱신: 2026-02-28
 

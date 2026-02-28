@@ -1,4 +1,4 @@
-# 사용 매뉴얼 — Control Tower 일상 운용법
+# 사용 매뉴얼 — 로컬 개발 이력 저장소 운용법
 
 > 대상: 박씨 (dtslib1979)
 > 최종 갱신: 2026-02-28
@@ -7,7 +7,7 @@
 
 ## 1. 한 줄 요약
 
-**평소엔 아무것도 안 해도 된다.** 각 레포에서 Claude 세션을 열면, CLAUDE.md가 자동으로 관제탑 경로를 알려준다.
+**평소엔 아무것도 안 해도 된다.** 각 레포에서 Claude 세션을 열면, CLAUDE.md가 자동으로 dtslib-localpc 경로를 알려준다.
 
 ---
 
@@ -24,7 +24,7 @@ dtslib-apk-lab 작업 → D:\1_GITHUB\dtslib-apk-lab 에서 Claude 세션 열기
 각 레포의 CLAUDE.md에 이미 이런 섹션이 들어있다:
 
 ```
-## 크로스레포 연동 (Control Tower)
+## 크로스레포 연동 (dtslib-localpc)
 > 이 세션은 독립적이지 않다. 3개 프로덕션 레포가 하나의 PC에서 협업한다.
 ```
 
@@ -125,9 +125,9 @@ powershell -ExecutionPolicy Bypass -File D:\PARKSY\dtslib-localpc\scripts\snapsh
 2. `repos/새레포.md` 상세 현황 파일 생성
 3. 새 레포의 `CLAUDE.md`에 크로스레포 연동 섹션 추가
 4. 기존 3개 레포의 형제 레포 테이블에 새 레포 추가
-5. `CLAUDE.md` (관제탑)의 크로스레포 맵에 추가
+5. `CLAUDE.md`의 크로스레포 맵에 추가
 
-Claude에게 "새 레포 XXX를 관제탑에 등록해줘"라고 하면 위 5단계를 자동으로 한다.
+Claude에게 "새 레포 XXX를 dtslib-localpc에 등록해줘"라고 하면 위 5단계를 자동으로 한다.
 
 ---
 
@@ -159,6 +159,9 @@ Claude에게 "새 레포 XXX를 관제탑에 등록해줘"라고 하면 위 5단
 | GitHub 20개 레포 맵 | `drive-map/repo-map.json` |
 | 설치된 소프트웨어 | `snapshots/installed-software.json` |
 | 개발도구 버전 | `snapshots/env-versions.json` |
+| VSCode 확장 목록 | `snapshots/vscode-extensions.json` |
+| PATH + 바이너리 경로 | `env/path-settings.json` |
+| Git 글로벌 설정 | `env/git-config.md` |
 | PC 복원 가이드 | `env/RESTORE.md` |
 | 중복 클론 정리 기록 | `drive-map/duplicates.md` |
 
@@ -202,4 +205,4 @@ powershell -ExecutionPolicy Bypass -File D:\PARKSY\dtslib-localpc\scripts\snapsh
 
 ---
 
-*이 매뉴얼은 dtslib-localpc Control Tower v2.0 기준입니다.*
+*이 매뉴얼은 dtslib-localpc v3.0 기준입니다. (snapshot.ps1 8단계, env/ 자동 갱신 포함)*

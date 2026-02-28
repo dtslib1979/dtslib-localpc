@@ -17,7 +17,7 @@
         "contents": {
           "parksy-audio": "음악 파이프라인 (canonical working copy)",
           "parksy-image": "NOTE: D:\\parksy-image에 별도 존재",
-          "dtslib-localpc": "이 레포 (관제탑)",
+          "dtslib-localpc": "이 레포 (로컬 개발 이력 저장소)",
           "parksy-axis-test": "테스트 레포"
         }
       },
