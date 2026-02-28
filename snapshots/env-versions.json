@@ -1,14 +1,14 @@
 ﻿{
-    "adb":  "not in PATH",
-    "java":  "openjdk version \"17.0.17\" 2025-10-21 LTS",
-    "flutter":  "not in PATH",
-    "go":  "1.24.6",
+    "collected":  "2026-02-28T13:55:38+09:00",
     "node":  "22.18.0",
-    "ffmpeg":  "8.0.1-full_build-www.gyan.dev",
-    "powershell":  "5.1.26100.7705",
+    "npm":  "10.9.3",
     "python":  "3.12.10",
     "git":  "2.50.1.windows.1",
+    "java":  "openjdk version \"17.0.17\" 2025-10-21 LTS",
+    "powershell":  "5.1.26100.7705",
+    "go":  "1.24.6",
+    "ffmpeg":  "8.0.1-full_build-www.gyan.dev",
     "rclone":  "1.73.1",
-    "collected":  "2026-02-28T00:13:26+09:00",
-    "npm":  "10.9.3"
+    "flutter":  "not in PATH",
+    "adb":  "not in PATH"
 }

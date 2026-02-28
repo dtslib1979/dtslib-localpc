@@ -1,5 +1,5 @@
 ﻿{
-    "collected":  "2026-02-28T00:13:30+09:00",
+    "collected":  "2026-02-28T13:55:38+09:00",
     "packages":  [
                      "KBSKong 2.1.1                            KBS.Kong                                 2.1.1                          winget",
                      "AutoHotkey                               AutoHotkey.AutoHotkey                    2.0.19           2.0.21        winget",
@@ -30,7 +30,7 @@
                      "Google Cloud SDK                         Google.CloudSDK                          Unknown          558.0.0       winget",
                      "Google Cloud SDK                         Google.CloudSDK                          Unknown                        winget",
                      "카카오톡                                 Kakao.KakaoTalk                          26.1.2.4957                    winget",
-                     "Microsoft Edge                           Microsoft.Edge                           145.0.3800.70                  winget",
+                     "Microsoft Edge                           Microsoft.Edge                           145.0.3800.82                  winget",
                      "Splashtop Business                       Splashtop.SplashtopBusiness              3.7.403.0        3.8.4.0       winget",
                      "Microsoft Windows Desktop Runtime - 6.0… Microsoft.DotNet.DesktopRuntime.6        6.0.36                         winget",
                      "Microsoft Visual C++ 2015-2022 Redistri… Microsoft.VCRedist.2015+.x86             14.44.35211.0    14.50.35719.0 winget",
@@ -143,7 +143,7 @@
                      "Windows 녹음기                           MSIX\\Microsoft.WindowsSoundRecorder_1.1… 1.1.86.0",
                      "Microsoft Store                          MSIX\\Microsoft.WindowsStore_22601.1401.… 22601.1401.3.0",
                      "Windows 터미널                           Microsoft.WindowsTerminal                1.23.20211.0                   winget",
-                     "Windows Package Manager Source (winget)… MSIX\\Microsoft.Winget.Source_2026.227.1… 2026.227.1509.39",
+                     "Windows Package Manager Source (winget)… MSIX\\Microsoft.Winget.Source_2026.228.5… 2026.228.531.16",
                      "휴대폰과 연결                            MSIX\\Microsoft.YourPhone_1.26011.42.0_x… 1.26011.42.0",
                      "Windows 미디어 플레이어                  MSIX\\Microsoft.ZuneMusic_11.2512.10.0_x… 11.2512.10.0",
                      "Microsoft Family                         MSIX\\MicrosoftCorporationII.MicrosoftFa… 0.2.40.0",
