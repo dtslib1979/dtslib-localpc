@@ -146,6 +146,12 @@ dtslib-localpc/
 │   ├── stop-session-log.sh      ← Stop hook: 세션 로그 미작성 시 블록
 │   └── start-session-recovery.sh ← SessionStart hook: 비정상 종료 감지 + 복구
 │
+├── cctv/                        ← PC CCTV 시스템 (화면 녹화 + AI 해설)
+│   ├── INSTRUCTION.md           ← Termux Claude Code용 개발 인스트럭션
+│   ├── cctv.py                  ← 메인 스크립트 (스크린샷 + Claude.ai 자동화)
+│   ├── cctv-config.json         ← 설정 (간격, 프롬프트, YouTube 채널, OBS)
+│   └── requirements.txt         ← Python 의존성 (mss, playwright)
+│
 ├── scripts/                     ← 자동화 (Task Scheduler 연동)
 │   ├── snapshot.ps1             ← 원클릭 스냅샷 갱신 [8/8]
 │   ├── sync-all.ps1             ← GitHub 전체 sync (매일 18시)
@@ -162,7 +168,42 @@ dtslib-localpc/
 
 ---
 
-## 7. 설계 원칙
+## 7. PC CCTV 시스템
+
+> **Claude Code 작업 화면을 자동 캡처 + Claude.ai가 실시간 해설하는 무인 방송 시스템**
+
+### 구조
+```
+집 PC (무인 가동)
+├── 화면 1: Claude Code 터미널 (자율 작업)
+├── 화면 2: Chrome Claude.ai (자동 해설 + 읽어주기)
+├── cctv.py: 스크린샷 → Claude.ai 업로드 → 프롬프트 → 해설 (자동 루프)
+└── OBS: 두 화면 합성 녹화 (→ YouTube Live)
+```
+
+### 3가지 용도
+1. **원격 모니터링** — 밖에서 폰으로 "지금 내 PC가 뭐 하고 있지?" 확인
+2. **YouTube 콘텐츠** — AI가 AI를 해설하는 무인 이원 방송
+3. **개발 이력 영상 보존** — 세션 로그(텍스트)의 상위호환
+
+### 저장 전략
+```
+현재: OBS 로컬 녹화 → D:\5_YOUTUBE\raw\recordings\
+목표: OBS → YouTube Live → 자동 VOD 아카이브 (로컬 저장 0, 용량 무제한)
+```
+
+### YouTube 채널
+| 항목 | 값 |
+|------|-----|
+| 채널 | https://www.youtube.com/@technician-parksy |
+| 라이브 조건 | 구독자 50명 이상 |
+
+### 상세
+> `cctv/INSTRUCTION.md` — 전체 설계 + 개발 단계 + 코드 설계
+
+---
+
+## 8. 설계 원칙
 
 1. **Single Source of Truth** — `D:\_SYSTEM/`의 기존 자산을 흡수, 중복 제거
 2. **Machine-Readable** — JSON은 Claude 파싱용, Markdown은 사람용
@@ -172,7 +213,7 @@ dtslib-localpc/
 
 ---
 
-## 8. 환경 요약 (2026-02-28 기준)
+## 9. 환경 요약 (2026-02-28 기준)
 
 | 도구 | 버전 |
 |------|------|
@@ -189,7 +230,7 @@ dtslib-localpc/
 
 ---
 
-## 9. GitHub 엔드포인트
+## 10. GitHub 엔드포인트
 
 | 항목 | 값 |
 |------|-----|
@@ -202,7 +243,7 @@ dtslib-localpc/
 
 ---
 
-## 10. 세션 종료 프로토콜 (자동 강제)
+## 11. 세션 종료 프로토콜 (자동 강제)
 
 > **Claude Code Stop hook이 자동으로 강제한다. Claude가 까먹어도 hook이 블록한다.**
 
@@ -298,6 +339,6 @@ bash scripts/install-hooks.sh --uninstall
 
 ---
 
-*Version: 4.1 — 세션 로그 자동 강제 + 비정상 종료 복구 (Stop + SessionStart hook)*
+*Version: 4.2 — PC CCTV 시스템 추가 (화면 녹화 + Claude.ai 실시간 해설)*
 *Updated: 2026-02-28*
 *Built with: Claude Code (Claude Opus 4.6)*
