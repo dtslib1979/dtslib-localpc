@@ -218,7 +218,7 @@ Claude 세션 종료 시도
   → Claude가 로그 작성 → 재시도 → 통과
 
 [비정상 종료 복구 — SessionStart hook]
-새 세션 시작
+새 세션 시작 (startup만, resume 제외)
   → SessionStart hook 실행 (hooks/start-session-recovery.sh)
   → 이전 세션 마커(.sessions/{repo}.json) 존재?
   → 마커 있음 + 세션 로그 없음 = 이전 세션 비정상 종료 (서버/PC 다운)
