@@ -164,6 +164,9 @@ Claude에게 "새 레포 XXX를 dtslib-localpc에 등록해줘"라고 하면 위
 | Git 글로벌 설정 | `env/git-config.md` |
 | PC 복원 가이드 | `env/RESTORE.md` |
 | 중복 클론 정리 기록 | `drive-map/duplicates.md` |
+| GitHub 전체 sync 스크립트 | `scripts/sync-all.ps1` |
+| 시스템 점검 스크립트 | `scripts/health-check.ps1` |
+| Task Scheduler 등록 | `scripts/register-scheduler.ps1` |
 
 ---
 

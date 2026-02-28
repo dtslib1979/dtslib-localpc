@@ -182,8 +182,8 @@ powershell -ExecutionPolicy Bypass -File D:\PARKSY\dtslib-localpc\scripts\snapsh
 
 ### 7-2. 스케줄러 등록 (선택)
 ```powershell
-# 매일 자동 스냅샷
-powershell -ExecutionPolicy Bypass -File D:\_SYSTEM\scripts\register-scheduler.ps1
+# 매일 자동 sync + health check
+powershell -ExecutionPolicy Bypass -File D:\PARKSY\dtslib-localpc\scripts\register-scheduler.ps1
 ```
 
 ## 검증 체크리스트
