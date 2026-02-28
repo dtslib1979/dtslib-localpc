@@ -476,3 +476,12 @@ GCP 프로젝트: parksy-youtube (Account A 소유)
 -->
 
 *— 세션 로그 축적 시작점 —*
+
+---
+### 2026-02-28 | dtslib-localpc 자동 축적 시스템 구축 — CLAUDE.md 세션 종료 프로토콜 추가
+**작업**: parksy-audio CLAUDE.md에 세션 종료 프로토콜 추가 (커밋 시 dtslib-localpc/repos/status.json + repos/parksy-audio.md 세션 로그 append 의무화). dtslib-localpc/repos/parksy-audio.md 재구축 매뉴얼 479줄 작성.
+**결정**: D:\tmp 작업 파일(optimizer.py, score_engine.py 등)의 git 이력이 0이므로, dtslib-localpc에 개발 과정을 문서화하여 재구축 가능하도록 설계. 코드가 아닌 "코드를 다시 만들 수 있는 지식"을 백업.
+**결과**: optimal_config.json 42파라미터, 4개 오케스트라 config(STRING/WOODWIND/BRASS/ORCHESTRAL), adaptive rules 4건, Score Engine 5차원(LUFS/LRA/TP/FreqBal/DynVar) 전부 문서화 완료. 커밋 e2bab5a.
+**교훈**: 매 세션 종료 시 이 파일 끝에 로그를 append하는 것이 유일한 이력 보존 수단. D:\tmp에는 git이 없다. 빠뜨리면 개발 과정 유실.
+**재구축 힌트**: 이 파일의 Part 1(섹션 1~10)을 Claude에게 읽히면 전체 파이프라인 재구축 가능. 특히 섹션 5(설정 아카이브)에 optimal_config 42개 파라미터 + 4개 오케스트라 config 전부 있음.
+---

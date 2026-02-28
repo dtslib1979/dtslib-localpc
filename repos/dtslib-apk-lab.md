@@ -437,3 +437,12 @@ ls -lh build/app/outputs/flutter-apk/app-debug.apk
 -->
 
 *— 세션 로그 축적 시작점 —*
+
+---
+### 2026-02-28 | dtslib-localpc 자동 축적 시스템 구축 — CLAUDE.md 세션 종료 프로토콜 추가
+**작업**: dtslib-apk-lab CLAUDE.md에 세션 종료 프로토콜 추가. dtslib-localpc/repos/dtslib-apk-lab.md 재구축 매뉴얼 440줄 작성 (5개 Flutter 앱 포트폴리오, ChronoCall STT 파이프라인 상세).
+**결정**: Flutter 코드는 Git에 있으므로 코드 백업 불필요. 대신 빌드 환경(compileSdk 34, minSdk 26, Gradle), STT 파이프라인(FFmpeg→Whisper API→Kotlin Channel), 앱 간 버전 동기화 프로토콜 등 환경 의존적 지식을 문서화.
+**결과**: ChronoCall 9개 Dart 파일 구조, Kotlin Platform Channel, STT 4단계 전부 기록. 빌드 환경 마스터 문서 완성. 커밋 3f3bb78.
+**교훈**: Flutter/Android 빌드는 환경 의존성 높음. SDK 버전, Gradle 설정, libc++_shared.so 충돌 등 해결 과정을 반드시 기록. C드라이브 클론(C:\Users\dtsli\dtslib-apk-lab)은 D:\1_GITHUB로 통합 권고.
+**재구축 힌트**: 이 파일의 섹션 4(ChronoCall)를 Claude에게 읽히면 STT 앱 재구축 가능. 섹션 6(빌드 환경)이 SDK/Gradle 설정의 마스터.
+---

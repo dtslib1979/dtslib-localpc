@@ -1,5 +1,7 @@
-# DTSLIB Control Tower — Snapshot Refresh Script
+# DTSLIB — 로컬 개발 이력 저장소 Snapshot Script
 # 원클릭으로 모든 스냅샷 갱신
+# 핵심: status.json은 MERGE 방식 (rich metadata 보존, git 정보만 갱신)
+#
 # Usage: powershell -ExecutionPolicy Bypass -File snapshot.ps1 [-AutoCommit]
 
 param(
@@ -13,21 +15,21 @@ $reposDir = Join-Path $repoRoot "repos"
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  DTSLIB Control Tower - Snapshot Refresh" -ForegroundColor Cyan
+Write-Host "  DTSLIB Snapshot Refresh" -ForegroundColor Cyan
 Write-Host "  $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Gray
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Ensure directories exist
 New-Item -ItemType Directory -Path $snapshotDir -Force -ErrorAction SilentlyContinue | Out-Null
 New-Item -ItemType Directory -Path $reposDir -Force -ErrorAction SilentlyContinue | Out-Null
 
 $timestamp = Get-Date -Format "yyyy-MM-ddTHH:mm:sszzz"
+$warnings = @()
 
 # ─────────────────────────────────────
-# 1. D: Drive Tree (depth 3, dirs only)
+# [1/6] D: Drive Tree (depth 3, dirs only)
 # ─────────────────────────────────────
-Write-Host "[1/4] D: Drive Tree..." -ForegroundColor Yellow
+Write-Host "[1/6] D: Drive Tree..." -ForegroundColor Yellow
 $tree = @()
 Get-ChildItem -Path 'D:\' -Directory -ErrorAction SilentlyContinue | ForEach-Object {
     $tree += "D:\$($_.Name)\"
@@ -42,9 +44,9 @@ $tree | Out-File -FilePath (Join-Path $snapshotDir "drive-d.txt") -Encoding UTF8
 Write-Host "  OK: $($tree.Count) entries" -ForegroundColor Green
 
 # ─────────────────────────────────────
-# 2. Environment Versions
+# [2/6] Environment Versions
 # ─────────────────────────────────────
-Write-Host "[2/4] Environment Versions..." -ForegroundColor Yellow
+Write-Host "[2/6] Environment Versions..." -ForegroundColor Yellow
 $nodeVer = try { (& node --version 2>&1).ToString() -replace '^v','' } catch { "not installed" }
 $npmVer = try { (& npm --version 2>&1).ToString() } catch { "not installed" }
 $pyVer = try { (& python --version 2>&1).ToString() -replace '^Python ','' } catch { "not installed" }
@@ -54,8 +56,10 @@ $psVer = $PSVersionTable.PSVersion.ToString()
 $goVer = try { (& go version 2>&1).ToString() -replace '^go version go','' -replace ' .*$','' } catch { "not installed" }
 $ffmpegVer = try { (& ffmpeg -version 2>&1 | Select-Object -First 1).ToString() -replace '^ffmpeg version ','' -replace ' .*$','' } catch { "not installed" }
 $rcloneVer = try { (& rclone version 2>&1 | Select-Object -First 1).ToString() -replace '^rclone v','' } catch { "not installed" }
+$flutterVer = try { (& flutter --version 2>&1 | Select-Object -First 1).ToString() -replace '^Flutter ','' -replace ' .*$','' } catch { "not in PATH" }
+$adbVer = try { (& adb version 2>&1 | Select-Object -First 1).ToString() -replace '^Android Debug Bridge version ','' } catch { "not in PATH" }
 
-$envData = @{
+$envData = [ordered]@{
     "collected" = $timestamp
     "node" = $nodeVer
     "npm" = $npmVer
@@ -66,14 +70,16 @@ $envData = @{
     "go" = $goVer
     "ffmpeg" = $ffmpegVer
     "rclone" = $rcloneVer
+    "flutter" = $flutterVer
+    "adb" = $adbVer
 }
 $envData | ConvertTo-Json -Depth 3 | Out-File -FilePath (Join-Path $snapshotDir "env-versions.json") -Encoding UTF8
 Write-Host "  OK: $($envData.Count) tools" -ForegroundColor Green
 
 # ─────────────────────────────────────
-# 3. Installed Software (winget)
+# [3/6] Installed Software (winget)
 # ─────────────────────────────────────
-Write-Host "[3/4] Installed Software..." -ForegroundColor Yellow
+Write-Host "[3/6] Installed Software..." -ForegroundColor Yellow
 $software = @()
 try {
     $rawOutput = & winget list --accept-source-agreements 2>&1
@@ -91,45 +97,130 @@ $swObj | ConvertTo-Json -Depth 3 | Out-File -FilePath (Join-Path $snapshotDir "i
 Write-Host "  OK: $($software.Count) packages" -ForegroundColor Green
 
 # ─────────────────────────────────────
-# 5. Cross-Repo Status (3 production repos)
+# [4/6] VSCode Extensions
 # ─────────────────────────────────────
-Write-Host "[4/4] Cross-Repo Status..." -ForegroundColor Yellow
+Write-Host "[4/6] VSCode Extensions..." -ForegroundColor Yellow
+$extensions = @()
+try {
+    $extensions = @(& code --list-extensions 2>&1 | Where-Object { $_ -notmatch '^(ERROR|WARN)' })
+} catch {}
+$extObj = @{ "collected" = $timestamp; "count" = $extensions.Count; "extensions" = $extensions }
+$extObj | ConvertTo-Json -Depth 3 | Out-File -FilePath (Join-Path $snapshotDir "vscode-extensions.json") -Encoding UTF8
+Write-Host "  OK: $($extensions.Count) extensions" -ForegroundColor Green
 
-$repoPaths = @{
+# ─────────────────────────────────────
+# [5/6] Cross-Repo Status (MERGE — rich metadata 보존)
+# ─────────────────────────────────────
+Write-Host "[5/6] Cross-Repo Status (merge)..." -ForegroundColor Yellow
+
+$statusFile = Join-Path $reposDir "status.json"
+
+# Read existing status.json to preserve rich metadata (phase, score, queue, cross_links)
+$existingJson = $null
+if (Test-Path $statusFile) {
+    try {
+        $existingJson = Get-Content $statusFile -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch {
+        Write-Host "  WARN: Could not parse existing status.json" -ForegroundColor Red
+        $warnings += "status.json parse failed - rich metadata may be lost"
+    }
+}
+
+$repoPaths = [ordered]@{
     "parksy-audio" = "D:\PARKSY\parksy-audio"
     "parksy-image" = "D:\parksy-image"
     "dtslib-apk-lab" = "D:\1_GITHUB\dtslib-apk-lab"
 }
 
-$repoStatus = @{}
 foreach ($name in $repoPaths.Keys) {
     $path = $repoPaths[$name]
     if (Test-Path (Join-Path $path ".git")) {
         Push-Location $path
-        $commitHash = (& git log --oneline -1 2>&1).ToString()
+        $commitHash = (& git rev-parse --short HEAD 2>&1).ToString()
+        $commitMsg = (& git log -1 --format="%s" 2>&1).ToString()
         $branch = (& git branch --show-current 2>&1).ToString()
         $dirtyCount = @(& git status --porcelain 2>&1 | Where-Object { $_.ToString().Trim().Length -gt 0 }).Count
         Pop-Location
 
-        $repoStatus[$name] = @{
-            "local_path" = $path
-            "branch" = $branch
-            "last_commit" = $commitHash
-            "dirty_files" = $dirtyCount
+        # MERGE: update ONLY git fields, preserve everything else
+        if ($existingJson -and $existingJson.repos.PSObject.Properties[$name]) {
+            $existingJson.repos.$name.branch = $branch
+            $existingJson.repos.$name.last_commit = $commitHash
+            $existingJson.repos.$name.last_commit_msg = $commitMsg
+            $existingJson.repos.$name.dirty_files = $dirtyCount
+        } else {
+            Write-Host "  WARN: No existing metadata for $name" -ForegroundColor Red
+            $warnings += "$name has no rich metadata in status.json"
         }
-        Write-Host "  $name : $branch, dirty=$dirtyCount" -ForegroundColor Gray
+        Write-Host "  $name : $branch, $commitHash, dirty=$dirtyCount" -ForegroundColor Gray
     } else {
-        $repoStatus[$name] = @{ "local_path" = $path; "error" = "not found" }
         Write-Host "  $name : NOT FOUND at $path" -ForegroundColor Red
+        $warnings += "$name not found at $path"
     }
 }
 
-$statusObj = @{
-    "updated" = $timestamp
-    "repos" = $repoStatus
+if ($existingJson) {
+    $existingJson.updated = $timestamp
+    $existingJson | ConvertTo-Json -Depth 6 | Out-File -FilePath $statusFile -Encoding UTF8
+    Write-Host "  OK: $($repoPaths.Count) repos merged (rich metadata preserved)" -ForegroundColor Green
+} else {
+    Write-Host "  WARN: No existing status.json — create one manually or via Claude session" -ForegroundColor Red
+    $warnings += "status.json missing - rich metadata cannot be auto-generated"
 }
-$statusObj | ConvertTo-Json -Depth 4 | Out-File -FilePath (Join-Path $reposDir "status.json") -Encoding UTF8
-Write-Host "  OK: $($repoStatus.Count) repos scanned" -ForegroundColor Green
+
+# ─────────────────────────────────────
+# [6/6] Session Log Staleness Check
+# ─────────────────────────────────────
+Write-Host "[6/6] Session Log Staleness..." -ForegroundColor Yellow
+
+$journals = [ordered]@{
+    "parksy-audio" = Join-Path $reposDir "parksy-audio.md"
+    "parksy-image" = Join-Path $reposDir "parksy-image.md"
+    "dtslib-apk-lab" = Join-Path $reposDir "dtslib-apk-lab.md"
+}
+$staleDays = 7
+$today = Get-Date
+
+foreach ($name in $journals.Keys) {
+    $journalPath = $journals[$name]
+    if (Test-Path $journalPath) {
+        $content = Get-Content $journalPath -Raw
+        $dateMatches = [regex]::Matches($content, '### (\d{4}-\d{2}-\d{2})')
+        if ($dateMatches.Count -gt 0) {
+            $lastDateStr = $dateMatches[$dateMatches.Count - 1].Groups[1].Value
+            $lastDate = [datetime]::ParseExact($lastDateStr, 'yyyy-MM-dd', $null)
+            $daysSince = ($today - $lastDate).Days
+            if ($daysSince -gt $staleDays) {
+                Write-Host "  STALE: $name - last log ${daysSince}d ago ($lastDateStr)" -ForegroundColor Red
+                $warnings += "$name session log stale (${daysSince}d since $lastDateStr)"
+            } else {
+                Write-Host "  OK: $name - last log ${daysSince}d ago" -ForegroundColor Green
+            }
+        } else {
+            Write-Host "  WARN: $name - no session logs yet" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "  WARN: $name - journal file not found!" -ForegroundColor Red
+        $warnings += "$name journal file missing"
+    }
+}
+
+# ─────────────────────────────────────
+# Summary
+# ─────────────────────────────────────
+Write-Host ""
+if ($warnings.Count -gt 0) {
+    Write-Host "========================================" -ForegroundColor Yellow
+    Write-Host "  Warnings ($($warnings.Count)):" -ForegroundColor Yellow
+    foreach ($w in $warnings) {
+        Write-Host "  - $w" -ForegroundColor Yellow
+    }
+    Write-Host "========================================" -ForegroundColor Yellow
+} else {
+    Write-Host "========================================" -ForegroundColor Green
+    Write-Host "  All checks passed!" -ForegroundColor Green
+    Write-Host "========================================" -ForegroundColor Green
+}
 
 # ─────────────────────────────────────
 # Auto-Commit (optional)
@@ -146,9 +237,5 @@ if ($AutoCommit) {
 }
 
 Write-Host ""
-Write-Host "========================================" -ForegroundColor Green
-Write-Host "  Snapshot refresh complete!" -ForegroundColor Green
-Write-Host "  Files: $snapshotDir" -ForegroundColor Gray
-Write-Host "  Repos: $reposDir\status.json" -ForegroundColor Gray
-Write-Host "========================================" -ForegroundColor Green
+Write-Host "Done. $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Gray
 Write-Host ""

@@ -548,3 +548,12 @@ python scripts/drawing/photo2drawing.py [사진] --ruler -o output.dxf
 -->
 
 *— 세션 로그 축적 시작점 —*
+
+---
+### 2026-02-28 | dtslib-localpc 자동 축적 시스템 구축 — CLAUDE.md 세션 종료 프로토콜 추가
+**작업**: parksy-image CLAUDE.md에 세션 종료 프로토콜 추가. dtslib-localpc/repos/parksy-image.md 재구축 매뉴얼 551줄 작성 (8-stage pipeline v3, PSE 86글리프 사양, face disassembler 6단계, photo2drawing, 6개 배포채널).
+**결정**: parksy-image는 코드가 Git에 있으므로 코드 백업 불필요. 대신 파이프라인 설계 의도, PSE 사양, 배포 채널 설정, 큐 시스템 등 "왜 이렇게 만들었는가"를 문서화.
+**결과**: 17개 섹션 완성. Telegram bridge SVG 전용 규칙, YouTube/GDrive/Naver 4채널 설정 전부 기록. 커밋 1501f98.
+**교훈**: parksy-image는 PC 세션에서만 동작 (Python + 로컬 파일). 매 PC 세션 종료 시 반드시 이 로그를 갱신할 것. PSE Phase 2 진입 시 태블릿 손글씨 SVG 수집이 블로커.
+**재구축 힌트**: 이 파일 전체를 Claude에게 읽히면 파이프라인, PSE, 배포 시스템 전부 재구축 가능. 섹션 3(pipeline v3)이 핵심.
+---

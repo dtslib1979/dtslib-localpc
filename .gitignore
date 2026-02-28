@@ -4,10 +4,20 @@ samples/**/*.wav
 samples/**/*.m4a
 
 # Keep trimmed and midi
-!trimmed/
-!midi/
+!samples/trimmed/
+!samples/midi/
 
 # System files
 .DS_Store
 Thumbs.db
 *.tmp
+
+# Python
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Logs
+*.log
