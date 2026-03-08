@@ -356,3 +356,16 @@ bash scripts/install-hooks.sh --uninstall
 *Version: 5.0 — 홈 PC 원격 관제탑으로 재정의 (CCTV + RustDesk + Termux 동기화)*
 *Updated: 2026-02-28*
 *Built with: Claude Code (Claude Opus 4.6)*
+
+---
+
+## Browser Runtime
+
+> Parksy OS 2+2 매트릭스 — 이 레포 전담 브라우저
+
+| 항목 | 값 |
+|------|-----|
+| **브라우저** | Google Chrome |
+| **이유** | 로컬 PC 실행 노드 — 오프라인 자동화 시연 |
+| **URL** | https://github.com/dtslib1979/dtslib-localpc |
+
