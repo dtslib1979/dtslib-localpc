@@ -485,3 +485,30 @@ GCP 프로젝트: parksy-youtube (Account A 소유)
 **교훈**: 매 세션 종료 시 이 파일 끝에 로그를 append하는 것이 유일한 이력 보존 수단. D:\tmp에는 git이 없다. 빠뜨리면 개발 과정 유실.
 **재구축 힌트**: 이 파일의 Part 1(섹션 1~10)을 Claude에게 읽히면 전체 파이프라인 재구축 가능. 특히 섹션 5(설정 아카이브)에 optimal_config 42개 파라미터 + 4개 오케스트라 config 전부 있음.
 ---
+
+---
+### 2026-03-01~03-10 | Musician TV URL 대시보드 + WSL 원격 인프라 구축
+**작업**:
+1. Musician TV URL 페이지 구조 구축 — 5-Program 채널 허브 (커밋 9786d19)
+2. Musician TV → 조작 가능한 대시보드 콘솔로 재설계 (커밋 4d4bcb1, PR #2 병합 b1b0712)
+3. WSL2 Claude Code CLI 인증 시도 — OAuth PKCE 흐름 15회+ 시도 전량 실패
+4. WSL 인증 실패 원인 분석 보고서 작성 (docs/WSL_CLAUDE_AUTH_ISSUE_REPORT.md, 커밋 088b48b)
+
+**결정**:
+- Musician TV를 단순 URL 페이지에서 실시간 조작 가능한 대시보드 콘솔로 재설계. 5-Program 채널 허브 구조 채택
+- WSL2 인증: redirect_uri가 localhost가 아닌 platform.claude.com으로 설정되어 authorization code가 플랫폼 서버에서 소비됨 → CLI 토큰 교환 구조적 불가능 확인
+- `setup-token` + `CLAUDE_CODE_OAUTH_TOKEN` 환경변수 방식이 유일한 해결책으로 결정 (1년짜리 장기 토큰)
+
+**결과**:
+- Musician TV 대시보드 PR #2 병합 완료
+- WSL 인증: 15회+ 시도 전량 HTTP 400 실패. 원인 분석 완료. 수작업 솔루션 확인됨 (setup-token → env var)
+- WSL 인증 미완료 — 사용자가 PowerShell에서 `claude setup-token` 수동 실행 필요
+
+**교훈**:
+- WSL2 NAT 네트워크 격리로 Windows 브라우저에서 WSL localhost 직접 접근 불가
+- OAuth PKCE에서 redirect_uri double consumption은 자동화로 우회 불가능
+- Ink TUI 기반 CLI는 tmux send-keys로 텍스트 전달 불가 (stdin 입력 제한)
+- `CLAUDECODE` 환경변수가 nested session 차단 — `$env:CLAUDECODE=""` 로 해제 필요
+
+**재구축 힌트**: WSL 인증은 `docs/WSL_CLAUDE_AUTH_ISSUE_REPORT.md` 참조. 핵심: Windows PowerShell에서 `$env:CLAUDECODE=""; claude setup-token` → 토큰 생성 → WSL `~/.bashrc`에 `CLAUDE_CODE_OAUTH_TOKEN` 설정
+---
