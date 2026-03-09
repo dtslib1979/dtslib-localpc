@@ -2,19 +2,19 @@
   "name": "dtslib-localpc",
   "short_name": "LocalPC",
   "description": "로컬 PC 복원 보험 — 개발환경 스냅샷",
-  "start_url": "/",
+  "start_url": "./",
   "display": "browser",
   "background_color": "#020404",
   "theme_color": "#020404",
   "icons": [
     {
-      "src": "/assets/icons/icon-192.png",
+      "src": "./icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/assets/icons/icon-512.png",
+      "src": "./icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
