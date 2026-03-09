@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#D4AF37"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="13" fill="#020404"/>
+  <rect x="2" y="2" width="96" height="96" rx="11" fill="none" stroke="url(#g)" stroke-width="1.5" opacity="0.5"/>
+  <!-- 모니터 -->
+  <rect x="18" y="24" width="64" height="42" rx="4" fill="none" stroke="url(#g)" stroke-width="3"/>
+  <!-- 모니터 화면 내부 -->
+  <rect x="24" y="30" width="52" height="30" rx="2" fill="url(#g)" opacity="0.12"/>
+  <!-- 커서/코드 라인 -->
+  <line x1="29" y1="38" x2="50" y2="38" stroke="url(#g)" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+  <line x1="29" y1="44" x2="44" y2="44" stroke="url(#g)" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="29" y1="50" x2="54" y2="50" stroke="url(#g)" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <!-- 받침대 -->
+  <line x1="50" y1="66" x2="50" y2="76" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="36" y1="76" x2="64" y2="76" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+  <!-- LP 워드마크 -->
+  <text x="50" y="91" font-family="monospace" font-size="9" font-weight="700" fill="url(#g)" text-anchor="middle" letter-spacing="2">PC</text>
+</svg>
