@@ -71,8 +71,12 @@ Claude Code가 git, 서버, 원격 작업을 전부 추상화해버렸다.
 3. `drive-map/structure.json` — D드라이브 논리 구조
 4. `drive-map/repo-map.json` — 20개 GitHub 레포 의존성 맵
 5. `snapshots/env-versions.json` — 설치된 개발도구 버전
+6. `docs/ISSUES.md` — 미완료 이슈/팔로우업 목록
+7. `docs/PC_QUICKSTART.md` — PC 환경 최초 세팅 가이드 (미실행 시)
 
 **갱신 명령:** `powershell -File scripts/snapshot.ps1`
+
+**PC 최초 세팅:** `docs/PC_QUICKSTART.md` 참조 → `scripts/setup-all.ps1` 실행
 
 ---
 
