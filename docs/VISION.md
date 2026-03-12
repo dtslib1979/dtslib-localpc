@@ -155,6 +155,60 @@ git pull → 이어서 작업
 - [ ] 자동 git pull on session start (PC)
 - [ ] 충돌 감지 + 알림
 
+### 축 6: SSH + CLI 통합 원격 제어 (NEW — 2026-03-12 백서 기반)
+```
+"Claude Desktop GUI 파편화 문제 해결"
+→ Claude Code CLI로 메인 환경 전환
+→ SSH + tmux로 모바일에서 PC 터미널 직접 제어
+→ MCP를 CLI에서 직접 연결 (Desktop 불필요)
+→ RustDesk 의존도 80% 감소
+```
+| 상태 | 백서 완성, 구현 예정 |
+|------|------|
+| 백서 | docs/INFRA_WHITEPAPER.md |
+| 원본 대화 | docs/logs/20260312_cli-transition-qa.md |
+| 구현 가이드 | env/SSH_SETUP.md, env/CLI_MIGRATION.md |
+
+#### 4-Layer 아키텍처
+```
+LAYER 1: MOBILE (폰 Termux)
+  ├─ SSH → PC 터미널 제어 (서버처럼)
+  ├─ Telegram Bot → 대용량 파일 송수신
+  └─ Claude Code → 폰 로컬 작업
+
+LAYER 2: PC Windows (24시간 ON)
+  ├─ Claude Code CLI + MCP (Puppeteer, GitHub 등)
+  ├─ D: 드라이브 광역 파일 접근
+  └─ SSH Server + tmux (원격 접속 대기)
+
+LAYER 3: WSL Ubuntu (서버 환경)
+  ├─ Telegram Bot Daemon (24시간 상주)
+  ├─ Cron 배치 작업
+  └─ /mnt/d/ → Windows D: 드라이브 공유
+
+LAYER 4: CLOUD
+  ├─ GitHub (28+ repos, Actions CI/CD)
+  ├─ YouTube (CDN / 콘텐츠 배포)
+  └─ Vercel (PWA 배포)
+```
+
+#### 구현 Phase (총 60분)
+- [ ] Phase 1: Claude Code CLI 설치 (3분)
+- [ ] Phase 2: MCP 서버 연결 — Puppeteer, GitHub, Filesystem (5분)
+- [ ] Phase 3: SSH 서버 설정 — OpenSSH on Windows (5분, 직접 1회)
+- [ ] Phase 4: tmux 멀티 세션 설정 (2분)
+- [ ] Phase 5: WSL + Telegram Bot 세팅 (25분)
+- [ ] Phase 6: 전체 테스트 (20분)
+
+#### 핵심 전환: Before → After
+| 항목 | Before | After |
+|------|--------|-------|
+| 메인 인터페이스 | Claude Desktop GUI | Claude Code CLI |
+| 레포 접근 | 1개만 | D: 전체 광역 |
+| 원격 접속 | RustDesk (끊김 빈발) | SSH+tmux (세션 유지) |
+| 브라우저 자동화 | Claude in Chrome (별도) | Puppeteer MCP (CLI 통합) |
+| 동시 작업 | 창 1개 | tmux 멀티 세션 |
+
 ---
 
 ## 4. 홈 PC 서버화 — 개념
@@ -279,11 +333,13 @@ dtslib-localpc/
 
 | 순위 | 항목 | 이유 | 난이도 |
 |------|------|------|--------|
+| **0** | **SSH + CLI 통합 전환** | **모든 원격 작업의 기반. 60분이면 완료** | **하** |
 | 1 | PC CCTV 실동작 | 핵심 기능, Windows PC에서 DOM 셀렉터 조사 필요 | 중 |
-| 2 | RustDesk 설정 가이드 | 원격 접속 없으면 CCTV 시작도 못 함 | 하 |
+| 2 | RustDesk 설정 가이드 | GUI 필요 시만 사용 (SSH 전환 후 의존도 80% 감소) | 하 |
 | 3 | PC 서버화 체크리스트 | 절전모드 끄기, 자동로그인 등 기본 설정 | 하 |
-| 4 | Termux ↔ PC 동기화 | 양쪽에서 작업하려면 필요 | 중 |
+| 4 | Termux ↔ PC 동기화 | SSH+tmux로 대부분 해소, 나머지 자동화 | 중 |
 | 5 | YouTube Live 연동 | 구독자 50명 이후 | 중 |
+| 6 | WSL + Telegram Bot | 대용량 파일 파이프라인 | 중 |
 
 ---
 
