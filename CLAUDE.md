@@ -25,20 +25,22 @@
 > **비개발자가 Claude Code로 집 PC를 서버처럼 쓰면서 필요한**
 > **모든 자동화 + 안전장치 + 원격 도구 모음**
 
-### 사용 패턴
+### 사용 패턴 (v5.1 — CLI 통합 전환 후)
 ```
-[외출 전] PC 켜놓음 → Claude Code 세션 시작 → 집 나감
-[밖에서]  태블릿(RustDesk)으로 PC 조작 / YouTube Live로 CCTV 시청
-          / Termux Claude Code로 같은 레포 작업
+[외출 전] PC 켜놓음 → Claude Code CLI 세션 시작 → tmux detach → 집 나감
+[밖에서]  폰 Termux → SSH → PC tmux attach → Claude Code 원격 제어
+          / RustDesk는 GUI 필요 시만 (APK UI 테스트, 디자인 확인)
+          / YouTube Live로 CCTV 시청
 [귀가 후] PC 결과 확인 → 다음 작업
 ```
 
-### 5개 축
+### 6개 축
 1. **환경 스냅샷** — 내 PC에 뭐가 깔려있는지 자동 기록 (scripts/)
 2. **세션 로그 강제** — Claude가 뭘 했는지 기록 누락 방지 (hooks/)
 3. **PC CCTV** — Claude Code 작업 화면 녹화 + AI 실시간 해설 (cctv/)
-4. **원격 데스크탑** — RustDesk로 밖에서 PC GUI 접속 (env/ 예정)
-5. **Termux ↔ PC 동기화** — 폰과 PC 작업 연결 (scripts/ 예정)
+4. **원격 데스크탑** — RustDesk로 밖에서 PC GUI 접속 (GUI 필요 시만, 의존도 20%)
+5. **Termux ↔ PC 동기화** — 폰과 PC 작업 연결 (SSH+tmux로 대부분 해소)
+6. **SSH + CLI 통합 원격 제어** — Claude Desktop GUI → CLI 전환, SSH+tmux+MCP 통합 (env/)
 
 ### 왜 필요한가
 ```
@@ -133,7 +135,10 @@ dtslib-localpc/
 ├── README.md
 │
 ├── docs/                        ← 비전 + 가이드 문서
-│   └── VISION.md                ← 레포 비전 재정의 + 로드맵
+│   ├── VISION.md                ← 레포 비전 재정의 + 로드맵
+│   ├── INFRA_WHITEPAPER.md      ← CLI 통합 전환 기술 백서 (v1.0)
+│   └── logs/                    ← 의사결정 원본 대화 아카이브
+│       └── 20260312_cli-transition-qa.md
 │
 ├── snapshots/                   ← 자동 생성 스냅샷
 │   ├── drive-d.txt              ← D드라이브 디렉토리 트리
@@ -148,6 +153,8 @@ dtslib-localpc/
 │
 ├── env/                         ← 환경 설정 + 복원 매뉴얼
 │   ├── RESTORE.md               ← 새 PC 복원 가이드
+│   ├── SSH_SETUP.md             ← SSH 서버 세팅 가이드 (원격 제어)
+│   ├── CLI_MIGRATION.md         ← Claude Desktop → CLI 전환 체크리스트
 │   ├── path-settings.json       ← PATH + 바이너리 경로 (자동 갱신)
 │   └── git-config.md            ← Git 글로벌 설정 (자동 갱신)
 │
@@ -214,6 +221,54 @@ dtslib-localpc/
 
 ### 상세
 > `cctv/INSTRUCTION.md` — 전체 설계 + 개발 단계 + 코드 설계
+
+---
+
+## 7.5. SSH + CLI 통합 원격 제어 (2026-03-12 추가)
+
+> **Claude Desktop GUI → Claude Code CLI 전환. SSH+tmux로 모바일에서 PC 완전 제어.**
+
+### 핵심 발견
+- Claude Code CLI에서 MCP 직접 연결 가능 (`claude mcp add`)
+- Claude Desktop 없이 CLI 하나로 코드 + 브라우저 자동화 + 외부 서비스 통합
+- SSH + tmux = RustDesk 대비 세션 안정성 압도적 (끊겨도 세션 유지)
+
+### 아키텍처
+```
+폰 Termux
+  ├─ SSH → PC PowerShell → Claude Code CLI (광역 작업)
+  ├─ SSH → PC WSL → Telegram Bot (파일 파이프라인)
+  └─ Claude Code Local (폰 작업)
+
+집 PC (24시간 ON)
+  ├─ Claude Code CLI + MCP (Puppeteer, GitHub, Filesystem)
+  ├─ SSH Server + tmux (원격 접속 대기)
+  ├─ WSL Ubuntu (Telegram Bot Daemon, Cron)
+  └─ RustDesk (GUI 필요 시만, 20%)
+```
+
+### 도구별 역할
+| 도구 | 역할 |
+|------|------|
+| SSH + tmux | 원격 터미널 + 세션 유지 (메인) |
+| Claude Code CLI | 코드/파일/배치 + MCP 통합 (메인) |
+| Puppeteer MCP | 브라우저 자동화 (YouTube, 티스토리 등) |
+| Telegram Bot | 대용량 파일 송수신 (2GB) |
+| RustDesk | GUI 확인 필요 시만 (APK UI, 디자인) |
+
+### 구현 상태
+| Phase | 내용 | 상태 |
+|-------|------|------|
+| 1 | Claude Code CLI 설치 | 미구현 |
+| 2 | MCP 서버 연결 | 미구현 |
+| 3 | SSH 서버 설정 | 미구현 |
+| 4 | tmux 멀티 세션 | 미구현 |
+| 5 | WSL + Telegram Bot | 미구현 |
+
+### 상세
+> `docs/INFRA_WHITEPAPER.md` — 기술 백서 (문제 분석 + 솔루션 + 구현 가이드)
+> `env/SSH_SETUP.md` — SSH 서버 세팅 실행 매뉴얼
+> `env/CLI_MIGRATION.md` — Desktop → CLI 전환 체크리스트
 
 ---
 
@@ -353,8 +408,8 @@ bash scripts/install-hooks.sh --uninstall
 
 ---
 
-*Version: 5.0 — 홈 PC 원격 관제탑으로 재정의 (CCTV + RustDesk + Termux 동기화)*
-*Updated: 2026-02-28*
+*Version: 5.1 — SSH+CLI 통합 전환 반영 (축 6 추가, Desktop→CLI 패러다임 전환)*
+*Updated: 2026-03-12*
 *Built with: Claude Code (Claude Opus 4.6)*
 
 ---
