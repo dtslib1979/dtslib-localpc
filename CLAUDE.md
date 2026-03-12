@@ -143,7 +143,8 @@ dtslib-localpc/
 ├── snapshots/                   ← 자동 생성 스냅샷
 │   ├── drive-d.txt              ← D드라이브 디렉토리 트리
 │   ├── installed-software.json  ← 설치된 소프트웨어
-│   └── env-versions.json        ← 개발도구 버전
+│   ├── env-versions.json        ← 개발도구 버전
+│   └── infra-verify.json        ← CLI 인프라 검증 결과 (자동 생성)
 │
 ├── repos/                       ← 크로스레포 상태 (핵심)
 │   ├── status.json              ← 3개 레포 현황 요약
@@ -173,13 +174,22 @@ dtslib-localpc/
 │   ├── cctv-config.json         ← 설정 (간격, 프롬프트, YouTube 채널, OBS)
 │   └── requirements.txt         ← Python 의존성 (mss, playwright)
 │
-├── scripts/                     ← 자동화 (Task Scheduler 연동)
+├── scripts/                     ← 자동화 (Task Scheduler + CLI 인프라)
 │   ├── snapshot.ps1             ← 원클릭 스냅샷 갱신 [8/8]
 │   ├── sync-all.ps1             ← GitHub 전체 sync (매일 18시)
 │   ├── health-check.ps1         ← 시스템 점검 (매일 09시)
 │   ├── register-scheduler.ps1   ← Task Scheduler 등록
 │   ├── install-hooks.ps1        ← 프로덕션 레포에 Stop hook 설치 (Windows)
-│   └── install-hooks.sh         ← 프로덕션 레포에 Stop hook 설치 (Linux)
+│   ├── install-hooks.sh         ← 프로덕션 레포에 Stop hook 설치 (Linux)
+│   ├── setup-all.ps1            ← [NEW] 원클릭 전체 인프라 구축 (마스터)
+│   ├── setup-ssh.ps1            ← [NEW] SSH 서버 자동 세팅
+│   ├── setup-cli.ps1            ← [NEW] Claude Code CLI + MCP 설치
+│   ├── setup-wsl.ps1            ← [NEW] WSL + tmux + Telegram Bot 환경
+│   ├── verify-infra.ps1         ← [NEW] CLI 인프라 전체 검증
+│   ├── telegram-bot.py          ← [NEW] Telegram 파일 전송 봇 (WSL 데몬)
+│   ├── telegram-bot-config.json ← [NEW] 봇 설정
+│   ├── tmux-workspace.sh        ← [NEW] tmux 멀티 세션 런처 (4 프리셋)
+│   └── remote-connect.sh        ← [NEW] Termux→PC SSH 접속 헬퍼
 │
 └── samples/                     ← Phase 1 유산 (차이콥스키)
     ├── metadata/library.json
