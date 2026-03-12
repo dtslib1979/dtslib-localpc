@@ -1,0 +1,15 @@
+{
+  "bot_token": "",
+  "allowed_chat_ids": [],
+  "download_dir": "/home/user/telegram-bot/downloads",
+  "upload_dir": "/home/user/telegram-bot/uploads",
+  "d_drive": "/mnt/d",
+  "max_file_size_mb": 2000,
+  "auto_organize": true,
+  "_comment": [
+    "bot_token: @BotFather에서 /newbot으로 발급",
+    "allowed_chat_ids: 보안용. 빈 배열이면 누구나 접근 가능",
+    "chat_id 확인: 봇에게 /start 보내면 표시됨",
+    "d_drive: WSL에서 Windows D: = /mnt/d"
+  ]
+}
