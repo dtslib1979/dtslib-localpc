@@ -120,25 +120,26 @@ echo 'export CLAUDE_CODE_OAUTH_TOKEN="sk-ant-oat01-..."' >> ~/.bashrc
 | watchdog.sh | ✅ 수정 완료 | tailscale 루프 버그 해결 |
 | 이미지 브릿지 (image_downloader.py) | ✅ 실행 중 | @parksy_bridge_bot |
 | 오디오 브릿지 (audio_bridge.py) | ✅ 실행 중 | @parksy_bridges_bot |
-| Claude 이미지 봇 (telegram_claude_bot.py) | ⚠️ 실행 중 | CLI 인증 만료로 Claude 호출 실패 |
-| Claude 오디오 봇 (telegram_claude_bot.py) | ⚠️ 실행 중 | CLI 인증 만료로 Claude 호출 실패 |
-| WSL Claude Code CLI | ❌ 인증 만료 | `setup-token`으로 갱신 필요 |
+| Claude 이미지 봇 (telegram_claude_bot.py) | ✅ 정상 | 2026-03-16 인증 갱신 완료, E2E 테스트 통과 |
+| Claude 오디오 봇 (telegram_claude_bot.py) | ✅ 정상 | 2026-03-16 인증 갱신 완료 |
+| WSL Claude Code CLI | ✅ 정상 | Windows credentials.json 복사 방식으로 해결 |
 
-## 다음 작업 (TODO)
+## ✅ 완료된 작업 (2026-03-16)
 
-1. **[필수] Claude Code CLI 인증 갱신**
-   - Windows 별도 터미널에서 `claude setup-token` 실행
-   - 발급된 토큰을 WSL `~/.bashrc`에 `CLAUDE_CODE_OAUTH_TOKEN` 설정
-   - `claude -p 'echo hello'`로 동작 확인
+1. **[완료] Claude Code CLI 인증 갱신**
+   - Windows `~/.claude/.credentials.json` → WSL 복사
+   - refreshToken 포함으로 자동 갱신 가능
+   - `claude -p 'echo hello'` 동작 확인 ✅
 
-2. **엔드투엔드 테스트**
-   - 텔레그램에서 Claude 봇에 메시지 전송
-   - Claude CLI 실행 → 작업 수행 → 응답 반환 확인
-   - 긴 응답(>4096자) 파일 첨부 전송 확인
+2. **[완료] 엔드투엔드 테스트**
+   - ClaudeRunner 직접 호출 테스트 통과 (30.8초, 텔레그램 전송 확인)
+   - 긴 응답(>10000자) 파일 첨부 전송 경로 검증
+   - work_dir(/mnt/d/parksy-image) 내 Claude 실행 확인
 
-3. **시스템 안정화**
-   - watchdog.sh에 Claude 봇 인증 상태 체크 추가 검토
-   - 토큰 만료 시 알림 메커니즘 검토
+3. **[완료] 시스템 안정화**
+   - watchdog.sh에 `refresh_claude_creds()` 추가
+   - 매 60초 만료 1시간 미만 시 Windows credentials 자동 동기화
+   - server.log에 sync 이벤트 기록
 
 ## 연관 파일
 
