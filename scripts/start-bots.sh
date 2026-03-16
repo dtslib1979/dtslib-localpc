@@ -1,74 +1,34 @@
 #!/bin/bash
-# start-bots.sh — 텔레그램 봇 tmux 세션 일괄 시작
-#
-# 구조:
-#   tmux tg-image → parksy-image 봇 (이미지 수신 + 명령어)
-#   tmux tg-audio → parksy-audio 봇 (오디오 파이프라인 제어)
-#
-# 사용:
-#   bash scripts/start-bots.sh
-#   bash scripts/start-bots.sh stop   # 세션 종료
-#   bash scripts/start-bots.sh status # 세션 상태 확인
+# Parksy 텔레그램 봇 런처 v2.0
+# @parksy_bridge_bot  (tg-image) + @parksy_bridges_bot (tg-audio)
 
-ACTION="${1:-start}"
+IMAGE_BOT="/mnt/d/parksy-image/tools/telegram-bridge/bot.py"
+AUDIO_BOT="/mnt/d/PARKSY/parksy-audio/local-agent/bot.py"
 
-# WSL 경로 설정
-if grep -qi microsoft /proc/version 2>/dev/null; then
-  IMAGE_PATH="/mnt/d/parksy-image"
-  AUDIO_PATH="/mnt/d/PARKSY/parksy-audio"
-else
-  IMAGE_PATH="$HOME/parksy-image"
-  AUDIO_PATH="$HOME/parksy-audio"
-fi
-
-case "$ACTION" in
-  stop)
-    echo "🛑 봇 세션 종료..."
-    tmux kill-session -t tg-image 2>/dev/null && echo "  ✅ tg-image 종료"
-    tmux kill-session -t tg-audio 2>/dev/null && echo "  ✅ tg-audio 종료"
-    ;;
-  status)
-    echo "📊 봇 세션 상태:"
-    tmux ls 2>/dev/null | grep -E "tg-image|tg-audio" || echo "  실행 중인 봇 없음"
-    ;;
-  start|*)
-    echo "🤖 텔레그램 봇 시작..."
-    echo ""
-
-    # 기존 세션 정리
-    tmux kill-session -t tg-image 2>/dev/null
-    tmux kill-session -t tg-audio 2>/dev/null
-
-    # parksy-image 봇
-    BOT_IMAGE="$IMAGE_PATH/tools/telegram-bridge/bot.py"
-    if [ -f "$BOT_IMAGE" ]; then
-      tmux new-session -d -s tg-image \
-        "cd  && pip install requests -q && python3 tools/telegram-bridge/bot.py 2>&1 | tee /tmp/tg-image.log"
-      echo "✅ tg-image 시작"
-      echo "   접속: tmux attach -t tg-image"
-      echo "   로그: tail -f /tmp/tg-image.log"
-    else
-      echo "❌ tg-image: bot.py 없음 ($IMAGE_PATH)"
-      echo "   git clone https://github.com/dtslib1979/parksy-image $IMAGE_PATH"
+start_session() {
+    local name=$1
+    local script=$2
+    if tmux has-session -t "$name" 2>/dev/null; then
+        echo "[$name] 기존 세션 종료 중..."
+        tmux kill-session -t "$name"
+        sleep 1
     fi
-
-    echo ""
-
-    # parksy-audio 봇
-    BOT_AUDIO="$AUDIO_PATH/local-agent/bot.py"
-    if [ -f "$BOT_AUDIO" ]; then
-      tmux new-session -d -s tg-audio \
-        "cd  && pip install requests -q && python3 local-agent/bot.py 2>&1 | tee /tmp/tg-audio.log"
-      echo "✅ tg-audio 시작"
-      echo "   접속: tmux attach -t tg-audio"
-      echo "   로그: tail -f /tmp/tg-audio.log"
+    echo "[$name] 시작: $script"
+    tmux new-session -d -s "$name" "python3 $script; echo '=== 종료됨 ==='; read"
+    sleep 0.5
+    if tmux has-session -t "$name" 2>/dev/null; then
+        echo "[$name] ✅ 실행 중"
     else
-      echo "❌ tg-audio: bot.py 없음 ($AUDIO_PATH)"
-      echo "   git clone https://github.com/dtslib1979/parksy-audio $AUDIO_PATH"
+        echo "[$name] ❌ 시작 실패"
     fi
+}
 
-    echo ""
-    echo "세션 목록: tmux ls"
-    ;;
-esac
+echo "=== Parksy Bot Launcher v2.0 ==="
+start_session "tg-image" "$IMAGE_BOT"
+start_session "tg-audio" "$AUDIO_BOT"
 
+echo ""
+echo "세션 확인: tmux ls"
+echo "로그 확인:"
+echo "  tmux attach -t tg-image"
+echo "  tmux attach -t tg-audio"
