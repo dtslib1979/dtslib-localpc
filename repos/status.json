@@ -1,129 +1,59 @@
-﻿{
-    "updated":  "2026-03-10T23:55:00+09:00",
-    "description":  "3개 프로덕션 레포 크로스레포 상태 요약 — 세션 종료 시 자동 갱신",
-    "repos":  {
-                  "parksy-audio":  {
-                                       "local_path":  "D:\\PARKSY\\parksy-audio",
-                                       "github":  "dtslib1979/parksy-audio",
-                                       "branch":  "main",
-                                       "last_commit":  "088b48b",
-                                       "last_commit_msg":  "docs: WSL2 Claude Code CLI 인증 실패 원인 분석 및 해결 보고서",
-                                       "dirty_files":  1,
-                                       "phase":  "Phase 8 Complete + Musician TV 대시보드 + WSL 인프라",
-                                       "next_phase":  "Phase 9 — YouTube 배포 + WSL 원격 배치 자동화",
-                                       "piano_score":  {
-                                                           "avg":  96.4,
-                                                           "perfect_count":  "15/22 at 100.0"
-                                                       },
-                                       "orchestral_score":  {
-                                                                "avg":  99.9,
-                                                                "min":  99.5,
-                                                                "count":  "12/12 \u003e= 99.5"
-                                                            },
-                                       "work_dir":  "D:\\tmp",
-                                       "key_configs":  [
-                                                           "D:\\tmp\\optimal_config.json",
-                                                           "D:\\tmp\\orchestral_optimal_config.json"
-                                                       ],
-                                       "key_tools":  [
-                                                         "D:\\tmp\\optimizer.py",
-                                                         "D:\\tmp\\score_engine.py",
-                                                         "D:\\tmp\\quartet_pipeline.py"
-                                                     ],
-                                       "videos_produced":  6,
-                                       "pending":  [
-                                                       "WSL Claude Code 인증 완료 (setup-token 수동 실행)",
-                                                       "YouTube upload execution",
-                                                       "Score Engine refinement",
-                                                       "AI Velocity Generation"
-                                                   ],
-                                       "journal":  "repos/parksy-audio.md"
-                                   },
-                  "parksy-image":  {
-                                       "local_path":  "D:\\parksy-image",
-                                       "github":  "dtslib1979/parksy-image",
-                                       "branch":  "main",
-                                       "last_commit":  "1501f98",
-                                       "last_commit_msg":  "docs: CLAUDE.md에 세션 종료 프로토콜 추가 — dtslib-localpc 자동 로그 축적",
-                                       "dirty_files":  30,
-                                       "phase":  "Phase 2 — PSE Korean expansion",
-                                       "pse_status":  {
-                                                          "glyphs":  86,
-                                                          "tests":  "33/33 passing",
-                                                          "font_output":  "tools/pse/output/parksy-hand.ttf"
-                                                      },
-                                       "pipeline_version":  "v3 (8-stage automation)",
-                                       "distribution":  {
-                                                            "youtube":  "@visualizer-parksy (configured, upload pending)",
-                                                            "gdrive":  "rclone gdrive:parksy-image/ (ready)",
-                                                            "telegram":  "@parksy_bridge_bot (SVG only)",
-                                                            "naver_blog":  "3-channel format (distribution pending)"
-                                                        },
-                                       "queue":  "_queue/ folder with pending jobs",
-                                       "pending":  [
-                                                       "User handwriting SVG for PSE Phase 2",
-                                                       "YouTube upload automation test",
-                                                       "Naver Blog distribution",
-                                                       "PC session: validate pse.build metrics"
-                                                   ],
-                                       "journal":  "repos/parksy-image.md"
-                                   },
-                  "dtslib-apk-lab":  {
-                                         "local_path":  "D:\\1_GITHUB\\dtslib-apk-lab",
-                                         "github":  "dtslib1979/dtslib-apk-lab",
-                                         "branch":  "main",
-                                         "last_commit":  "3f3bb78",
-                                         "last_commit_msg":  "docs: CLAUDE.md에 세션 종료 프로토콜 추가 — dtslib-localpc 자동 로그 축적",
-                                         "dirty_files":  0,
-                                         "phase":  "Active (5 apps, 1 building)",
-                                         "store_url":  "https://dtslib-apk-lab.vercel.app/",
-                                         "apps":  {
-                                                      "parksy-capture":  {
-                                                                             "status":  "production"
-                                                                         },
-                                                      "parksy-pen":  {
-                                                                         "status":  "production"
-                                                                     },
-                                                      "parksy-wavesy":  {
-                                                                            "status":  "production"
-                                                                        },
-                                                      "parksy-tts":  {
-                                                                         "status":  "production"
-                                                                     },
-                                                      "chrono-call":  {
-                                                                          "status":  "code complete, build pending"
-                                                                      }
-                                                  },
-                                         "active_dev":  "chrono-call v1.0.0 (flutter create + build needed)",
-                                         "build_env":  {
-                                                           "compileSdk":  34,
-                                                           "minSdk":  26,
-                                                           "targetSdk":  34,
-                                                           "flutter":  "required (not in PATH)"
-                                                       },
-                                         "pending":  [
-                                                         "ChronoCall: flutter create + build + device test",
-                                                         "ChronoCall: APK signing + release",
-                                                         "Wavesy: libc++_shared.so conflict resolved, needs rebuild"
-                                                     ],
-                                         "journal":  "repos/dtslib-apk-lab.md"
-                                     }
-              },
-    "cross_links":  [
-                        {
-                            "from":  "parksy-audio",
-                            "to":  "parksy-image",
-                            "type":  "YouTube videos → @visualizer-parksy"
-                        },
-                        {
-                            "from":  "dtslib-apk-lab",
-                            "to":  "parksy-image",
-                            "type":  "ChronoCall → Parksy Capture auto-share"
-                        },
-                        {
-                            "from":  "parksy-audio",
-                            "to":  "dtslib-apk-lab",
-                            "type":  "Audio → Wavesy editor (potential)"
-                        }
-                    ]
+{
+  "updated": "2026-03-16T13:00:00+09:00",
+  "description": "4개 레포 크로스레포 상태 — 유레카 전환 후 PC-native v6.0 기준",
+  "axiom": "PC 메인 / 핸드폰 SSH 클라이언트 (유레카 2026-03-16)",
+  "repos": {
+    "parksy-audio": {
+      "local_path": "D:\\PARKSY\\parksy-audio",
+      "github": "dtslib1979/parksy-audio",
+      "branch": "main",
+      "phase": "Phase 9 — YouTube 배포 + 텔레그램 원격 제어",
+      "telegram_bot": "@parksy_bridges_bot",
+      "bot_script": "local-agent/bot.py",
+      "bot_start": "local-agent/start_bot.sh",
+      "tmux_session": "tg-audio",
+      "status": "bot v1.0 배포 완료, config 필요",
+      "pending": [
+        "telegram_config.json 생성 (bot_token 입력)",
+        "tmux tg-audio 세션 시작: bash local-agent/start_bot.sh",
+        "YouTube 업로드 6트랙"
+      ]
+    },
+    "parksy-image": {
+      "local_path": "D:\\parksy-image",
+      "github": "dtslib1979/parksy-image",
+      "branch": "main",
+      "phase": "Phase 2 — PSE 한글 확장",
+      "telegram_bot": "@parksy_bridge_bot",
+      "bot_script": "tools/telegram-bridge/bot.py",
+      "bot_start": "tools/telegram-bridge/start_bridge.sh",
+      "tmux_session": "tg-image",
+      "status": "bot v2.0 배포 완료, config 필요",
+      "pending": [
+        "tools/telegram-bridge/config.json 생성 (bot_token 입력)",
+        "tmux tg-image 세션 시작: bash tools/telegram-bridge/start_bridge.sh",
+        "00_inbox에 이미지 전송 테스트"
+      ]
+    },
+    "dtslib-localpc": {
+      "local_path": "D:\\PARKSY\\dtslib-localpc",
+      "github": "dtslib1979/dtslib-localpc",
+      "branch": "main",
+      "phase": "v6.0 — PC 메인 전환 완료",
+      "status": "start-bots.sh 배포 완료",
+      "pending": [
+        "bash scripts/start-bots.sh 실행 (PC에서 1회)",
+        "Tailscale SSH 연결 확인"
+      ]
+    }
+  },
+  "boot_sequence": {
+    "description": "PC 세션 시작 시 순서",
+    "steps": [
+      "git pull (각 레포)",
+      "bash ~/dtslib-localpc/scripts/start-bots.sh",
+      "tmux ls → tg-image, tg-audio 확인",
+      "텔레그램에서 /status 테스트"
+    ]
+  }
 }
