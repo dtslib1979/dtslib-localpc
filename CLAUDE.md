@@ -2,6 +2,55 @@
 
 ---
 
+## ⚡ 헌법 특별법 제0조 — 패러다임 전환 선언 (2026-03-16)
+
+> **이 조항은 모든 하위 조항보다 우선한다. 충돌 시 이 조항이 이긴다.**
+
+### 공리 전환
+
+| | Before (v5.1 이전) | After (v6.0~) |
+|---|---|---|
+| **메인 기기** | 핸드폰 (Termux) | 집 PC (WSL2) |
+| **보조 기기** | PC (원격 서버) | 핸드폰 (SSH 클라이언트) |
+| **브라우저 자동화** | headless 우회, ADB 체인, CDP 흉내 | PC Chrome 직접 실행 (정도) |
+| **배치 작업** | 핸드폰에서 한 세션 겨우 | tmux 던져놓고 퇴근 |
+| **Claude Code** | Termux에서 근사치 | WSL2 PC에서 풀스펙 |
+
+### 죽은 패턴 (절대 부활 금지)
+
+```
+❌ headless Chromium 우회 — PC Chrome 있으니까 필요없음
+❌ ADB 체인 — PC에서 직접 실행하면 됨
+❌ 핸드폰에서 CDP 흉내 — PC가 메인이니까 의미없음
+❌ 핸드폰 배터리/성능 고려한 설계 — PC 스펙으로 그냥 돌림
+❌ 세션 1개 제약 — tmux로 N개 병렬 실행
+```
+
+### 정도(正道) 패턴
+
+```
+✅ 브라우저 자동화 → Playwright headless=False (봇 탐지 없음)
+✅ 카카오/구글 로그인 → 실제 Chrome으로 직접 처리
+✅ 배치 작업 → tmux 세션에 던지고 텔레그램으로 결과 수신
+✅ 광역 작업 → 28개 레포 Claude Code 세션 1개에서 전부 처리
+✅ 핸드폰 역할 → SSH 터미널 클라이언트 + 텔레그램 결과 수신
+```
+
+### 현재 작업 표준 아키텍처
+
+```
+핸드폰 (SSH 클라이언트)
+  └─ Tailscale VPN
+       └─ 집 PC (24시간 ON)
+            ├─ WSL2 → Claude Code (광역 28레포 작업)
+            ├─ tmux claude-main → 메인 작업 세션
+            ├─ tmux tg-image → 이미지 배치 (텔레그램 봇)
+            ├─ tmux tg-audio → 오디오 배치 (텔레그램 봇)
+            └─ Windows Chrome → 브라우저 자동화 (Playwright 직접)
+```
+
+---
+
 ## 헌법 제1조: 레포지토리는 소설이다
 ## 헌법 제2조: 매트릭스 아키텍처
 
@@ -25,22 +74,22 @@
 > **비개발자가 Claude Code로 집 PC를 서버처럼 쓰면서 필요한**
 > **모든 자동화 + 안전장치 + 원격 도구 모음**
 
-### 사용 패턴 (v5.1 — CLI 통합 전환 후)
+### 사용 패턴 (v6.0 — PC 메인 전환 후) ← 특별법 제0조 적용
+
 ```
-[외출 전] PC 켜놓음 → Claude Code CLI 세션 시작 → tmux detach → 집 나감
-[밖에서]  폰 Termux → SSH → PC tmux attach → Claude Code 원격 제어
-          / RustDesk는 GUI 필요 시만 (APK UI 테스트, 디자인 확인)
-          / YouTube Live로 CCTV 시청
-[귀가 후] PC 결과 확인 → 다음 작업
+[어디서든] 핸드폰 → Tailscale SSH → PC tmux attach → Claude Code
+[배치 작업] 텔레그램으로 지시 → tmux 세션이 처리 → 결과 텔레그램 수신
+[브라우저 자동화] PC에서 Playwright headless=False 직접 실행
+[귀찮은 작업] tmux에 던져놓고 퇴근 → 나중에 텔레그램으로 확인
 ```
 
-### 6개 축
+### 6개 축 (v6.0)
 1. **환경 스냅샷** — 내 PC에 뭐가 깔려있는지 자동 기록 (scripts/)
 2. **세션 로그 강제** — Claude가 뭘 했는지 기록 누락 방지 (hooks/)
 3. **PC CCTV** — Claude Code 작업 화면 녹화 + AI 실시간 해설 (cctv/)
-4. **원격 데스크탑** — RustDesk로 밖에서 PC GUI 접속 (GUI 필요 시만, 의존도 20%)
-5. **Termux ↔ PC 동기화** — 폰과 PC 작업 연결 (SSH+tmux로 대부분 해소)
-6. **SSH + CLI 통합 원격 제어** — Claude Desktop GUI → CLI 전환, SSH+tmux+MCP 통합 (env/)
+4. **브라우저 자동화** — PC Chrome 직접 실행 (Playwright headless=False) ← RustDesk 대체
+5. **텔레그램 봇 배치** — 이미지/오디오 Claude Code 원격 지시 + 결과 수신
+6. **SSH + tmux 멀티 세션** — 핸드폰에서 N개 작업 병렬 제어
 
 ### 왜 필요한가
 ```
@@ -255,35 +304,34 @@ dtslib-localpc/
 
 ### 아키텍처
 ```
-폰 Termux
-  ├─ SSH → PC PowerShell → Claude Code CLI (광역 작업)
-  ├─ SSH → PC WSL → Telegram Bot (파일 파이프라인)
-  └─ Claude Code Local (폰 작업)
-
-집 PC (24시간 ON)
-  ├─ Claude Code CLI + MCP (Puppeteer, GitHub, Filesystem)
-  ├─ SSH Server + tmux (원격 접속 대기)
-  ├─ WSL Ubuntu (Telegram Bot Daemon, Cron)
-  └─ RustDesk (GUI 필요 시만, 20%)
+핸드폰 (SSH 클라이언트 — 입출력 단말기)
+  └─ Tailscale VPN
+       └─ 집 PC (24시간 ON) ← 모든 연산/저장/실행은 여기서
+            ├─ WSL2 → Claude Code (광역 28레포 작업)
+            ├─ tmux claude-main → 메인 작업 세션
+            ├─ tmux tg-image → 이미지 배치 (Telegram Claude Bot)
+            ├─ tmux tg-audio → 오디오 배치 (Telegram Claude Bot)
+            └─ Windows Chrome → Playwright headless=False (브라우저 자동화)
 ```
 
-### 도구별 역할
+### 도구별 역할 (v6.0)
 | 도구 | 역할 |
 |------|------|
-| SSH + tmux | 원격 터미널 + 세션 유지 (메인) |
-| Claude Code CLI | 코드/파일/배치 + MCP 통합 (메인) |
-| Puppeteer MCP | 브라우저 자동화 (YouTube, 티스토리 등) |
-| Telegram Bot | 대용량 파일 송수신 (2GB) |
-| RustDesk | GUI 확인 필요 시만 (APK UI, 디자인) |
+| Tailscale + SSH + tmux | 원격 터미널 + 세션 유지 (메인) |
+| Claude Code CLI (WSL2) | 코드/파일/배치 + 28레포 광역 작업 (메인) |
+| Playwright headless=False | 브라우저 자동화 정도 (카카오/구글 로그인, 티스토리, YouTube) |
+| Telegram Claude Bot | 배치 작업 지시 + 결과 수신 (던져놓고 퇴근) |
+| RustDesk | APK UI 테스트, 디자인 확인 시만 (5% 이하) |
 
 ### 구현 상태
 | Phase | 내용 | 상태 |
 |-------|------|------|
-| 1 | Claude Code CLI 설치 | 미구현 |
-| 2 | MCP 서버 연결 | 미구현 |
-| 3 | SSH 서버 설정 | 미구현 |
-| 4 | tmux 멀티 세션 | 미구현 |
-| 5 | WSL + Telegram Bot | 미구현 |
+| 1 | Claude Code CLI 설치 | ✅ 완료 |
+| 2 | MCP 서버 연결 | ✅ 완료 |
+| 3 | SSH 서버 설정 (Tailscale) | ✅ 완료 |
+| 4 | tmux 멀티 세션 (4세션) | ✅ 완료 |
+| 5 | WSL + Telegram Claude Bot | ✅ 완료 |
+| 6 | **패러다임 전환 — PC 메인** | ✅ 2026-03-16 선언 |
 
 ### 상세
 > `docs/INFRA_WHITEPAPER.md` — 기술 백서 (문제 분석 + 솔루션 + 구현 가이드)
@@ -428,9 +476,9 @@ bash scripts/install-hooks.sh --uninstall
 
 ---
 
-*Version: 5.1 — SSH+CLI 통합 전환 반영 (축 6 추가, Desktop→CLI 패러다임 전환)*
-*Updated: 2026-03-12*
-*Built with: Claude Code (Claude Opus 4.6)*
+*Version: 6.0 — PC 메인 패러다임 전환 (특별법 제0조, 정도 자동화 선언)*
+*Updated: 2026-03-16*
+*Built with: Claude Code (Claude Sonnet 4.6)*
 
 ---
 
