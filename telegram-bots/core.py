@@ -135,10 +135,10 @@ class DraftStreamer:
         if final_text:
             self._text = final_text
         self._tool_lines = []
-        await self._do_edit()
+        await self._do_edit(is_final=True)
         self._finalized = True
 
-    async def _do_edit(self, final: bool = False):
+    async def _do_edit(self, is_final: bool = False):
         if not self.message_id:
             return
         body = self._build()
@@ -154,8 +154,18 @@ class DraftStreamer:
             )
             self._last_sent = body
             self._last_edit = time.monotonic()
-        except Exception:
-            pass
+        except Exception as e:
+            err = str(e).lower()
+            if "message is not modified" in err:
+                self._last_sent = body  # 이미 전달됨 — 정상
+                return
+            if is_final:
+                # 최종 결과 edit 실패 시 새 메시지로 fallback
+                try:
+                    await self.bot.send_message(self.chat_id, body)
+                    self._last_sent = body
+                except Exception:
+                    pass
 
     def _build(self) -> str:
         parts = []
