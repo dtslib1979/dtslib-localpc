@@ -1,8 +1,23 @@
 {
-  "updated": "2026-03-16T13:00:00+09:00",
+  "updated": "2026-03-17T00:00:00+09:00",
   "description": "4개 레포 크로스레포 상태 — 유레카 전환 후 PC-native v6.0 기준",
   "axiom": "PC 메인 / 핸드폰 SSH 클라이언트 (유레카 2026-03-16)",
   "repos": {
+    "dtslib-papyrus": {
+      "local_path": "D:\\1_GITHUB\\dtslib-papyrus",
+      "github": "dtslib1979/dtslib-papyrus",
+      "branch": "main",
+      "phase": "Phase 9 — YouTube OAuth + 자동 업로드 파이프라인",
+      "status": "OAuth 자동화 완성, GCP 스코프 블로커",
+      "last_session": "2026-03-17",
+      "pending": [
+        "[CRITICAL] GCP console → parksy-youtube 프로젝트 → APIs & Services → Library → YouTube Data API v3 Enable",
+        "[CRITICAL] OAuth consent screen → Add scope: https://www.googleapis.com/auth/youtube",
+        "rm tools/youtube/accounts/token_a.json 후 yt_oauth_auto.cjs 재실행",
+        "token_a.json youtube 스코프 포함 확인 후 upload.cjs 테스트",
+        "풀 파이프라인 테스트: MIDI → Claude 렌더 → M4A to Telegram → /upload → YouTube private"
+      ]
+    },
     "parksy-audio": {
       "local_path": "D:\\PARKSY\\parksy-audio",
       "github": "dtslib1979/parksy-audio",
@@ -12,11 +27,12 @@
       "bot_script": "local-agent/bot.py",
       "bot_start": "local-agent/start_bot.sh",
       "tmux_session": "tg-audio",
-      "status": "bot v1.0 배포 완료, config 필요",
+      "status": "bot v1.0 배포 완료, YouTube OAuth 블로커 (GCP)",
       "pending": [
+        "[BLOCKER] dtslib-papyrus GCP 작업 완료 후 token_a.json 재생성",
         "telegram_config.json 생성 (bot_token 입력)",
         "tmux tg-audio 세션 시작: bash local-agent/start_bot.sh",
-        "YouTube 업로드 6트랙"
+        "YouTube 업로드 6트랙 (token_a.json 완성 후)"
       ]
     },
     "parksy-image": {

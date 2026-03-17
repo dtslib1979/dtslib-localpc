@@ -487,6 +487,43 @@ GCP 프로젝트: parksy-youtube (Account A 소유)
 ---
 
 ---
+### 2026-03-17 | YouTube OAuth 완전 자동화 완성 → GCP 스코프 블로커 확인
+**작업**: `dtslib-papyrus/tools/youtube/yt_oauth_auto.cjs` 전면 수정 (6개 fix). Playwright `launchPersistentContext` + `channel:'chrome'` 패턴으로 Google 로그인 완전 자동화. `token_a.json` (Account A: dimas.thomas.sancho@gmail.com) 생성 완료.
+- Fix 1: DOM detach 오류 (`elementHandle.click` → `page.click()` 직접 호출)
+- Fix 2: `ignoreDefaultArgs: ['--enable-automation', '--disable-infobars']` + `--disable-blink-features=AutomationControlled` — Google 봇 탐지 차단
+- Fix 3: 비밀번호 페이지 Allow 루프 내부에서도 처리 (슬로우 로딩 케이스)
+- Fix 4: 2FA 탐지 + 8초 대기 루프 (핸드폰 승인 시간 확보)
+- Fix 5: 루프 12→30회 확장, "허용"(최종 동의) vs "계속"(중간 경고) 분리 처리
+- Fix 6: 마지막 YouTube API 검증 try/catch (스코프 미포함 시 토큰은 저장됨)
+
+**결정**: `token_a.json` refresh_token 있음 확인. 그러나 `youtube` 스코프 미포함 (현재 토큰: `yt-analytics.readonly`만). 근본 원인 = GCP 프로젝트 `parksy-youtube`에서 YouTube Data API v3 미활성화. OAuth 동의 페이지에 "1개 서비스"만 표시됨 → `youtube` 스코프 자체가 안 나옴.
+
+**결과**:
+```
+token_a.json 저장됨 (refresh_token: 있음 ✅)
+YouTube API 검증: ⚠️ Request had insufficient authentication scopes
+→ GCP 수동 작업 필요
+```
+
+**교훈**:
+1. `ignoreDefaultArgs: ['--enable-automation']` 가 Google 차단의 핵심 원인. `channel:'chrome'`만으로는 부족.
+2. GCP에서 API 활성화하지 않으면 OAuth 동의 페이지에 해당 스코프 자체가 안 나옴.
+3. `youtube` 스코프 받으려면 token_a.json 삭제 후 GCP 작업 완료 후 재실행 필요.
+
+**재구축 힌트**: `dtslib-papyrus/tools/youtube/yt_oauth_auto.cjs` 실행. 선행 조건: GCP console.cloud.google.com → parksy-youtube → APIs & Services → Library → "YouTube Data API v3" Enable + OAuth consent screen에 `https://www.googleapis.com/auth/youtube` 스코프 추가.
+
+**펜딩 블로커 (GCP 수동 작업 필요)**:
+```
+1. console.cloud.google.com → 프로젝트: parksy-youtube
+2. APIs & Services → Library → "YouTube Data API v3" → Enable
+3. APIs & Services → OAuth consent screen → Edit app → Add or remove scopes
+   → "https://www.googleapis.com/auth/youtube" 추가 → Save
+4. rm tools/youtube/accounts/token_a.json
+5. '/mnt/c/Program Files/nodejs/node.exe' tools/youtube/yt_oauth_auto.cjs
+```
+---
+
+---
 ### 2026-03-01~03-10 | Musician TV URL 대시보드 + WSL 원격 인프라 구축
 **작업**:
 1. Musician TV URL 페이지 구조 구축 — 5-Program 채널 허브 (커밋 9786d19)
