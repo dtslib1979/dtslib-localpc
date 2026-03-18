@@ -7,15 +7,21 @@
       "local_path": "D:\\1_GITHUB\\dtslib-papyrus",
       "github": "dtslib1979/dtslib-papyrus",
       "branch": "main",
-      "phase": "Phase 9 — YouTube OAuth + 자동 업로드 파이프라인",
-      "status": "OAuth 자동화 완성, GCP 스코프 블로커",
-      "last_session": "2026-03-17",
+      "phase": "Phase 10 — 플랫폼 포스팅 자동화",
+      "status": "전 플랫폼 로그인 완료. post.cjs/post.py 작성 대기",
+      "last_session": "2026-03-18",
+      "completed": [
+        "YouTube OAuth 4계정 token_a/b/c/d.json ✅",
+        "티스토리 5계정 _state.json ✅",
+        "네이버 dtslib/eae_kr NID_AUT/NID_SES ✅",
+        "네이버 parksy_kr → 태블릿 직접 사용 (기기 신뢰 차단)"
+      ],
       "pending": [
-        "[CRITICAL] GCP console → parksy-youtube 프로젝트 → APIs & Services → Library → YouTube Data API v3 Enable",
-        "[CRITICAL] OAuth consent screen → Add scope: https://www.googleapis.com/auth/youtube",
-        "rm tools/youtube/accounts/token_a.json 후 yt_oauth_auto.cjs 재실행",
-        "token_a.json youtube 스코프 포함 확인 후 upload.cjs 테스트",
-        "풀 파이프라인 테스트: MIDI → Claude 렌더 → M4A to Telegram → /upload → YouTube private"
+        "tools/naver/post.cjs — 카테고리 + 에디터 포스팅 (dtslib, eae_kr)",
+        "tools/tistory/post.py — 웹툰 이미지 업로드 (parksy-image 연동)",
+        "tools/youtube/upload.cjs — 영상 업로드 테스트",
+        "tools/youtube/community.cjs — 커뮤니티 포스트",
+        "parksy-image × 티스토리 SCM 파이프라인 설계"
       ]
     },
     "parksy-audio": {
