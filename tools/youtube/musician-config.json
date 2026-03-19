@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "updated": "2026-03-20",
+  "channel": {
+    "handle": "@musician-parksy",
+    "channel_id": "UCun6b2HD3ekp35PhqbTfOlg",
+    "url": "https://www.youtube.com/@musician-parksy",
+    "account": "a",
+    "email": "dimas.thomas.sancho@gmail.com",
+    "token_file": "accounts/token_a.json"
+  },
+  "playlists": [
+    {
+      "id": "PLNAJ8HsuRXWtIMM4seoCYagolfSvC5TM6",
+      "title": "@musician-parksy | 앨범 시리즈",
+      "key": "album"
+    },
+    {
+      "id": "PLNAJ8HsuRXWuwBqHqs9A5w-o6ec9Nh8Er",
+      "title": "@musician-parksy | 제작기",
+      "key": "making"
+    },
+    {
+      "id": "PLNAJ8HsuRXWuor0xRp3X1iZM05R0qTFzW",
+      "title": "@musician-parksy | BGM 소재집",
+      "key": "bgm"
+    }
+  ]
+}

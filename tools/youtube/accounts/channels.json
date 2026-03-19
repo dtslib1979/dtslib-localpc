@@ -1,0 +1,51 @@
+{
+  "accounts": [
+    {
+      "id": "a",
+      "email": "dimas.thomas.sancho@gmail.com",
+      "token_file": "accounts/token_a.json",
+      "note": "KR 방송 5채널",
+      "channels": [
+        { "handle": "@blogger-parksy",    "channel_id": "UC5H8CnRGDxvx4v3HWrktuSg", "repo": "parksy.kr" },
+        { "handle": "@musician-parksy",   "channel_id": "UCun6b2HD3ekp35PhqbTfOlg", "repo": "parksy-audio" },
+        { "handle": "@visualizer-parksy", "channel_id": "UC2MfUghTnMRE1xrODSfoELA", "repo": "parksy-image" },
+        { "handle": "@technician-parksy", "channel_id": "UCfRaJjIn2oXyThHpAhOBSYg", "repo": "dtslib-papyrus" },
+        { "handle": "@philosopher-parksy","channel_id": "UCJaGuXjxoNjFMqfYUSFjZVg", "repo": "dtslib-papyrus" }
+      ]
+    },
+    {
+      "id": "b",
+      "email": "dtslib1979@gmail.com",
+      "token_file": "accounts/token_b.json",
+      "note": "경제방송 6채널",
+      "channels": [
+        { "handle": "@dtslib-branch",   "channel_id": "UCxz800sMD27pk6X6HvxNS1g", "repo": "dtslib-branch" },
+        { "handle": "@espiritu-tango",  "channel_id": "UCfhlV8VijgD9wMT9WY2KI0Q", "repo": "espiritu-tango" },
+        { "handle": "@artrew-i1w",      "channel_id": "UCNciU69gQolXddS9nQx29XA", "repo": "artrew" },
+        { "handle": "@phoneparis-r6q",  "channel_id": "UCOvHKAfWYYUQKPunZIjOQbg", "repo": "phoneparis" },
+        { "handle": "@alexandria-y6k",  "channel_id": "UCt-pTP_Bketi7o9R-2Q7tPA", "repo": "alexandria-sanctuary" },
+        { "handle": "@justino-fashion", "channel_id": "UCRJsaNvt9tQtOJ1tZ-_T3Yg", "repo": "justino" }
+      ]
+    },
+    {
+      "id": "c",
+      "email": "Thomas.tj.Park@gmail.com",
+      "token_file": "accounts/token_c.json",
+      "note": "교육방송 2채널",
+      "channels": [
+        { "handle": "@BeingEduartEngineer-4", "channel_id": "UC9aqEC7Onh7UpCEoPwhujvA", "repo": "eae.kr" },
+        { "handle": "@EAE-University",        "channel_id": "UCogemhYGCnbVp13ARqFYM8A", "repo": "eae-univ" }
+      ]
+    },
+    {
+      "id": "d",
+      "email": "dimas@dtslib.com",
+      "token_file": "accounts/token_d.json",
+      "note": "명함도메인 2채널",
+      "channels": [
+        { "handle": "@dtslib_com",   "channel_id": "UCd1tVVsxwsLrd254ZlXeYqA", "repo": "dtslib-papyrus" },
+        { "handle": "@dtslib_world", "channel_id": "UCv33IgkQ8P3ctFHwXLGyglw", "repo": "dtslib-papyrus" }
+      ]
+    }
+  ]
+}
