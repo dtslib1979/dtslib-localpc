@@ -557,3 +557,24 @@ python scripts/drawing/photo2drawing.py [사진] --ruler -o output.dxf
 **교훈**: parksy-image는 PC 세션에서만 동작 (Python + 로컬 파일). 매 PC 세션 종료 시 반드시 이 로그를 갱신할 것. PSE Phase 2 진입 시 태블릿 손글씨 SVG 수집이 블로커.
 **재구축 힌트**: 이 파일 전체를 Claude에게 읽히면 파이프라인, PSE, 배포 시스템 전부 재구축 가능. 섹션 3(pipeline v3)이 핵심.
 ---
+
+---
+### 2026-03-22 | web2video E2E 완성 + 15채널 OAuth Production 전환 + 채널 자동 라우팅
+**작업**:
+1. 15채널 OAuth Production 전환: tools/youtube/accounts/token_*.json 15개 전부 Testing→Production 재인증 (Playwright MCP + auth_one.js). Error 500 패턴: back→retry, 연속 500 시 lsof -ti:8787 | xargs kill -9 후 재시작.
+2. youtube-studio.js update 버그 수정: `part: 'snippet'` 만 보내던 것 → privacy 변경 시 `status` part도 추가.
+3. web2video.py E2E 테스트: python3 web2video.py "https://dtslib.com/" --channel dtslib_com --privacy private → 42초 영상, Video ID WHCLa94lYtc, 1.9MB.
+4. channel_routing.json 생성: 21개 도메인→레포→채널 라우팅 테이블 (tools/web2video/channel_routing.json). resolve_channel() 함수 추가.
+5. notify_telegram() 추가: 업로드 완료 → Telegram admin 알림 (telegram-bridge/config.json의 admin_id 필요).
+**결정**:
+- dtslib.com → @dtslib_com (Account D, dimas@dtslib.com)
+- dtslib.kr → @dtslib-branch (Account B, 경제방송국)
+- parksy.kr → @visualizer-parksy 기본, /persona 경로로 오버라이드
+- --channel 기본값을 None → "auto"로 변경 (이제 URL만 넣으면 채널 자동)
+**결과**: 15/15 채널 갱신 성공 (node token_refresh_all.js 확인). 라우팅 6개 URL 전수 검증 OK. Telegram 알림은 config.json 없어서 비활성 (graceful skip).
+**교훈**:
+- Brand account OAuth: Google 첫 클릭 Error 500은 흔함. back→retry 먼저, 2회 이상 실패 시 포트 kill 후 새 AUTH_URL 받을 것.
+- web2video 결과물 경로: /mnt/d/PARKSY/web2video/outputs/w2v_*.mp4
+- Telegram 알림 활성화: tools/telegram-bridge/config.json에 "admin_id": "박씨_chat_id" 추가.
+**재구축 힌트**: tools/web2video/ 디렉토리에 web2video.py, tts_humanizer.py, lecture_template.html, presets.json, channel_routing.json 전부 있음. pip install edge-tts pedalboard soundfile playwright + playwright install chromium 하면 돌아감.
+---
