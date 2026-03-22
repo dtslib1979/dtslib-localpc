@@ -594,3 +594,41 @@ python scripts/drawing/photo2drawing.py [사진] --ruler -o output.dxf
 **교훈**: 3-window 인접 dedup은 "Lock Good Lock" 같은 합성어를 파괴함 → 2-window + 5글자 임계값으로 제한
 **재구축 힌트**: `_clean_body()`는 display_limit/narr_limit 이중 반환 구조. narration은 symbol 변환(/ → space, · → , ) 적용 후 마침표 보장.
 ---
+
+---
+### 2026-03-22 | web2video R11~Telegram오프닝파이프라인 — 음질/템플릿/영상효과 전면 개선
+
+**작업**:
+1. tts_humanizer.py R11 브로드캐스트 프리셋: Distortion(drive_db=2.5) 완전 제거(saturation_drive=0.0), comp_ratio=2.2, limiter_db=-1.5
+2. BGM 교체: lyria3 AI 생성음 → Musician-Parksy 자작 클래식 피아노 7트랙 (parksy-audio/lyria3/material/parksy_original/)
+3. 보이스 교체: ko-KR-HyunsuMultilingualNeural +30% (1.3배속 남성)
+4. 기호 제거 적용 범위 확장: narration 전용 → display(화면 텍스트)까지 동일 regex 적용
+5. --tone cocky: Claude Haiku API로 나레이션 재작성 (익살/잘난척 톤). OAuth: ~/.claude/.credentials.json → claudeAiOauth.accessToken
+6. lecture_template.html R13→R15 전면 재작성: Oswald condensed 폰트, wrapWords()/wordReveal() 단어별 stagger 애니메이션, runTimingLoop()로 window.__TIMINGS__ 읽어서 슬라이드 전진 (핵심버그: 기존 showSlide(0) 하드코딩으로 슬라이드 고정됨)
+7. FFmpeg zoompan Ken Burns 배경: fetch_page()에서 Playwright 스크린샷 촬영, assemble_final()에서 zoompan_bg.mp4 생성, blend=all_mode=screen:all_opacity=0.28으로 텍스트 webm 뒤에 합성
+8. Telegram 오프닝 파이프라인: image_downloader.py에 VIDEO_EXTS 추가, mp4 수신 → opening_staging/opening_latest.mp4 심링크. web2video.py에 --opening PATH 추가 → assemble_final()에서 opening 정규화 후 FFmpeg concat demuxer로 앞에 붙임
+
+**결정**:
+- Distortion 제거: pedalboard Distortion이 TTS에 기타 찌그러짐 유발 → 완전 제거
+- BGM: "내 게 아닌" AI 생성음 문제 → 박씨 자작 Musician-Parksy 연주곡으로 교체
+- HyunsuMultilingual: 한국어 남성 목소리 중 가장 자연스러운 인토네이션
+- lecture_template R15: "PPT 수준"이라는 피드백 → Oswald + 단어별 stagger + diagonal line으로 AE 느낌
+- zoompan 배경: 소스 페이지 스크린샷을 배경으로 써서 "footage+텍스트" 합성 AE 스타일 구현
+- Grok 오프닝: SuperGrok 버스 요금제 한도 이슈 → 수작업 큐레이션 후 Telegram 전송 → 자동 붙이기 (히트작 후보 전용)
+
+**결과**: 
+- R10→R15 강화학습 루프, Telegram 오프닝 파이프라인 코드 완성 (커밋 2d09922)
+- tts_humanizer.py R11, lecture_template.html R15 커밋 완료
+- telegram-bridges image_downloader.py mp4 핸들러 커밋 완료 (6442c79)
+
+**교훈**:
+- runTimingLoop 없으면 슬라이드가 0번에서 절대 안 넘어감 — 브라우저 녹화 결과물 첫 확인 시 반드시 슬라이드 전진 여부 체크
+- anthropic 모듈: pip install anthropic --break-system-packages
+- OAuth key: claudeAiOauth.accessToken (claudeAiOauthToken 아님)
+- Port 19301 already in use: fuser -k 19301/tcp 선실행
+
+**재구축 힌트**: 
+web2video 전체 파이프라인: `python3 tools/web2video/web2video.py "URL" --lang ko --bgm clair --tone cocky --opening /mnt/d/PARKSY/web2video/opening_staging/opening_latest.mp4`
+오프닝 없이 쓸 때: `--opening` 인수 생략하면 그냥 스킵됨
+Telegram mp4 수신: telegram-bridges/image_downloader.py 백그라운드 실행 (tmux tg-image)
+---
