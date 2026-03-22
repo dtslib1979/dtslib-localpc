@@ -1,5 +1,5 @@
 {
-  "updated": "2026-03-17T00:00:00+09:00",
+  "updated": "2026-03-18T00:00:00+09:00",
   "description": "4개 레포 크로스레포 상태 — 유레카 전환 후 PC-native v6.0 기준",
   "axiom": "PC 메인 / 핸드폰 SSH 클라이언트 (유레카 2026-03-16)",
   "repos": {
@@ -19,20 +19,24 @@
       ]
     },
     "parksy-audio": {
-      "local_path": "D:\\PARKSY\\parksy-audio",
+      "local_path": "/home/dtsli/parksy-audio",
       "github": "dtslib1979/parksy-audio",
       "branch": "main",
-      "phase": "Phase 9 — YouTube 배포 + 텔레그램 원격 제어",
+      "phase": "Phase 11 — MIDI 큐레이터 + Merlin Grand 렌더링",
       "telegram_bot": "@parksy_bridges_bot",
       "bot_script": "local-agent/bot.py",
-      "bot_start": "local-agent/start_bot.sh",
-      "tmux_session": "tg-audio",
-      "status": "bot v1.0 배포 완료, YouTube OAuth 블로커 (GCP)",
+      "bot_pid": 28253,
+      "bot_status": "실행 중 (2026-03-23)",
+      "soundfont": "/mnt/d/VST/MerlinGrand.sf2",
+      "quality_score": "~60점 (Merlin Grand SF2)",
+      "architecture": "MIDI 귀검수 → 텔레그램 드랍 → fast-track (OK_midi→+1반음→humanize→렌더→M4A)",
+      "philosophy": "편곡/작곡 포기. MIDI 아카이브 큐레이터 + 렌더링 엔지니어 포지션.",
+      "ok_midi_dir": "local-agent/sources/OK_midi/ (7곡)",
+      "last_session": "2026-03-23",
       "pending": [
-        "[BLOCKER] dtslib-papyrus GCP 작업 완료 후 token_a.json 재생성",
-        "telegram_config.json 생성 (bot_token 입력)",
-        "tmux tg-audio 세션 시작: bash local-agent/start_bot.sh",
-        "YouTube 업로드 6트랙 (token_a.json 완성 후)"
+        "새 MIDI 소스 발굴 (Mutopia, piano-midi.de) → 귀검수 → OK_midi 추가",
+        "YouTube @musician-parksy 업로드 재개 (token 갱신 필요)",
+        "Cakewalk + Salamander Grand Piano 세팅 (Windows측, 72점 달성)"
       ]
     },
     "parksy-image": {

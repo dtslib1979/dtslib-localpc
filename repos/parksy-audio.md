@@ -2,7 +2,7 @@
 
 > **이 문서는 dtslib-localpc의 크로스레포 복원 문서다.**
 > 새 Claude 세션이 이 파일만 읽으면 parksy-audio의 전체 맥락을 즉시 파악하고 작업을 이어갈 수 있어야 한다.
-> 최종 갱신: 2026-02-28
+> 최종 갱신: 2026-03-18
 
 ---
 
@@ -548,4 +548,137 @@ YouTube API 검증: ⚠️ Request had insufficient authentication scopes
 - `CLAUDECODE` 환경변수가 nested session 차단 — `$env:CLAUDECODE=""` 로 해제 필요
 
 **재구축 힌트**: WSL 인증은 `docs/WSL_CLAUDE_AUTH_ISSUE_REPORT.md` 참조. 핵심: Windows PowerShell에서 `$env:CLAUDECODE=""; claude setup-token` → 토큰 생성 → WSL `~/.bashrc`에 `CLAUDE_CODE_OAUTH_TOKEN` 설정
+---
+
+---
+### 2026-03-18 | 음악 생산 파이프라인 전면 확장 — 오디오→MIDI→편곡→렌더링 풀 자동화
+
+**작업**:
+1. **WSL 패키지 설치 완료** (`soundfile`, `pyloudnorm`, `scipy`, `basic-pitch`, `onnxruntime`)
+   - 기존 환경에서 렌더링 파이프라인 누락 패키지 3개 발견 → 설치
+   - basic-pitch Python 3.12 충돌(resampy pkgutil 이슈) → --no-build-isolation + onnx 백엔드로 우회 해결
+
+2. **`/mnt/d/tmp/runner.py` 생성** — 풀 최적화 루프
+   - WAV/MP3/MIDI 입력 → 자동 렌더 → score_engine 채점 → hill climbing 파라미터 최적화
+   - FluidSynth 경로 WSL 패치 (`D:\VST\...exe` → `/usr/bin/fluidsynth`)
+   - 기본 10회 이터레이션, target 85점 달성 시 조기 종료
+   - 최종 optimal_config.json 자동 저장 (D:\tmp + local-agent/ 양쪽)
+
+3. **`/mnt/d/tmp/audio_to_midi.py` 생성** — basic-pitch 변환기
+   - WAV/MP3 → MIDI 추출 (Spotify Basic Pitch, ONNX 백엔드)
+   - melodia_trick=True, 최소 음표 58ms 필터
+   - 목 테스트 3회 통과: swan_lake(513음), sample.mp3(4,180음), nocturne(2,088음)
+
+4. **`/mnt/d/tmp/composer.py` 생성** — 3형제 작곡 로직
+   - Bruckner: 장3도+완전5도+옥타브 적층 (코랄 두께)
+   - Mahler: 크레센도 아크 → 정점(×1.4) → 급격한 피아노 대비
+   - Fauré: 9도 컬러음(30% 볼륨) + S-curve 부드러운 다이나믹
+
+5. **`/mnt/d/tmp/arranger.py` 생성** — 편곡 마스터 엔진 (오늘의 핵심 성과)
+   - **조성 순번도**: 크로마 프로파일 기반 자동 키 탐지 + 스타일별 전조 확률 행렬
+     - Bruckner: 색채전조 3·4도 선호 / Mahler: 반음·증4도(트리토누스) / Fauré: 2도 모달
+   - **확률 수열**: 7×7 Markov 행렬 화음 진행 (V→I 45%, ii→V 40% 등)
+   - **감정 플로우**: 15가지 감정 × 4파라미터 매핑 (vel_scale, density, mode, tempo_ratio)
+   - **프리셋 5종**: triumph / elegy / nocturne / epic / pastoral
+   - **--suggest 모드**: 입력 MIDI 자동 분석 → 편곡 옵션 5종 + CLI 명령 출력
+
+**결정사항**:
+
+- **핵심 아키텍처 결정**: 핸드폰 = 입력(즉흥 녹음) + 출력(청취·승인) 단말기. PC = 전체 처리
+  ```
+  📱 핸드폰: 녹음 전송 → Telegram → 결과 수신 → /approve or /rerender
+  🖥️ PC: audio_to_midi → arranger → composer → optimizer → score_engine → M4A 전송
+  ```
+- 표절·편집·렌더링 시퀀스 전부 PC Claude Code가 담당. 핸드폰은 결정권만 보유.
+- 즉흥성/충동성/모바일성 음원은 핸드폰이 담당. 나머지 전부 PC.
+
+**결과**:
+- 풀 파이프라인 완성: WAV/MP3 → MIDI → 작곡가 스타일 편곡 → 렌더링 최적화 → M4A
+- arranger.py 목 테스트 3회 통과 (swan_lake elegy/faure, nocturne/faure, sample epic/bruckner)
+- runner.py `--help` 정상 작동 확인
+
+**교훈**:
+- basic-pitch Python 3.12에서 resampy 빌드 실패 → `--no-build-isolation`으로 우회
+- 핸드폰 역할을 명확히 정의하지 않으면 이중 작업 발생 → 입출력 단말기로 고정
+- 편곡 엔진은 MIDI 레벨에서 작동해야 FluidSynth 렌더와 자연스럽게 체인됨
+
+**재구축 힌트**: `/mnt/d/tmp/`에 audio_to_midi.py, composer.py, arranger.py, runner.py, optimizer.py, score_engine.py 6개가 파이프라인 전체. runner.py가 진입점. 새 PC 세팅 시 `pip3 install mido soundfile pyloudnorm scipy basic-pitch onnxruntime --break-system-packages` 먼저 실행.
+
+**다음 작업**:
+- [ ] bot.py에 오디오 파일 수신 핸들러 추가 (파일 수신 → runner.py 자동 실행 → M4A 전송)
+- [ ] GCP 블로커 해결 후 YouTube 업로드 연결
+- [ ] runner.py를 bot.py에서 subprocess로 호출하는 구조 완성
+---
+
+---
+### 2026-03-23 | 철학 재정의 + MIDI fast-track + Merlin Grand SF2 교체
+
+**작업**:
+1. **midi_quality_gate.py 업데이트** — ear_pass 로직 추가
+   - 7곡 YouTube 업로드 실측 역추적으로 귀검수 통과 공식 도출
+   - `note_density=20 AND duration=20 AND (vel_stdev≥12 OR structure≥15)` → ear_pass=True → +7점 보너스
+   - 필수조건 미달 시 -10점 패널티
+   - CLI 출력에 👂✅/👂❌ + 보정값 표시
+
+2. **OK_midi 폴더 생성** — `local-agent/sources/OK_midi/`
+   - YouTube 업로드된 7곡 소스 MIDI 역추적 수집
+   - 01_Claire_de_Lune_Debussy.mid ~ 07_Panis_Angelicus_Franck.mid
+   - 전곡 텔레그램으로 전송
+
+3. **bot.py MIDI fast-track 핸들러 추가** — 오늘의 핵심 구현
+   - `.mid`/`.midi` 파일 수신 시 Claude 우회, 직접 파이프라인 실행
+   - `_transpose_midi()`: mido로 +1반음 전조 (저작권 완충, 드럼 채널 9 보존)
+   - `_process_midi_fast()`: OK_midi 저장 → 전조 → humanize_preset piano → FluidSynth → M4A → 텔레그램 반환
+   - 상수 추가: OK_MIDI_DIR, HUMANIZE_PY, _FLUIDSYNTH, _SOUNDFONT
+
+4. **Merlin Grand SF2 도입** — 피아노 소리 교체
+   - 기존: SGM-V2.01.sf2 (GM 사운드폰트, 피아노 4~6레이어) → 40점
+   - 신규: MerlinGrand.sf2 (전용 피아노 SF2, 58MB) → ~60점
+   - archive.org에서 직접 다운로드, `/mnt/d/VST/MerlinGrand.sf2`
+   - 텔레그램 A/B 비교 청취 → Merlin Grand 압승, 즉시 확정
+   - bot.py `_SOUNDFONT` 경로 업데이트
+
+5. **docs/RENDERING-ENGINE-PLAN.md 생성** — 업그레이드 로드맵
+   - Phase 1 (지금): Cakewalk(무료) + sforzando(무료) + Salamander(무료) → 72점
+   - Phase 2 (수익 $50+): Addictive Keys $99 → 85점
+   - Phase 3 (수익 $200+): Ivory III $350 → 93점
+
+**결정사항**:
+- **철학 재정의 (가장 중요)**: 편곡/작곡/화성학 전부 포기. "MIDI 아카이브 큐레이터 + 렌더링 엔지니어" 포지션으로 확정.
+  - 이유: 직접 편곡해도 어차피 클래식 클리셰. 원본 명곡 MIDI가 품질 우위.
+  - 버린 것: piano_expression.py, arranger.py, emotion/style 파이프라인, 전조 편곡 작업 전체
+  - 남긴 것: 좋은 MIDI 귀검수 → minimal humanize → 고품질 렌더 → YouTube
+
+- **새 표준 파이프라인**:
+  ```
+  핸드폰에서 MIDI 재생 귀검수
+      ↓
+  텔레그램으로 .mid 파일 드랍
+      ↓
+  bot.py fast-track: OK_midi 저장 → +1반음 → humanize piano → Merlin Grand 렌더
+      ↓
+  M4A 텔레그램 수신 → /approve → YouTube 업로드
+  ```
+
+- **품질 게이트 한계 인정**: midi_quality_gate.py 통계 점수는 실제 청감 품질 예측 불가. A급 MIDI도 들어보면 별로일 수 있음. 귀검수(ear_pass)가 유일한 진짜 기준.
+
+- **Cakewalk + Salamander는 차순위**: sfizz 리눅스 바이너리 없고 cmake도 없어서 오늘 구현 불가. 대신 Merlin Grand SF2(MerlinGrand.sf2)로 즉시 대응. FluidSynth + Merlin Grand = 60점으로 충분.
+
+**결과**:
+- 커밋 3개: midi fast-track, 렌더링 플랜 문서, Merlin Grand 교체
+- bot.py 재시작 완료 (PID 28253, `/home/dtsli/parksy-audio/local-agent/bot.py`)
+- 텔레그램에 MIDI 드랍하면 Merlin Grand M4A 즉시 반환 확인
+
+**교훈**:
+- SF2 교체가 가장 빠른 품질 점프. sfizz/Salamander보다 Merlin Grand SF2 먼저 시도했어야 함
+- 복잡한 편곡 파이프라인은 원본 품질을 오히려 낮춤 (A급 MIDI에 piano_expression = 역효과)
+- FluidSynth + 전용 피아노 SF2 = 유튜브 BGM으로 충분한 품질
+- 박씨 귀검수 = 최종 품질 게이트. 통계보다 귀가 정확함.
+
+**재구축 힌트**: `MerlinGrand.sf2`는 `/mnt/d/VST/`에 있음. bot.py에서 `_SOUNDFONT` 환경변수로 덮을 수 있음. MIDI fast-track은 `_process_midi_fast()` 함수. OK_midi 폴더는 `local-agent/sources/OK_midi/`. 봇 실행: `python3 /home/dtsli/parksy-audio/local-agent/bot.py`
+
+**다음 작업**:
+- [ ] 새 MIDI 소스 발굴 (Mutopia, piano-midi.de) → 귀검수 → OK_midi 추가
+- [ ] YouTube @musician-parksy 업로드 재개 (token 갱신 필요)
+- [ ] Cakewalk + Salamander 세팅 (Windows 측, 72점 달성)
 ---
