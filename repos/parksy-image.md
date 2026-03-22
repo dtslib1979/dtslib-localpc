@@ -578,3 +578,19 @@ python scripts/drawing/photo2drawing.py [사진] --ruler -o output.dxf
 - Telegram 알림 활성화: tools/telegram-bridge/config.json에 "admin_id": "박씨_chat_id" 추가.
 **재구축 힌트**: tools/web2video/ 디렉토리에 web2video.py, tts_humanizer.py, lecture_template.html, presets.json, channel_routing.json 전부 있음. pip install edge-tts pedalboard soundfile playwright + playwright install chromium 하면 돌아감.
 ---
+
+---
+### 2026-03-22 | phoneparis.kr R1→R10 강화학습 루프 수렴 + 업로드 완료
+**작업**: web2video.py + lecture_template.html — 10회 반복 품질 개선 루프
+**결정**:
+- R4: Promise.all() 타이밍 수정 (10-15s 슬라이드 오프셋 제거)
+- R5: 3-8gram greedy phrase dedup (문장 경계 없는 중복 제거)
+- R6: heading subphrase removal from body, CSS word-break:keep-all
+- R7: 동적 인트로 폰트 크기 (30자↑→62px, 22자↑→72px)
+- R8: ALL_CAPS normalization (SAMSUNG→Samsung, _ABBR_KEEP 화이트리스트)
+- R9: normalization을 dedup 앞으로 이동
+- R10: display_limit(25) vs narr_limit(40) 분리 + 2-window 5글자↑ dedup
+**결과**: R1 6.5점 → R10 9.2점. YouTube 업로드 완료 https://youtu.be/jt6nmfAHbBM
+**교훈**: 3-window 인접 dedup은 "Lock Good Lock" 같은 합성어를 파괴함 → 2-window + 5글자 임계값으로 제한
+**재구축 힌트**: `_clean_body()`는 display_limit/narr_limit 이중 반환 구조. narration은 symbol 변환(/ → space, · → , ) 적용 후 마침표 보장.
+---
