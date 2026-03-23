@@ -632,3 +632,53 @@ web2video 전체 파이프라인: `python3 tools/web2video/web2video.py "URL" --
 오프닝 없이 쓸 때: `--opening` 인수 생략하면 그냥 스킵됨
 Telegram mp4 수신: telegram-bridges/image_downloader.py 백그라운드 실행 (tmux tg-image)
 ---
+
+---
+### 2026-03-23 | web2video 파이프라인 목테스트 전 채널 완료
+
+**작업**:
+- `parksy_voice_model.py` claude -p CLI 전환 (Anthropic SDK OAuth 오류 우회)
+- `tts_humanizer.py` REAPER 모드 추가 (`--engine reaper`)
+- `blender_renderer.py` 신규 작성 (헤드리스 Blender MP4 렌더)
+- `web2video.py` Blender/REAPER 통합 + `--blender/--tts-engine` CLI 플래그
+- `channel_routing.json` dtslib1979.github.io → EAE-University 추가
+- `fetch_page()` networkidle→load 폴백 + 타임아웃 30s→60s 수정
+- YouTube 토큰 15/15 재갱신 후 전 채널 mock 영상 생성+업로드
+
+**채널별 결과** (전부 unlisted):
+| URL | 채널 | 영상 ID |
+|-----|------|---------|
+| dtslib1979.github.io/eae-univ/ | @EAE-University | ZoNCR_h5qEQ |
+| parksy.kr | @visualizer-parksy | 1M9RGDHCvSg |
+| eae.kr | @BeingEduartEngineer-4 | anBVUuLhhf8 |
+| dtslib.kr | @dtslib-branch | 4km_FwdTo5k |
+| artrew.com | @artrew-i1w | 8rjAU7MDFNg |
+| justino.com | @justino-fashion | 9BScPNke6B4 |
+| hoyadang.com | @dtslib-branch | jJgnJ2PZx8Y |
+| gohsy.com | @dtslib-branch | _II6ZiaebWE |
+| buddies.kr | @dtslib-branch | o64Va9GVnRM |
+| buckleychang.com | @dtslib-branch | FKEsxqOUBmA |
+| namoneygoal.vercel.app | @dtslib-branch | BB4tWiWtVeY |
+| gohsyfashion.com | @dtslib-branch | jCVr86RQ_A0 |
+| gohsyproduction.com | @dtslib-branch | AZvJeXzTniQ |
+| dtslib.com | @dtslib_com | dcIpDsxk0YI |
+
+**스킵된 도메인** (접근 불가/Cloudflare 차단):
+- espiritu-tango.com: DNS 미등록
+- namoneygoal.com: DNS 미등록 (vercel.app으로 대체)
+- alexandria-sanctuary.com: 서버 없음
+- phoneparis.com: HugeDomains 판매 중 (도메인 미구입)
+- koosy.com, papafly.com: Cloudflare 봇 차단
+
+**결정**:
+- claude -p CLI 우선, SDK는 api_key 있을 때만 폴백 (OAuth 토큰은 API key로 쓸 수 없음)
+- fetch_page()에 networkidle→load 폴백 추가 (Notion/SPA계 사이트 대응)
+
+**결과**: 14채널 중 14개 업로드 성공 (접근 가능한 전 도메인 100%)
+
+**교훈**:
+- phoneparis.com 등 도메인은 아직 실제 운영 전 — 라우팅 테이블에서 제거하거나 도메인 구입 시 재테스트
+- Cloudflare 차단 사이트는 puppeteer-extra-stealth 등이 필요하지만 현재 파이프라인 범위 밖
+
+**재구축 힌트**: `python3 tools/web2video/web2video.py "URL" --shorts --tone cocky --lang ko --bgm clair --privacy unlisted` 로 임의 URL → @채널 업로드 가능. 라우팅은 `tools/web2video/channel_routing.json` 참조.
+---
