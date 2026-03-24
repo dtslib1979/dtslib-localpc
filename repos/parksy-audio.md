@@ -682,3 +682,42 @@ YouTube API 검증: ⚠️ Request had insufficient authentication scopes
 - [ ] YouTube @musician-parksy 업로드 재개 (token 갱신 필요)
 - [ ] Cakewalk + Salamander 세팅 (Windows 측, 72점 달성)
 ---
+
+---
+### 2026-03-24 | REAPER Phase 2 완성 — sfizz inline MIDI 렌더링 확인 + optimizer.py 통합
+**작업**:
+- render_reaper.py 전면 재작성: MIDI→REAPER 인라인 E-line 이벤트 변환 (mido 사용)
+- piano.rpp 템플릿 완성: sfizz.vst3 + SSO Grand Piano, SAMPLERATE 44100, RENDER_CFG2 제거
+- wsl_to_win() UNC 경로 변환 추가 (/home/... → \\wsl.localhost\Ubuntu\...)
+- pipeline/optimizer.py에 render_with_reaper() + render_auto() 추가
+- PARKSY_ENGINE=reaper 환경변수로 엔진 전환 가능 (기본값 FluidSynth 유지)
+- D: 드라이브 ↔ home ↔ origin/main 전부 동기화 완료
+
+**결정**:
+- FILE "..." IMPORT 1 방식은 sfizz 오프라인 렌더링에서 WAV 0-byte 버그 → 인라인 E-line으로 전환
+- SAMPLERATE 48000→44100 (SSO 샘플 44100Hz, 미스매치 시 침묵)
+- RENDER_CFG2 블록이 secondary output 에러 유발 → 제거
+- optimizer.py Step 3는 render_auto()로 교체 (하위 호환 유지, FluidSynth 기본값)
+
+**결과**:
+- Ave Verum Mozart: 40.31MB WAV, 2:39, 44100Hz/24-bit stereo, 렌더 9.4초 (~17x RT)
+- sfizz Freewheeling mode 확인, SSO Grand Piano 정상 동작
+- GitHub push 완료 (d8fc1e9), D: 드라이브 merge 완료
+
+**교훈**:
+- REAPER 인라인 MIDI = sfizz 렌더링 유일한 정상 경로. FILE import는 절대 쓰지 말 것.
+- pitchwheel: mido에서 -8192~8191 → +8192 → LSB/MSB 분리 (14-bit MIDI)
+- WSL 내부 경로는 UNC (\\wsl.localhost\Ubuntu\...) 로 변환해야 REAPER(Windows)가 접근
+
+**재구축 힌트**:
+- "REAPER CLI + sfizz.vst3 + SSO SFZ로 MIDI 오프라인 렌더링. MIDI는 인라인 E-line으로 삽입.
+  render_reaper.py + piano.rpp 템플릿 조합. PARKSY_ENGINE=reaper로 optimizer.py 엔진 전환."
+- sfizz 경로: C:\Program Files\Common Files\VST3\sfizz.vst3
+- SSO 경로: D:\VST\SSO\Sonatina Symphonic Orchestra\Keys - Grand Piano.sfz
+- sfizz VST state binary: version(int32=1) + sfzFile(null-term UTF-8) + volume(float32=0) + numVoices(64) + oversampling(1.0) + preload(8388608) + scala(null) + tuning(440.0) + stretch(0)
+
+**다음 작업**:
+- [ ] orchestra.rpp 템플릿 추가 (sfizz + SSO Strings/Brass)
+- [ ] render_auto()에서 genre 파라미터 MIDI 파일명 기반 자동 감지
+- [ ] Spotify basic-pitch (오디오→MIDI) 파이프라인 연결
+---
