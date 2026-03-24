@@ -595,5 +595,40 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 - [ ] xln_admin_setup.ps1 관리자 권한으로 1회 실행
 - [ ] Addictive Keys Studio Grand 설치
 - [ ] xln.rpp REAPER 템플릿 생성 (C:\Users\dtsli\XLN_MAIN\xln.rpp)
-- [ ] render_reaper.py에 'studio-grand' 장르 매핑 추가
+- [x] render_reaper.py에 'salamander'/'studio-grand' 장르 매핑 추가 ✅
+---
+
+---
+### 2026-03-24 | Salamander Grand Piano V3 파이프라인 완성 — XLN 대체
+**작업**:
+- `D:\VST\Salamander\SalamanderGrandPianoV3_44.1khz16bit\SalamanderGrandPianoV3.sfz` 확보 (BITS Transfer로 다운, tar.xz 추출)
+- sfizz VST3 이미 설치 확인 (`C:\Program Files\Common Files\VST3\sfizz.vst3`)
+- `local-agent/reaper-templates/piano_salamander.rpp` 신규 생성 — sfizz state base64 역설계로 SFZ 경로 직접 주입
+- `local-agent/render_reaper.py`에 `_GENRE_ALIASES` 추가: `'salamander'`/`'studio-grand'` → `'piano_salamander'`
+- `dtslib-localpc/scripts/xln_admin_setup.ps1` 신규 생성 — XLN self-update 루프 영구 차단 (Program Files 선제 생성)
+
+**결정**:
+- XLN Addictive Keys 완전 포기 → Salamander Grand Piano V3 (CC BY 3.0, Yamaha C5 샘플) 채택
+- sfizz state 바이너리 포맷 역설계: `\x01\x00\x00\x00` + UTF-8 경로 + `\x00` + 고정 트레일러 → base64
+- XLN UAC 문제는 Windows Secure Desktop 특성상 자동화 불가 — 사용자 1회 수동 클릭 필수 구조
+
+**결과**:
+- `piano_salamander.rpp` 커밋 완료 (4ed3d86)
+- `render_reaper.py` _GENRE_ALIASES 커밋 완료
+- `genre='salamander'`로 렌더링 호출 가능한 상태
+
+**교훈**:
+- sfizz VST3 plugin state는 바이너리 포맷: `01 00 00 00` + path + `00` + 26바이트 고정 트레일러 → base64
+- REAPER는 `%COMMONPROGRAMFILES%\VST3` 스캔 — sfizz는 이미 여기 있으므로 별도 경로 설정 불필요
+- Windows UAC Secure Desktop은 어떤 자동화 방법으로도 우회 불가 (kernel-level)
+
+**재구축 힌트**:
+```
+# Salamander REAPER 파이프라인 복원:
+# 1. sfizz.vst3 설치 (https://sfz.tools/sfizz)
+# 2. Salamander Grand Piano V3 다운로드 (freepats.zenvoid.org, CC BY 3.0)
+# 3. piano_salamander.rpp 템플릿의 sfizz state base64 재생성:
+#    python -c "import base64; print(base64.b64encode(b'\x01\x00\x00\x00' + 'D:\\VST\\Salamander\\...\\SalamanderGrandPianoV3.sfz'.encode() + b'\x00' + bytes.fromhex('0000000000400000000000803f00008000000000dc4300000000')).decode())"
+# 4. render_reaper(midi, genre='salamander') 호출
+```
 ---
