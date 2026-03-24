@@ -549,3 +549,51 @@ YouTube API 검증: ⚠️ Request had insufficient authentication scopes
 
 **재구축 힌트**: WSL 인증은 `docs/WSL_CLAUDE_AUTH_ISSUE_REPORT.md` 참조. 핵심: Windows PowerShell에서 `$env:CLAUDECODE=""; claude setup-token` → 토큰 생성 → WSL `~/.bashrc`에 `CLAUDE_CODE_OAUTH_TOKEN` 설정
 ---
+
+---
+### 2026-03-24 | XLN Addictive Keys Studio Grand 설치 시도 — UAC 장벽 확인
+**작업**:
+1. XLN Online Installer 자동 제어를 위한 win-gui MCP 서버 구축 (win-gui-mcp-server.py)
+2. Claude Code settings.json에 win-gui MCP 서버 등록 완료
+3. JUCE 윈도우 DPI/좌표계 분석 — 물리 1920×1080 / 논리 1280×720 (150% DPI)
+4. DPI-unaware + AttachThreadInput + SendInput 기법으로 JUCE 버튼 클릭 성공
+5. "Installation Type" 화면에서 Standard 클릭 → "Checking installation..." 상태 진입
+6. Cotton 프레임워크 verbose 로그(do_trace.txt) 분석 → 1.5GB 디스크 채움 → 삭제
+7. UAC 장벽 확인 및 원인 분석 완료
+
+**결정**:
+- Cotton 프레임워크가 `C:\Program Files\XLN Audio\XLN Online Installer\` 존재 여부 확인
+- 해당 경로 없음 → 자기 업데이트 루프 시작 → UAC 필요 → 루프
+- Program Files 쓰기 권한: BUILTIN\Administrators "deny only" (Medium Mandatory Level)
+- WSL에서 /mnt/c/Program Files/ 접근도 Permission denied
+- UAC Secure Desktop은 별도 데스크탑 — 어떤 자동화로도 접근 불가 (Windows 설계)
+- 솔루션: scripts/xln_admin_setup.ps1 제작 (관리자 권한으로 1회 실행 → 이후 영구 해결)
+
+**결과**:
+- win-gui MCP 서버: 구축 완료 ✅
+- JUCE 버튼 클릭 자동화: 성공 ✅
+- Addictive Keys Studio Grand 설치: 미완료 ❌ (UAC 1회 클릭 필요)
+- 솔루션 스크립트: scripts/xln_admin_setup.ps1 작성 완료 ✅
+
+**교훈**:
+- JUCE 앱 클릭: DPI-unaware 좌표 + AttachThreadInput + SendInput 조합이 유일한 방법
+- Cotton verbose 로그(do_trace.txt): 절대 켜지 말 것. 1시간에 수 GB 생성됨
+- XLN self-update 루프: Program Files 디렉토리만 미리 만들어두면 완전 차단 가능
+- Windows UAC Secure Desktop: 자동화 불가능, 사용자 1회 수동 클릭 필수
+
+**재구축 힌트**:
+```
+# 다음 번 XLN 설치 전 1회만 실행 (PowerShell 관리자 권한으로)
+powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln_admin_setup.ps1"
+
+# 이후 XLN 인스톨러 실행 → 자기 업데이트 없이 바로 Product List 진입
+# → Addictive Keys Studio Grand → Install 클릭
+# 나머지 자동화는 Claude Code가 처리
+```
+
+**펜딩**:
+- [ ] xln_admin_setup.ps1 관리자 권한으로 1회 실행
+- [ ] Addictive Keys Studio Grand 설치
+- [ ] xln.rpp REAPER 템플릿 생성 (C:\Users\dtsli\XLN_MAIN\xln.rpp)
+- [ ] render_reaper.py에 'studio-grand' 장르 매핑 추가
+---
