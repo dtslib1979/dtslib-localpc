@@ -632,3 +632,12 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 # 4. render_reaper(midi, genre='salamander') 호출
 ```
 ---
+
+---
+### 2026-03-25 | VST 설치 UAC Hell — 삽질 4시간 이력 저장
+**작업**: Pianoteq 트라이얼(72MB) + Audio Modeling SC(18MB) + Spitfire BBC SO Discover 자동 설치 시도. 3개 동시 진행.
+**결정**: 총 8가지 방법 시도 — PowerShell RunAs, NSIS /S, NSIS per-user path, 7z 추출, VBScript ShellExecute, Task Scheduler RunLevel Highest, win-gui MCP, Playwright MCP. 전부 실패.
+**결과**: UAC Secure Desktop은 어떤 자동화도 못 뚫음. Playwright MCP는 실수로 kill해서 세션 재시작 전까지 브라우저 자동화 불가. 인스톨러 파일은 C:\Temp 에 준비된 상태로 박씨 직접 클릭 대기 중.
+**교훈**: WSL에서 Windows admin 권한 자동화 = 구조적으로 불가. VST 인스톨러는 직접 더블클릭이 유일. Playwright 프로세스/파일 절대 건드리지 마라.
+**재구축 힌트**: dev-logs/017-vst-install-uac-hell-2026-03-25.md 에 8가지 실패 방법 전부 기록. 다음엔 Secure Desktop 비활성화 먼저(레지스트리 1줄) 하고 win-gui MCP로 자동화.
+---
