@@ -641,3 +641,44 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 **교훈**: WSL에서 Windows admin 권한 자동화 = 구조적으로 불가. VST 인스톨러는 직접 더블클릭이 유일. Playwright 프로세스/파일 절대 건드리지 마라.
 **재구축 힌트**: dev-logs/017-vst-install-uac-hell-2026-03-25.md 에 8가지 실패 방법 전부 기록. 다음엔 Secure Desktop 비활성화 먼저(레지스트리 1줄) 하고 win-gui MCP로 자동화.
 ---
+
+---
+### 2026-03-26 | WSL MCP + win-gui 연동 완성 — Claude Code 세션 재시작 대기 중
+
+**작업**:
+1. win-gui MCP 서버 CRLF 버그 수정 — `msvcrt.setmode` + `sys.stdout.buffer` 바이너리 모드 강제
+2. settings.json `win-gui`/`desktop-commander` 명령 방식 수정 — `cmd.exe` 직접 호출 → 쉘 래퍼 스크립트(`~/.local/bin/win-gui-mcp.sh`)
+3. `C:\Temp\enable_gui_control.ps1` 생성 — PromptOnSecureDesktop=0 (1회 관리자 실행 필요)
+4. C:\Temp 에서 `SpitfireAudioApp.exe` 신규 확인 (오늘 다운됨)
+
+**결정**:
+- Claude Code 1.0.108→1.0.110 업데이트 후 `cmd.exe` 직접 MCP 호출 방식이 연결 실패함
+- 해결: bash 쉘 래퍼 스크립트로 간접 실행 → settings.json에 반영 완료
+- win-gui 서버 자체는 0.28초 응답, 프로토콜 정상 확인됨
+- Playwright MCP (project-level)는 정상 연결됨
+
+**결과**:
+- ✅ win-gui-mcp-server.py CRLF 수정 완료
+- ✅ ~/.local/bin/win-gui-mcp.sh + desktop-commander-mcp.sh 생성 완료 (실행권한 포함)
+- ✅ settings.json win-gui/desktop-commander command 업데이트 완료
+- ⏳ Claude Code 세션 재시작 필요 → 재시작 후 win-gui 툴 사용 가능
+- ⏳ 박씨가 관리자 PowerShell로 `C:\Temp\enable_gui_control.ps1` 1회 실행 필요
+
+**교훈**:
+1. Claude Code 버전 업 후 cmd.exe 직접 호출 MCP 연결 불가 → 항상 sh 래퍼로 감싸야
+2. win-gui MCP 서버 자체는 정상 (0.28s 응답, 11개 툴) — 연결 방식 문제였음
+3. PromptOnSecureDesktop=0 실행 후 pyautogui로 UAC 다이얼로그 클릭 가능
+4. SpitfireAudioApp.exe 오늘 C:\Temp에 새로 다운됨 (다음 세션에 설치 자동화)
+
+**재구축 힌트**:
+- win-gui MCP 연결 안 되면: ~/.local/bin/win-gui-mcp.sh 존재 확인 + 실행권한 확인
+- UAC 자동화 순서: 1) enable_gui_control.ps1 관리자 실행 2) Claude Code 재시작 3) win-gui 툴로 installer 클릭
+- 설치 대기 중: pianoteq_trial_v912.exe (75MB) + AudioModelingSC installer + SpitfireAudioApp.exe
+
+**다음 세션 즉시 실행 순서**:
+1. 박씨 확인: `C:\Temp\enable_gui_control.ps1` 관리자 실행했는지
+2. win-gui `screenshot` 툴로 현재 화면 확인
+3. `run_powershell`로 `C:\Temp\pianoteq_trial_v912.exe /S` 실행 (UAC 비활성 시)
+4. `run_powershell`로 AudioModelingSC installer 실행
+5. `run_powershell`로 SpitfireAudioApp.exe 실행 (Spitfire BBC SO Discover)
+---
