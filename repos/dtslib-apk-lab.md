@@ -478,3 +478,18 @@ ls -lh build/app/outputs/flutter-apk/app-debug.apk
 
 **재구축 힌트**: `apps/parksy-glot/lib/main.dart` + `docs/EPISODE-PLAN-SERIES.md` 읽으면 전체 파악 가능.
 방송 시리즈 기획은 `docs/TARGETING-PROGRAMS-PC-ONLY.md` (26개 장르 티어 분류) 참조.
+
+---
+### 2026-03-27 | PC 런처 완성 — 태블릿 탭 → ADB 터널 → PC 프로그램 실행
+**작업**: 
+- PowerShell로 Windows 설치 프로그램 목록 파싱 (레지스트리 HKLM:\Software\...\Uninstall\*)
+- 10개 핵심 앱 exe 경로 확인 (REAPER, Excel, Word, PowerPoint, Chrome, Focusrite, Pianoteq, Spitfire, FileZilla, RustDesk)
+- tools/pc-launcher/server.py: Python HTTP 서버 (port 7777), GET /apps, GET /launch?app=ID
+- dashboard/pc-launcher.html: 태블릿 런처 UI — 다크 골드 테마, 카테고리 탭, 실행 피드백 애니메이션
+- deploy_tablet.sh: ADB reverse tcp:7777 + adb push + Chrome 자동 오픈
+- C:\Temp\pc-launch-server.py + start-pc-launcher.bat 복사 완료
+**결정**: file:// 방식으로 HTML 태블릿 직접 배포 (서버 없이 UI 로드, fetch만 서버 필요)
+**결과**: 태블릿 배포 성공 (adb push 28.6MB/s), git push main 완료
+**교훈**: ADB reverse tcp:PORT tcp:PORT — 태블릿 localhost가 PC 서버로 터널링됨. 매 세션 재설정 필요.
+**재구축 힌트**: "PC에 설치된 프로그램 파싱 → PowerShell Get-ItemProperty HKLM:\...Uninstall\* → server.py HTTP로 launch → adb reverse → 태블릿 HTML 런처" 로 Claude에게 시켜라. C:\Temp\에 서버 파일 있음.
+---
