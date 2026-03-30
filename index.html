@@ -1,61 +1,440 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <meta name="theme-color" content="#020404">
   <link rel="manifest" href="./assets/manifest.json">
   <link rel="icon" type="image/svg+xml" href="./assets/icons/favicon.svg">
   <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
   <title>dtslib-localpc | DTSLIB Infra</title>
   <style>
-    :root {
-      --bg: #020404; --card: #0d1410; --gold: #D4AF37;
-      --blue: #60A5FA; --text: #F8FAF9; --muted: rgba(248,250,249,0.55);
-      --border: rgba(248,250,249,0.07);
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #020404; font-family: system-ui, -apple-system, sans-serif; color: #F8FAF9; user-select: none; }
+
+    /* ── CANVAS ── */
+    #vp { position: fixed; inset: 0; overflow: hidden; cursor: grab; }
+    #vp.dragging { cursor: grabbing; }
+    #canvas { position: absolute; width: 0; height: 0; transform-origin: 0 0; will-change: transform; }
+
+    /* ── EDGES (SVG) ── */
+    #edges { position: absolute; overflow: visible; pointer-events: none; }
+
+    /* ── NODES ── */
+    .node { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-radius: 14px; cursor: pointer; transition: box-shadow 0.2s, transform 0.15s; }
+    .node:hover { transform: scale(1.06); }
+    .node.hub {
+      width: 160px; height: 80px;
+      background: linear-gradient(135deg, #1a1200 0%, #2a1f00 100%);
+      border: 2px solid #D4AF37;
+      box-shadow: 0 0 20px rgba(212,175,55,0.35), 0 0 40px rgba(212,175,55,0.12);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; min-height: 100dvh; padding: 24px 16px; }
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: rgba(96,165,250,0.15); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); margin-bottom: 12px; }
-    h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-    .sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
-    .cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
-    .card-title { font-size: 12px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
-    .card-body { font-size: 13px; color: var(--muted); line-height: 1.6; }
-    .stat-row { display: flex; gap: 10px; margin-bottom: 24px; }
-    .stat { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
-    .stat-num { font-size: 24px; font-weight: 700; color: var(--blue); }
-    .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .link { display: block; padding: 13px 16px; text-align: center; border: 1px solid rgba(212,175,55,0.3); border-radius: 10px; color: var(--gold); font-size: 13px; font-weight: 600; text-decoration: none; background: rgba(212,175,55,0.07); }
+    .node.regular {
+      width: 148px; height: 72px;
+      background: #0d1a2a;
+      border: 1px solid rgba(96,165,250,0.45);
+      box-shadow: 0 0 12px rgba(96,165,250,0.15);
+    }
+    .node.stat {
+      width: 96px; height: 48px;
+      background: #0a1210;
+      border: 1px solid rgba(248,250,249,0.12);
+    }
+    .node.link {
+      width: 130px; height: 40px;
+      background: rgba(212,175,55,0.07);
+      border: 1px solid rgba(212,175,55,0.3);
+      text-decoration: none;
+    }
+    .node-label { font-size: 12px; font-weight: 700; line-height: 1.3; white-space: pre-line; }
+    .node.hub .node-label { font-size: 14px; color: #D4AF37; }
+    .node.regular .node-label { color: #93c5fd; }
+    .node.stat .node-label { font-size: 10px; color: rgba(248,250,249,0.6); }
+    .node.link .node-label { font-size: 11px; color: #D4AF37; }
+
+    /* ── PULSE RING ── */
+    .node.hub::before {
+      content: '';
+      position: absolute;
+      inset: -6px; border-radius: 18px;
+      border: 1px solid rgba(212,175,55,0.3);
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:0.4;transform:scale(1)} 50%{opacity:0.9;transform:scale(1.03)} }
+
+    /* ── HUD ── */
+    #hud {
+      position: fixed; top: 16px; left: 16px; z-index: 20;
+      display: flex; flex-direction: column; gap: 4px;
+      pointer-events: none;
+    }
+    .hud-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      background: rgba(96,165,250,0.15); color: #60A5FA;
+      border: 1px solid rgba(96,165,250,0.3);
+    }
+    .hud-title { font-size: 18px; font-weight: 700; }
+    .hud-sub { font-size: 11px; color: rgba(248,250,249,0.5); }
+
+    /* ── FIT BUTTON ── */
+    #btn-fit {
+      position: fixed; top: 16px; right: 16px; z-index: 20;
+      padding: 7px 14px; border-radius: 8px; border: 1px solid rgba(248,250,249,0.15);
+      background: rgba(13,20,16,0.85); backdrop-filter: blur(8px);
+      color: rgba(248,250,249,0.7); font-size: 12px; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    #btn-fit:hover { background: rgba(212,175,55,0.15); color: #D4AF37; border-color: rgba(212,175,55,0.4); }
+
+    /* ── INFO PANEL ── */
+    #info {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
+      background: #0d1410; border-top: 1px solid rgba(248,250,249,0.07);
+      padding: 20px 24px 28px;
+      transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      max-height: 55vh; overflow-y: auto;
+    }
+    #info.open { transform: translateY(0); }
+    #info-title { font-size: 15px; font-weight: 700; color: #D4AF37; margin-bottom: 8px; }
+    #info-body { font-size: 13px; color: rgba(248,250,249,0.7); line-height: 1.65; }
+    #info-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+    .tag { padding: 3px 9px; border-radius: 12px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; background: rgba(96,165,250,0.12); color: #60A5FA; border: 1px solid rgba(96,165,250,0.25); }
+    #info-close { position: absolute; top: 14px; right: 18px; background: none; border: none; color: rgba(248,250,249,0.4); font-size: 20px; cursor: pointer; line-height: 1; }
+    #info-close:hover { color: #F8FAF9; }
+
+    /* ── HINT ── */
+    #hint {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+      border: 1px solid rgba(248,250,249,0.1); border-radius: 20px;
+      padding: 6px 16px; font-size: 11px; color: rgba(248,250,249,0.55);
+      pointer-events: none; transition: opacity 0.5s;
+    }
+    #hint.hidden { opacity: 0; }
   </style>
 </head>
 <body>
-  <div class="badge">INFRA · Chrome</div>
-  <h1>dtslib-localpc</h1>
-  <p class="sub">로컬 PC & 온프레미스 실행 노드<br>로컬 자동화 · 실험 코드 · 오프라인 워크플로우</p>
 
-  <div class="stat-row">
-    <div class="stat"><div class="stat-num">Local</div><div class="stat-label">온프레미스</div></div>
-    <div class="stat"><div class="stat-num">CLI</div><div class="stat-label">배치 실행</div></div>
-    <div class="stat"><div class="stat-num">DTSLIB</div><div class="stat-label">인프라 연결</div></div>
+<!-- HUD -->
+<div id="hud">
+  <span class="hud-badge">INFRA · LOCAL PC</span>
+  <div class="hud-title">dtslib-localpc</div>
+  <div class="hud-sub">Home PC Remote Control Tower</div>
+</div>
+
+<!-- FIT -->
+<button id="btn-fit" title="Fit all nodes">⊡ Fit</button>
+
+<!-- VIEWPORT -->
+<div id="vp">
+  <div id="canvas">
+    <svg id="edges"></svg>
   </div>
+</div>
 
-  <div class="cards">
-    <div class="card">
-      <div class="card-title">로컬 자동화</div>
-      <div class="card-body">PC 환경에서 실행되는 배치 스크립트 및 자동화 도구 모음.<br>Termux → PC 브릿지 오프라인 실행 노드.</div>
-    </div>
-    <div class="card">
-      <div class="card-title">실험 코드</div>
-      <div class="card-body">DTSLIB 생태계 내 로컬 전용 실험 및 프로토타입.<br>클라우드 의존 없는 오프라인 워크플로우.</div>
-    </div>
-    <div class="card">
-      <div class="card-title">인프라 포지션</div>
-      <div class="card-body">termux-bridge(모바일) ↔ dtslib-localpc(PC) 양방향 연결.<br>Papyrus 생태계 로컬 실행 거점.</div>
-    </div>
-  </div>
+<!-- INFO PANEL -->
+<div id="info">
+  <button id="info-close">×</button>
+  <div id="info-title"></div>
+  <div id="info-body"></div>
+  <div id="info-tags"></div>
+</div>
 
-  <a class="link" href="https://github.com/dtslib1979/dtslib-localpc">GitHub 레포지토리 →</a>
+<!-- HINT -->
+<div id="hint">Pinch to zoom · Drag to pan · Tap node to explore</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  MAP DATA — edit this block to customise the map
+// ═══════════════════════════════════════════════════
+const MAP = {
+  nodes: [
+    {
+      id: "hub", type: "hub", x: 0, y: 0,
+      label: "DTSLIB\nLocal PC",
+      title: "DTSLIB Local PC — Home Infra Tower",
+      body: "On-premises PC running as a 24/7 server via WSL2. Remote-controlled from anywhere via Tailscale SSH + tmux. The nerve center for all 28 repos. Claude Code runs here as the main driver.",
+      tags: ["INFRA", "WSL2", "PC-MAIN", "TMUX"]
+    },
+    {
+      id: "auto", type: "regular", x: -230, y: -150,
+      label: "Local\nAutomation",
+      title: "Local Automation",
+      body: "Batch scripts and automation tools running natively on the PC. Playwright headless=false for browser automation (Kakao, Google OAuth, Tistory). CLI pipelines kicked off from SSH sessions.",
+      tags: ["AUTOMATION", "PLAYWRIGHT", "BATCH", "CLI"]
+    },
+    {
+      id: "exp", type: "regular", x: 230, y: -150,
+      label: "Experimental\nCode",
+      title: "Experimental Code",
+      body: "Local-only prototypes and DTSLIB ecosystem experiments. No cloud dependencies. Offline-first workflow. Ideas land here before graduating to production repos.",
+      tags: ["PROTOTYPE", "OFFLINE", "EXPERIMENT"]
+    },
+    {
+      id: "infra", type: "regular", x: 0, y: 180,
+      label: "Infrastructure\nPosition",
+      title: "Infrastructure Position",
+      body: "Termux-bridge (mobile) ↔ dtslib-localpc (PC) bidirectional link. Snapshot scripts auto-capture installed tools, D-drive structure, and repo states. Cross-session bootstrap via repos/status.json.",
+      tags: ["SSH", "TAILSCALE", "SNAPSHOT", "BOOTSTRAP"]
+    },
+    {
+      id: "stat1", type: "stat", x: -250, y: 55,
+      label: "On-Premises",
+      title: "On-Premises First",
+      body: "Home PC stays on 24/7. No cloud bill. All compute, storage and execution happen locally. Cloud is a last resort.",
+      tags: ["ONPREM", "PC"]
+    },
+    {
+      id: "stat2", type: "stat", x: 250, y: 55,
+      label: "CLI Batch",
+      title: "CLI Batch Execution",
+      body: "tmux sessions run long jobs autonomously. Telegram bot sends results to phone. Fire and forget workflow.",
+      tags: ["TMUX", "TELEGRAM"]
+    },
+    {
+      id: "stat3", type: "stat", x: -130, y: 200,
+      label: "28 Repos",
+      title: "28 GitHub Repos",
+      body: "dtslib-localpc acts as the control tower for all 28 repositories. One Claude Code session, full coverage.",
+      tags: ["GITHUB", "MONOREPO"]
+    },
+    {
+      id: "github", type: "link", x: 0, y: 300,
+      label: "GitHub Repo →",
+      href: "https://github.com/dtslib1979/dtslib-localpc",
+      title: "GitHub — dtslib-localpc",
+      body: "Source repository on GitHub. Snapshots, hooks, scripts, and cross-repo status logs all live here.",
+      tags: ["GITHUB"]
+    }
+  ],
+  edges: [
+    { from: "hub",    to: "auto",   color: "#D4AF37" },
+    { from: "hub",    to: "exp",    color: "#D4AF37" },
+    { from: "hub",    to: "infra",  color: "#D4AF37" },
+    { from: "hub",    to: "stat1",  color: "#60A5FA" },
+    { from: "hub",    to: "stat2",  color: "#60A5FA" },
+    { from: "infra",  to: "stat3",  color: "#60A5FA" },
+    { from: "infra",  to: "github", color: "#D4AF37" },
+    { from: "auto",   to: "stat1",  color: "rgba(96,165,250,0.3)" },
+    { from: "exp",    to: "stat2",  color: "rgba(96,165,250,0.3)" }
+  ]
+};
+
+// ═══════════════════════════════════════════════════
+//  ENGINE
+// ═══════════════════════════════════════════════════
+
+const vp       = document.getElementById('vp');
+const canvas   = document.getElementById('canvas');
+const svgEl    = document.getElementById('edges');
+const info     = document.getElementById('info');
+const infoTitle= document.getElementById('info-title');
+const infoBody = document.getElementById('info-body');
+const infoTags = document.getElementById('info-tags');
+const hint     = document.getElementById('hint');
+
+let tx = 0, ty = 0, scale = 1;
+let dragging = false, lastX = 0, lastY = 0;
+
+// ── Bezier path between two node centres ──
+function bezierPath(n1, n2, W1, H1, W2, H2) {
+  const x1 = n1.x + W1/2, y1 = n1.y + H1/2;
+  const x2 = n2.x + W2/2, y2 = n2.y + H2/2;
+  const cx = (x1+x2)/2, cy = (y1+y2)/2 - 40;
+  return `M${x1},${y1} Q${cx},${cy} ${x2},${y2}`;
+}
+
+function nodeSize(type) {
+  if (type==='hub')     return [160,80];
+  if (type==='regular') return [148,72];
+  if (type==='stat')    return [96,48];
+  if (type==='link')    return [130,40];
+  return [120,60];
+}
+
+// ── Build DOM ──
+MAP.nodes.forEach(n => {
+  const [W,H] = nodeSize(n.type);
+  const el = document.createElement(n.type==='link' ? 'a' : 'div');
+  el.className = `node ${n.type}`;
+  el.style.left = (n.x - W/2) + 'px';
+  el.style.top  = (n.y - H/2) + 'px';
+  el.style.width  = W + 'px';
+  el.style.height = H + 'px';
+  if (n.href) { el.href = n.href; el.target = '_blank'; el.rel = 'noopener'; }
+  el.innerHTML = `<span class="node-label">${n.label}</span>`;
+  el.dataset.id = n.id;
+
+  el.addEventListener('click', e => {
+    if (dragging) { e.preventDefault(); return; }
+    openInfo(n);
+    if (n.href && n.type !== 'link') e.preventDefault();
+  });
+  canvas.appendChild(el);
+  n._el = el;
+});
+
+// ── Build SVG edges + animated dots ──
+const dots = [];
+MAP.edges.forEach(edge => {
+  const n1 = MAP.nodes.find(n=>n.id===edge.from);
+  const n2 = MAP.nodes.find(n=>n.id===edge.to);
+  if (!n1||!n2) return;
+  const [W1,H1]=nodeSize(n1.type), [W2,H2]=nodeSize(n2.type);
+  const d = bezierPath(n1,n2,W1,H1,W2,H2);
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d', d);
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', edge.color);
+  path.setAttribute('stroke-width', '1.5');
+  path.setAttribute('stroke-opacity', '0.45');
+  path.setAttribute('stroke-dasharray', '5 6');
+  svgEl.appendChild(path);
+
+  // dot
+  const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  dot.setAttribute('r', '3');
+  dot.setAttribute('fill', edge.color);
+  dot.setAttribute('fill-opacity', '0.85');
+  svgEl.appendChild(dot);
+  dots.push({ path, dot, t: Math.random(), speed: 0.0012 + Math.random()*0.0008 });
+});
+
+// ── Animate dots along paths ──
+function animateDots() {
+  dots.forEach(d => {
+    d.t = (d.t + d.speed) % 1;
+    try {
+      const len = d.path.getTotalLength();
+      const pt  = d.path.getPointAtLength(d.t * len);
+      d.dot.setAttribute('cx', pt.x);
+      d.dot.setAttribute('cy', pt.y);
+    } catch(e) {}
+  });
+  requestAnimationFrame(animateDots);
+}
+animateDots();
+
+// ── Transform helper ──
+function setTransform() {
+  canvas.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+}
+
+// ── Fit all ──
+function fitAll() {
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  MAP.nodes.forEach(n => {
+    const [W,H]=nodeSize(n.type);
+    minX=Math.min(minX,n.x-W/2); minY=Math.min(minY,n.y-H/2);
+    maxX=Math.max(maxX,n.x+W/2); maxY=Math.max(maxY,n.y+H/2);
+  });
+  const pad=60, vpW=vp.clientWidth, vpH=vp.clientHeight;
+  const mapW=maxX-minX, mapH=maxY-minY;
+  scale = Math.min((vpW-pad*2)/mapW, (vpH-pad*2)/mapH, 1.2);
+  tx = vpW/2 - (minX + mapW/2)*scale;
+  ty = vpH/2 - (minY + mapH/2)*scale;
+  setTransform();
+}
+fitAll();
+window.addEventListener('resize', fitAll);
+document.getElementById('btn-fit').addEventListener('click', fitAll);
+
+// ── Pan (mouse) ──
+let dragStarted = false;
+vp.addEventListener('mousedown', e => {
+  if (e.target.closest('.node')) return;
+  dragStarted = true; dragging = false;
+  lastX=e.clientX; lastY=e.clientY;
+  vp.classList.add('dragging');
+});
+window.addEventListener('mousemove', e => {
+  if (!dragStarted) return;
+  const dx=e.clientX-lastX, dy=e.clientY-lastY;
+  if (Math.abs(dx)+Math.abs(dy)>3) dragging=true;
+  tx+=dx; ty+=dy; lastX=e.clientX; lastY=e.clientY;
+  setTransform();
+});
+window.addEventListener('mouseup', () => { dragStarted=false; vp.classList.remove('dragging'); });
+
+// ── Zoom (wheel) ──
+vp.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = vp.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const factor = e.deltaY < 0 ? 1.12 : 1/1.12;
+  const newScale = Math.min(Math.max(scale*factor, 0.2), 4);
+  tx = mx - (mx-tx)*(newScale/scale);
+  ty = my - (my-ty)*(newScale/scale);
+  scale = newScale;
+  setTransform();
+}, { passive: false });
+
+// ── Touch (pan + pinch) ──
+const touches = {};
+let pinchDist0 = null, pinchScale0 = null, pinchTx0, pinchTy0, pinchCx, pinchCy;
+let touchMoved = false;
+
+vp.addEventListener('touchstart', e => {
+  e.preventDefault();
+  touchMoved = false;
+  Array.from(e.changedTouches).forEach(t => { touches[t.identifier]={x:t.clientX,y:t.clientY}; });
+  const ids = Object.keys(touches);
+  if (ids.length===2) {
+    const a=touches[ids[0]], b=touches[ids[1]];
+    pinchDist0 = Math.hypot(b.x-a.x,b.y-a.y);
+    pinchScale0 = scale;
+    pinchTx0 = tx; pinchTy0 = ty;
+    pinchCx=(a.x+b.x)/2; pinchCy=(a.y+b.y)/2;
+  }
+}, { passive: false });
+
+vp.addEventListener('touchmove', e => {
+  e.preventDefault();
+  touchMoved = true;
+  Array.from(e.changedTouches).forEach(t => {
+    if (touches[t.identifier]) touches[t.identifier]={x:t.clientX,y:t.clientY};
+  });
+  const ids = Object.keys(touches);
+  if (ids.length===1) {
+    const t0=touches[ids[0]];
+    const prev=lastTouchPos||t0;
+    tx += t0.x-prev.x; ty += t0.y-prev.y;
+    lastTouchPos=t0;
+    setTransform();
+  } else if (ids.length===2) {
+    const a=touches[ids[0]], b=touches[ids[1]];
+    const dist=Math.hypot(b.x-a.x,b.y-a.y);
+    const newScale=Math.min(Math.max(pinchScale0*(dist/pinchDist0),0.2),4);
+    tx = pinchCx - (pinchCx-pinchTx0)*(newScale/pinchScale0);
+    ty = pinchCy - (pinchCy-pinchTy0)*(newScale/pinchScale0);
+    scale=newScale;
+    setTransform();
+  }
+}, { passive: false });
+
+let lastTouchPos = null;
+vp.addEventListener('touchend', e => {
+  Array.from(e.changedTouches).forEach(t => delete touches[t.identifier]);
+  if (Object.keys(touches).length===0) { lastTouchPos=null; pinchDist0=null; }
+});
+
+// ── Info panel ──
+function openInfo(n) {
+  infoTitle.textContent = n.title || n.label.replace('\n',' ');
+  infoBody.textContent  = n.body || '';
+  infoTags.innerHTML    = (n.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+  info.classList.add('open');
+}
+document.getElementById('info-close').addEventListener('click', () => info.classList.remove('open'));
+vp.addEventListener('click', e => {
+  if (!e.target.closest('.node') && !e.target.closest('#info')) info.classList.remove('open');
+});
+
+// ── Hint auto-hide ──
+setTimeout(() => hint.classList.add('hidden'), 4000);
+</script>
 </body>
 </html>
