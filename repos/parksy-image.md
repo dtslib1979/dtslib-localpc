@@ -682,3 +682,34 @@ Telegram mp4 수신: telegram-bridges/image_downloader.py 백그라운드 실행
 
 **재구축 힌트**: `python3 tools/web2video/web2video.py "URL" --shorts --tone cocky --lang ko --bgm clair --privacy unlisted` 로 임의 URL → @채널 업로드 가능. 라우팅은 `tools/web2video/channel_routing.json` 참조.
 ---
+
+---
+### 2026-03-30 | RunPod WAN2.1 I2V 검증 — 핵심 결론: 적절한 serverless handler 없음
+**작업**:
+- RunPod API 키 발굴 (secrets.local): `rpa_REDACTED_FROM_HISTORY`
+- 계정 잔액 확인: $20
+- serverless endpoint 생성 시도: 3개 endpoint 생성/삭제 반복
+- `ashleykza/wan2.1:latest` (24GB) 사용 → workers init:1 but crash
+- GitHub 분석 결과: T2V Pod WebUI, 서버리스 handler 없음
+
+**결정**:
+- RunPod serverless GPU ID 규칙 확정: `ADA_24`, `AMPERE_24` (short codes) = 유효. 풀네임(`NVIDIA GeForce RTX 4090`) = POD용, serverless에서 무효
+- network volume: US-TX-3에서 GPU 없어 throttled → 삭제
+- 전략 변경: RunPod I2V 보류, 향후 직접 handler 빌드 또는 Replicate API
+
+**결과**:
+- `~/.cache/parksy/runpod_config.json` → status: investigated_no_i2v_handler
+- google-api-python-client 설치 완료 (P4 YouTube 준비)
+
+**교훈**:
+- RunPod serverless = Pod 스타일 이미지 그대로 쓰면 안됨. `handler(job)` + `runpod.serverless.start()` 구현한 전용 이미지 필요
+- WAN2.1 T2V 1.3B은 서버리스 대응 있지만 I2V는 없음
+- 서버리스 worker 충돌 패턴: `init:1→0` 반복 = 컨테이너 기동 후 20-30초 만에 크래시 (handler 없어서)
+
+**재구축 힌트**:
+- WAN2.1 I2V serverless 재시도 시: Dockerfile 직접 작성
+  - Base: `runpod/base:0.4.4-py3.11` 
+  - HuggingFace에서 `Wan-AI/Wan2.1-I2V-14B-480P` 다운로드
+  - handler.py: `runpod.serverless.start({"handler": handler})`
+  - 또는 Replicate API: `REPLICATE_API_TOKEN` 발급 후 `replicate.run("wan-ai/wan2.1-i2v")`
+---
