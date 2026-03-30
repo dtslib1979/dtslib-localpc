@@ -557,3 +557,39 @@ python scripts/drawing/photo2drawing.py [사진] --ruler -o output.dxf
 **교훈**: parksy-image는 PC 세션에서만 동작 (Python + 로컬 파일). 매 PC 세션 종료 시 반드시 이 로그를 갱신할 것. PSE Phase 2 진입 시 태블릿 손글씨 SVG 수집이 블로커.
 **재구축 힌트**: 이 파일 전체를 Claude에게 읽히면 파이프라인, PSE, 배포 시스템 전부 재구축 가능. 섹션 3(pipeline v3)이 핵심.
 ---
+
+---
+### 2026-03-30 | Parksy Air P3.5+P4 통합 + 텔레그램 봇 4개 정비
+
+**작업**:
+1. `ending_generator.py` v3 커밋 (8e875ad) — D3.js 노드그래프 → Playwright PNG → RunPod WAN2.1 I2V → 30s 엔딩 MP4
+2. `upload_youtube.py` 신규 — YouTube Data API v3 (googleapiclient + OAuth2), youtube-studio.js 폴백, channels.json 채널 매핑
+3. `runpod_setup.py` 신규 — RunPod GraphQL 엔드포인트 생성/확인, REST run+poll, ~/.cache/parksy/runpod_config.json 저장
+4. `orchestrator.py` 수정 — P3.5(ending) + P4(YouTube) + 오프닝 concat 통합, --ending/--runpod-key/--upload CLI 추가
+5. 텔레그램 봇 4개 이름 정비: setMyName API (BotFather ADB 삽질 → API로 해결)
+   - @Parksy_Image_Claude_bot → "Parksy Air" (8695070130)
+   - @parksy_bridge_bot → "Web2Video" (7634493765)
+   - @parksy_bridges_bot → "Parksy BGM" (8669426963) — parksy-audio 실행 중
+   - @Parksy_Audio_Claude_bot → "Parksy Song" (8661892750) — 노래방 프로젝트용 예약
+
+**결정**:
+- P4 YouTube: googleapiclient 없으면 Node.js 폴백 구조 (google-api-python-client 미설치 상태)
+- RunPod 엔딩: 봇 이름 변경 작업 중 BotFather ADB 조작 실패 → `setMyName` Bot API가 있었음 (10분 삽질 교훈)
+- 봇 4개 역할 분리: 이미지 레인(Air+Web2Video) / 오디오 레인(BGM+Song)
+
+**결과**:
+- 스모크 테스트 통과: 51초, 1.8MB, Telegram 전송 완료
+- 커밋 2cba582 (parksy-image master)
+- 의존성 미설치: google-api-python-client, google-auth (P4 YouTube 쓰려면 pip install 필요)
+
+**교훈**:
+- ADB 탭 좌표: 폰이 landscape(2340x1080)와 portrait(1080x2340) 사이 자동 회전 → 탭 전 uiautomator dump로 좌표 확인 필수
+- 봇 이름 변경은 BotFather 채팅 불필요 — `POST /setMyName` API 한 줄로 끝
+- RunPod WAN2.1 엔드포인트 아직 미생성 (API 키 없음) — 가입 후 `python3 runpod_setup.py --key KEY --create --test`
+
+**재구축 힌트**:
+- 파이프라인 전체: `python3 orchestrator.py --url SLIDES_URL --script-mode simple --tts-preset natural`
+- 엔딩 포함: 위 명령에 `--ending --runpod-key KEY` 추가
+- YouTube 업로드: 위 명령에 `--upload --channel visualizer-parksy` 추가
+- 봇 토큰 전체는 memory/project_telegram_bots.md 참조
+---
