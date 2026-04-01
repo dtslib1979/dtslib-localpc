@@ -202,12 +202,14 @@ class AsyncStreamClaude:
         session_id: str | None = None,
         allowed_tools: str | None = None,
         system_prompt: str | None = None,
+        model: str | None = None,
     ):
         self.workdir = workdir
         self.streamer = streamer
         self.session_id = session_id
         self.allowed_tools = allowed_tools or self.ALLOWED_TOOLS
         self.system_prompt = system_prompt
+        self.model = model
         self._proc: asyncio.subprocess.Process | None = None
 
     async def run(self, prompt: str) -> tuple[str, str | None]:
@@ -224,6 +226,8 @@ class AsyncStreamClaude:
             cmd += ["--resume", self.session_id]
         if self.system_prompt:
             cmd += ["--system-prompt", self.system_prompt]
+        if self.model:
+            cmd += ["--model", self.model]
 
         self._proc = await asyncio.create_subprocess_exec(
             *cmd,
