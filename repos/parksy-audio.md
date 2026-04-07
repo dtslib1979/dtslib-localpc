@@ -682,3 +682,40 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 4. `run_powershell`로 AudioModelingSC installer 실행
 5. `run_powershell`로 SpitfireAudioApp.exe 실행 (Spitfire BBC SO Discover)
 ---
+
+---
+### 2026-04-07 | Tiger DS v106 Python ONNX 풀파이프라인 + 백서 S5 소거법 + GitHub Actions 정리 + DDSP 완료
+
+**작업**:
+- `/tmp/tiger_full_pipeline.py` 완성 — Tiger DS v106 전체 DiffSinger 파이프라인 Python ONNX 구현
+  - DurLing → Dur → PitchLing → Pitch → Acoustic → tgm_hifigan → RVC 7단계
+- 백서 섹션 5 소거법 5라운드 전체 반영: R1 scoop -20c / R2 AP vel 0.6 / R3 VELC 차등 / R4 vibrato fade-in 40% / R5 phrase-end -20c
+- DDSP 바순 v2 학습 완료 (step 40000, loss 1.49), ~/backups/vast_checkpoints/ddsp_bassoon_v2/step_040000.pt (74MB)
+- GitHub Actions 68개 비활성화 (28개 레포 전수 조사)
+- GitHub PAT → papyrus/config/github_tokens.env 저장
+
+**결정**:
+- Tiger DS 경로: `/mnt/c/Temp/OpenUtau/Singers/TIGER_DS_v106/`
+- 이중 phoneme vocab: dsacoustic/phonemes.txt=116개, dspitch/files/phonemes.txt=113개 (별도 토크나이징 필수)
+- pitch_pred: 절대 MIDI note → `440.0 * 2^((pred-69)/12)` (deviation 아님!)
+- STEPS: `np.array(20, dtype=np.int64)` (np.int64(20) 타입 오류)
+- RVC: f0_up_key=+2, index_rate=0.75, protect=0.33, f0method=rmvpe
+
+**결과**:
+- Tiger DS Python ONNX: Raw Max 0.539 (게이트 통과), RVC 후 Max 0.880
+- 성공 기준선(ag_r5_drop.wav): Max 0.627 (OpenUtau 실제 렌더 기준)
+
+**교훈**:
+1. 로컬 메모리 먼저 확인 — Tiger DS 경로 메모리에 있었음
+2. 백서 S5가 정답 — GOLDEN 파일보다 백서 우선
+3. pitch_pred 절대값 — DiffSinger pitch는 MIDI deviation 아닌 절대 MIDI note
+4. phonemes.txt 분리 — Tiger dur(116) ≠ pitch(113)
+5. RVC 가창 한계 확인 — Tiger raw 자체가 들을 만함 → RVC 없이 Tiger raw 검토
+
+**재구축 힌트**:
+- Tiger DS 풀파이프라인: /tmp/tiger_full_pipeline.py
+- 모델: /mnt/c/Temp/OpenUtau/Singers/TIGER_DS_v106/
+- 기준선: /mnt/c/Temp/OpenUtau/Export/ag_r5_drop.wav (Max=0.627)
+- DDSP: ~/backups/vast_checkpoints/ddsp_bassoon_v2/step_040000.pt
+- 다음: PowerShell UI 자동화로 OpenUtau 실제 렌더 OR PARKSY_EN v3 완료 후 새 파이프라인
+---

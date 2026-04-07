@@ -1,5 +1,5 @@
 {
-  "updated": "2026-03-17T00:00:00+09:00",
+  "updated": "2026-04-07T00:00:00+09:00",
   "description": "4개 레포 크로스레포 상태 — 유레카 전환 후 PC-native v6.0 기준",
   "axiom": "PC 메인 / 핸드폰 SSH 클라이언트 (유레카 2026-03-16)",
   "repos": {
@@ -25,20 +25,21 @@
       ]
     },
     "parksy-audio": {
-      "local_path": "D:\\PARKSY\\parksy-audio",
+      "local_path": "/home/dtsli/parksy-audio",
       "github": "dtslib1979/parksy-audio",
       "branch": "main",
-      "phase": "Phase 9 — YouTube 배포 + 텔레그램 원격 제어",
-      "telegram_bot": "@parksy_bridges_bot",
-      "bot_script": "local-agent/bot.py",
-      "bot_start": "local-agent/start_bot.sh",
-      "tmux_session": "tg-audio",
-      "status": "bot v1.0 배포 완료, YouTube OAuth 블로커 (GCP)",
+      "phase": "Phase DiffSinger — Tiger DS v106 Python ONNX 파이프라인",
+      "last_session": "2026-04-07",
+      "tiger_ds_path": "/mnt/c/Temp/OpenUtau/Singers/TIGER_DS_v106/",
+      "pipeline_script": "/tmp/tiger_full_pipeline.py",
+      "baseline_wav": "/mnt/c/Temp/OpenUtau/Export/ag_r5_drop.wav (Max=0.627)",
+      "ddsp_model": "~/backups/vast_checkpoints/ddsp_bassoon_v2/step_040000.pt (74MB)",
+      "quality_score": "Tiger raw Max=0.539 (ONNX), 기준선 Max=0.627 (OpenUtau)",
       "pending": [
-        "[BLOCKER] dtslib-papyrus GCP 작업 완료 후 token_a.json 재생성",
-        "telegram_config.json 생성 (bot_token 입력)",
-        "tmux tg-audio 세션 시작: bash local-agent/start_bot.sh",
-        "YouTube 업로드 6트랙 (token_a.json 완성 후)"
+        "PowerShell UI 자동화로 OpenUtau 실제 렌더 기준선 재현",
+        "PARKSY_EN v3 완료 후 새 파이프라인 구축",
+        "DDSP 로컬 inference 테스트 (Sophie Dervaux 원본 비교)",
+        "RVC 없이 Tiger raw 사용 여부 결정 (RVC 가창 한계 확인)"
       ]
     },
     "parksy-image": {
