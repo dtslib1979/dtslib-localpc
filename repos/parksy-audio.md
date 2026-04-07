@@ -721,3 +721,59 @@ YouTube API 검증: ⚠️ Request had insufficient authentication scopes
 - [ ] render_auto()에서 genre 파라미터 MIDI 파일명 기반 자동 감지
 - [ ] Spotify basic-pitch (오디오→MIDI) 파이프라인 연결
 ---
+
+---
+### 2026-04-07 | Tiger DS v106 Python ONNX 풀파이프라인 + 백서 S5 소거법 + GitHub Actions 정리 + DDSP 완료
+
+**작업**:
+- `/tmp/tiger_full_pipeline.py` 완성 — Tiger DS v106 전체 DiffSinger 파이프라인 Python ONNX 구현
+  - SPORE 파이프라인 병행 완성 후 Tiger DS로 전환
+  - DurLing → Dur → PitchLing → Pitch → Acoustic → tgm_hifigan → RVC 7단계
+- 백서 섹션 5 소거법 5라운드 전체 반영:
+  - R1: pitch scoop -20c (진입 10% 구간)
+  - R2: AP breath vel 80→60 (0.6)
+  - R3: VELC 차등 강세=1.2 / 중간=0.8 / 끝=0.6
+  - R4: vibrato fade-in 40% (800t+ 음 전체)
+  - R5: phrase-end pitch drop -20c (마지막 음 70% 이후)
+- DDSP 바순 v2 학습 완료 (step 40000, loss 1.49), 모델 다운로드 후 Vast.ai Pod 종료
+- GitHub Actions 68개 비활성화 (28개 레포 전수 조사, ~120개 워크플로우)
+- GitHub PAT 갱신 → papyrus/config/github_tokens.env 저장 (.gitignore 등록)
+
+**결정**:
+- Tiger DS 경로: `/mnt/c/Temp/OpenUtau/Singers/TIGER_DS_v106/` (Windows 경로)
+- 이중 phoneme vocab: dsacoustic/phonemes.txt=116개(dur+acoustic), dspitch/files/phonemes.txt=113개(pitch전용) — 별도 토크나이징 필수
+- spk_embed: `tiger_fresh.emb` 256 float32 → np.tile로 broadcast
+- pitch_pred: 절대 MIDI note (42~55) → `440.0 * 2^((pred-69)/12)` (deviation 아님!)
+- STEPS: `np.array(20, dtype=np.int64)` (np.int64(20) 아님 — ONNX 스칼라 타입 오류)
+- RVC: f0_up_key=+2, index_rate=0.75, protect=0.33, f0method=rmvpe
+- GitHub Actions: Claude Code가 오케스트레이션 담당 → Actions 불필요. Vercel은 GitHub App 자체 처리
+
+**결과**:
+- Tiger DS Python ONNX 결과: Raw Max 0.539 (게이트 통과 >0.5 ✅), RMS 0.081
+- RVC 후: Max 0.880, RMS 0.139, 클리핑 0개, Crest 16.0dB
+- 성공 기준선(ag_r5_drop.wav): Tiger raw Max 0.627, RMS 0.094 (OpenUtau 실제 렌더 기준)
+- DDSP 체크포인트: ~/backups/vast_checkpoints/ddsp_bassoon_v2/step_040000.pt (74MB)
+- GitHub Actions 68개 비활성화 (실패 4개: Copilot coding agent, GitHub 관리라 API 불가)
+
+**교훈**:
+1. 로컬 메모리 먼저 확인 — Tiger DS 경로 메모리에 있었음. find로 탐색 금지
+2. 백서 S5가 정답 — GOLDEN 파일, 메모리 등 부차 자료보다 백서 우선
+3. pitch_pred 절대값 — DiffSinger pitch model은 MIDI deviation이 아닌 절대 MIDI note 출력
+4. phonemes.txt 분리 — Tiger dur(116) ≠ pitch(113), 별도 토크나이징 필수
+5. 검증 게이트 — Tiger raw Max > 0.5 통과, < 0.5 폐기
+6. RVC 가창 한계 — 소거법에서 확인. Tiger raw(0.627) 자체가 들을 만함 → RVC 없이 Tiger raw 검토
+
+**재구축 힌트**:
+- Tiger DS 풀파이프라인: /tmp/tiger_full_pipeline.py 복원
+- 모델 경로: /mnt/c/Temp/OpenUtau/Singers/TIGER_DS_v106/
+  - DurLing: dsdur/files/linguistic.onnx
+  - Dur: dsdur/files/dur.onnx  
+  - PitchLing: dspitch/files/linguistic.onnx
+  - Pitch: dspitch/files/pitch.onnx
+  - Acoustic: dsacoustic/acoustic.onnx
+  - Vocoder: dsvocoder/tgm_hifigan.onnx
+  - SPK: dsacoustic/tiger_fresh.emb (256 float32)
+- Amazing Grace 성공 기준선: /mnt/c/Temp/OpenUtau/Export/ag_r5_drop.wav (Max=0.627)
+- DDSP 모델: ~/backups/vast_checkpoints/ddsp_bassoon_v2/step_040000.pt
+- 다음: PowerShell UI 자동화로 OpenUtau 실제 렌더 재현 OR PARKSY_EN v3 완료 후 새 파이프라인
+---

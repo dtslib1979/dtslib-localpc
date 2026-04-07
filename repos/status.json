@@ -22,21 +22,18 @@
       "local_path": "/home/dtsli/parksy-audio",
       "github": "dtslib1979/parksy-audio",
       "branch": "main",
-      "phase": "Phase 11 — MIDI 큐레이터 + Merlin Grand 렌더링",
-      "telegram_bot": "@parksy_bridges_bot",
-      "bot_script": "local-agent/bot.py",
-      "bot_pid": 28253,
-      "bot_status": "실행 중 (2026-03-23)",
-      "soundfont": "/mnt/d/VST/MerlinGrand.sf2",
-      "quality_score": "~60점 (Merlin Grand SF2)",
-      "architecture": "MIDI 귀검수 → 텔레그램 드랍 → fast-track (OK_midi→+1반음→humanize→렌더→M4A)",
-      "philosophy": "편곡/작곡 포기. MIDI 아카이브 큐레이터 + 렌더링 엔지니어 포지션.",
-      "ok_midi_dir": "local-agent/sources/OK_midi/ (7곡)",
-      "last_session": "2026-03-23",
+      "phase": "Phase DiffSinger — Tiger DS v106 Python ONNX 파이프라인",
+      "last_session": "2026-04-07",
+      "tiger_ds_path": "/mnt/c/Temp/OpenUtau/Singers/TIGER_DS_v106/",
+      "pipeline_script": "/tmp/tiger_full_pipeline.py",
+      "baseline_wav": "/mnt/c/Temp/OpenUtau/Export/ag_r5_drop.wav (Max=0.627)",
+      "ddsp_model": "~/backups/vast_checkpoints/ddsp_bassoon_v2/step_040000.pt (74MB)",
+      "quality_score": "Tiger raw Max=0.539 (ONNX), 기준선 Max=0.627 (OpenUtau)",
       "pending": [
-        "새 MIDI 소스 발굴 (Mutopia, piano-midi.de) → 귀검수 → OK_midi 추가",
-        "YouTube @musician-parksy 업로드 재개 (token 갱신 필요)",
-        "Cakewalk + Salamander Grand Piano 세팅 (Windows측, 72점 달성)"
+        "PowerShell UI 자동화로 OpenUtau 실제 렌더 기준선 재현",
+        "PARKSY_EN v3 완료 후 새 파이프라인 구축",
+        "DDSP 로컬 inference 테스트 (Sophie Dervaux 원본 비교)",
+        "RVC 없이 Tiger raw 사용 여부 결정 (RVC 가창 한계 확인)"
       ]
     },
     "parksy-image": {
