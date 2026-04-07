@@ -1,5 +1,5 @@
 {
-  "updated": "2026-03-18T00:00:00+09:00",
+  "updated": "2026-03-17T00:00:00+09:00",
   "description": "4개 레포 크로스레포 상태 — 유레카 전환 후 PC-native v6.0 기준",
   "axiom": "PC 메인 / 핸드폰 SSH 클라이언트 (유레카 2026-03-16)",
   "repos": {
@@ -7,33 +7,38 @@
       "local_path": "D:\\1_GITHUB\\dtslib-papyrus",
       "github": "dtslib1979/dtslib-papyrus",
       "branch": "main",
-      "phase": "Phase 9 — YouTube OAuth + 자동 업로드 파이프라인",
-      "status": "OAuth 자동화 완성, GCP 스코프 블로커",
-      "last_session": "2026-03-17",
+      "phase": "Phase 10 — 플랫폼 포스팅 자동화",
+      "status": "전 플랫폼 로그인 완료. post.cjs/post.py 작성 대기",
+      "last_session": "2026-03-18",
+      "completed": [
+        "YouTube OAuth 4계정 token_a/b/c/d.json ✅",
+        "티스토리 5계정 _state.json ✅",
+        "네이버 dtslib/eae_kr NID_AUT/NID_SES ✅",
+        "네이버 parksy_kr → 태블릿 직접 사용 (기기 신뢰 차단)"
+      ],
       "pending": [
-        "[CRITICAL] GCP console → parksy-youtube 프로젝트 → APIs & Services → Library → YouTube Data API v3 Enable",
-        "[CRITICAL] OAuth consent screen → Add scope: https://www.googleapis.com/auth/youtube",
-        "rm tools/youtube/accounts/token_a.json 후 yt_oauth_auto.cjs 재실행",
-        "token_a.json youtube 스코프 포함 확인 후 upload.cjs 테스트",
-        "풀 파이프라인 테스트: MIDI → Claude 렌더 → M4A to Telegram → /upload → YouTube private"
+        "tools/naver/post.cjs — 카테고리 + 에디터 포스팅 (dtslib, eae_kr)",
+        "tools/tistory/post.py — 웹툰 이미지 업로드 (parksy-image 연동)",
+        "tools/youtube/upload.cjs — 영상 업로드 테스트",
+        "tools/youtube/community.cjs — 커뮤니티 포스트",
+        "parksy-image × 티스토리 SCM 파이프라인 설계"
       ]
     },
     "parksy-audio": {
-      "local_path": "/home/dtsli/parksy-audio",
+      "local_path": "D:\\PARKSY\\parksy-audio",
       "github": "dtslib1979/parksy-audio",
       "branch": "main",
-      "phase": "Phase DiffSinger — Tiger DS v106 Python ONNX 파이프라인",
-      "last_session": "2026-04-07",
-      "tiger_ds_path": "/mnt/c/Temp/OpenUtau/Singers/TIGER_DS_v106/",
-      "pipeline_script": "/tmp/tiger_full_pipeline.py",
-      "baseline_wav": "/mnt/c/Temp/OpenUtau/Export/ag_r5_drop.wav (Max=0.627)",
-      "ddsp_model": "~/backups/vast_checkpoints/ddsp_bassoon_v2/step_040000.pt (74MB)",
-      "quality_score": "Tiger raw Max=0.539 (ONNX), 기준선 Max=0.627 (OpenUtau)",
+      "phase": "Phase 9 — YouTube 배포 + 텔레그램 원격 제어",
+      "telegram_bot": "@parksy_bridges_bot",
+      "bot_script": "local-agent/bot.py",
+      "bot_start": "local-agent/start_bot.sh",
+      "tmux_session": "tg-audio",
+      "status": "bot v1.0 배포 완료, YouTube OAuth 블로커 (GCP)",
       "pending": [
-        "PowerShell UI 자동화로 OpenUtau 실제 렌더 기준선 재현",
-        "PARKSY_EN v3 완료 후 새 파이프라인 구축",
-        "DDSP 로컬 inference 테스트 (Sophie Dervaux 원본 비교)",
-        "RVC 없이 Tiger raw 사용 여부 결정 (RVC 가창 한계 확인)"
+        "[BLOCKER] dtslib-papyrus GCP 작업 완료 후 token_a.json 재생성",
+        "telegram_config.json 생성 (bot_token 입력)",
+        "tmux tg-audio 세션 시작: bash local-agent/start_bot.sh",
+        "YouTube 업로드 6트랙 (token_a.json 완성 후)"
       ]
     },
     "parksy-image": {

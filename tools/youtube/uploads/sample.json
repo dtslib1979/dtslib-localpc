@@ -1,0 +1,10 @@
+{
+  "account": "b",
+  "title": "테스트 업로드",
+  "description": "자동화 테스트 영상입니다.",
+  "tags": ["자동화", "테스트"],
+  "category_id": "22",
+  "privacy": "private",
+  "file": "D:/parksy-image/output/youtube/sample.mp4",
+  "thumbnail": "D:/parksy-image/output/youtube/sample-thumb.jpg"
+}

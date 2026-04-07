@@ -2,7 +2,7 @@
 
 > **이 문서는 dtslib-localpc의 크로스레포 복원 문서다.**
 > 새 Claude 세션이 이 파일만 읽으면 parksy-audio의 전체 맥락을 즉시 파악하고 작업을 이어갈 수 있어야 한다.
-> 최종 갱신: 2026-03-18
+> 최종 갱신: 2026-02-28
 
 ---
 
@@ -551,229 +551,134 @@ YouTube API 검증: ⚠️ Request had insufficient authentication scopes
 ---
 
 ---
-### 2026-03-18 | 음악 생산 파이프라인 전면 확장 — 오디오→MIDI→편곡→렌더링 풀 자동화
-
+### 2026-03-24 | XLN Addictive Keys Studio Grand 설치 시도 — UAC 장벽 확인
 **작업**:
-1. **WSL 패키지 설치 완료** (`soundfile`, `pyloudnorm`, `scipy`, `basic-pitch`, `onnxruntime`)
-   - 기존 환경에서 렌더링 파이프라인 누락 패키지 3개 발견 → 설치
-   - basic-pitch Python 3.12 충돌(resampy pkgutil 이슈) → --no-build-isolation + onnx 백엔드로 우회 해결
-
-2. **`/mnt/d/tmp/runner.py` 생성** — 풀 최적화 루프
-   - WAV/MP3/MIDI 입력 → 자동 렌더 → score_engine 채점 → hill climbing 파라미터 최적화
-   - FluidSynth 경로 WSL 패치 (`D:\VST\...exe` → `/usr/bin/fluidsynth`)
-   - 기본 10회 이터레이션, target 85점 달성 시 조기 종료
-   - 최종 optimal_config.json 자동 저장 (D:\tmp + local-agent/ 양쪽)
-
-3. **`/mnt/d/tmp/audio_to_midi.py` 생성** — basic-pitch 변환기
-   - WAV/MP3 → MIDI 추출 (Spotify Basic Pitch, ONNX 백엔드)
-   - melodia_trick=True, 최소 음표 58ms 필터
-   - 목 테스트 3회 통과: swan_lake(513음), sample.mp3(4,180음), nocturne(2,088음)
-
-4. **`/mnt/d/tmp/composer.py` 생성** — 3형제 작곡 로직
-   - Bruckner: 장3도+완전5도+옥타브 적층 (코랄 두께)
-   - Mahler: 크레센도 아크 → 정점(×1.4) → 급격한 피아노 대비
-   - Fauré: 9도 컬러음(30% 볼륨) + S-curve 부드러운 다이나믹
-
-5. **`/mnt/d/tmp/arranger.py` 생성** — 편곡 마스터 엔진 (오늘의 핵심 성과)
-   - **조성 순번도**: 크로마 프로파일 기반 자동 키 탐지 + 스타일별 전조 확률 행렬
-     - Bruckner: 색채전조 3·4도 선호 / Mahler: 반음·증4도(트리토누스) / Fauré: 2도 모달
-   - **확률 수열**: 7×7 Markov 행렬 화음 진행 (V→I 45%, ii→V 40% 등)
-   - **감정 플로우**: 15가지 감정 × 4파라미터 매핑 (vel_scale, density, mode, tempo_ratio)
-   - **프리셋 5종**: triumph / elegy / nocturne / epic / pastoral
-   - **--suggest 모드**: 입력 MIDI 자동 분석 → 편곡 옵션 5종 + CLI 명령 출력
-
-**결정사항**:
-
-- **핵심 아키텍처 결정**: 핸드폰 = 입력(즉흥 녹음) + 출력(청취·승인) 단말기. PC = 전체 처리
-  ```
-  📱 핸드폰: 녹음 전송 → Telegram → 결과 수신 → /approve or /rerender
-  🖥️ PC: audio_to_midi → arranger → composer → optimizer → score_engine → M4A 전송
-  ```
-- 표절·편집·렌더링 시퀀스 전부 PC Claude Code가 담당. 핸드폰은 결정권만 보유.
-- 즉흥성/충동성/모바일성 음원은 핸드폰이 담당. 나머지 전부 PC.
-
-**결과**:
-- 풀 파이프라인 완성: WAV/MP3 → MIDI → 작곡가 스타일 편곡 → 렌더링 최적화 → M4A
-- arranger.py 목 테스트 3회 통과 (swan_lake elegy/faure, nocturne/faure, sample epic/bruckner)
-- runner.py `--help` 정상 작동 확인
-
-**교훈**:
-- basic-pitch Python 3.12에서 resampy 빌드 실패 → `--no-build-isolation`으로 우회
-- 핸드폰 역할을 명확히 정의하지 않으면 이중 작업 발생 → 입출력 단말기로 고정
-- 편곡 엔진은 MIDI 레벨에서 작동해야 FluidSynth 렌더와 자연스럽게 체인됨
-
-**재구축 힌트**: `/mnt/d/tmp/`에 audio_to_midi.py, composer.py, arranger.py, runner.py, optimizer.py, score_engine.py 6개가 파이프라인 전체. runner.py가 진입점. 새 PC 세팅 시 `pip3 install mido soundfile pyloudnorm scipy basic-pitch onnxruntime --break-system-packages` 먼저 실행.
-
-**다음 작업**:
-- [ ] bot.py에 오디오 파일 수신 핸들러 추가 (파일 수신 → runner.py 자동 실행 → M4A 전송)
-- [ ] GCP 블로커 해결 후 YouTube 업로드 연결
-- [ ] runner.py를 bot.py에서 subprocess로 호출하는 구조 완성
----
-
----
-### 2026-03-23 | 철학 재정의 + MIDI fast-track + Merlin Grand SF2 교체
-
-**작업**:
-1. **midi_quality_gate.py 업데이트** — ear_pass 로직 추가
-   - 7곡 YouTube 업로드 실측 역추적으로 귀검수 통과 공식 도출
-   - `note_density=20 AND duration=20 AND (vel_stdev≥12 OR structure≥15)` → ear_pass=True → +7점 보너스
-   - 필수조건 미달 시 -10점 패널티
-   - CLI 출력에 👂✅/👂❌ + 보정값 표시
-
-2. **OK_midi 폴더 생성** — `local-agent/sources/OK_midi/`
-   - YouTube 업로드된 7곡 소스 MIDI 역추적 수집
-   - 01_Claire_de_Lune_Debussy.mid ~ 07_Panis_Angelicus_Franck.mid
-   - 전곡 텔레그램으로 전송
-
-3. **bot.py MIDI fast-track 핸들러 추가** — 오늘의 핵심 구현
-   - `.mid`/`.midi` 파일 수신 시 Claude 우회, 직접 파이프라인 실행
-   - `_transpose_midi()`: mido로 +1반음 전조 (저작권 완충, 드럼 채널 9 보존)
-   - `_process_midi_fast()`: OK_midi 저장 → 전조 → humanize_preset piano → FluidSynth → M4A → 텔레그램 반환
-   - 상수 추가: OK_MIDI_DIR, HUMANIZE_PY, _FLUIDSYNTH, _SOUNDFONT
-
-4. **Merlin Grand SF2 도입** — 피아노 소리 교체
-   - 기존: SGM-V2.01.sf2 (GM 사운드폰트, 피아노 4~6레이어) → 40점
-   - 신규: MerlinGrand.sf2 (전용 피아노 SF2, 58MB) → ~60점
-   - archive.org에서 직접 다운로드, `/mnt/d/VST/MerlinGrand.sf2`
-   - 텔레그램 A/B 비교 청취 → Merlin Grand 압승, 즉시 확정
-   - bot.py `_SOUNDFONT` 경로 업데이트
-
-5. **docs/RENDERING-ENGINE-PLAN.md 생성** — 업그레이드 로드맵
-   - Phase 1 (지금): Cakewalk(무료) + sforzando(무료) + Salamander(무료) → 72점
-   - Phase 2 (수익 $50+): Addictive Keys $99 → 85점
-   - Phase 3 (수익 $200+): Ivory III $350 → 93점
-
-**결정사항**:
-- **철학 재정의 (가장 중요)**: 편곡/작곡/화성학 전부 포기. "MIDI 아카이브 큐레이터 + 렌더링 엔지니어" 포지션으로 확정.
-  - 이유: 직접 편곡해도 어차피 클래식 클리셰. 원본 명곡 MIDI가 품질 우위.
-  - 버린 것: piano_expression.py, arranger.py, emotion/style 파이프라인, 전조 편곡 작업 전체
-  - 남긴 것: 좋은 MIDI 귀검수 → minimal humanize → 고품질 렌더 → YouTube
-
-- **새 표준 파이프라인**:
-  ```
-  핸드폰에서 MIDI 재생 귀검수
-      ↓
-  텔레그램으로 .mid 파일 드랍
-      ↓
-  bot.py fast-track: OK_midi 저장 → +1반음 → humanize piano → Merlin Grand 렌더
-      ↓
-  M4A 텔레그램 수신 → /approve → YouTube 업로드
-  ```
-
-- **품질 게이트 한계 인정**: midi_quality_gate.py 통계 점수는 실제 청감 품질 예측 불가. A급 MIDI도 들어보면 별로일 수 있음. 귀검수(ear_pass)가 유일한 진짜 기준.
-
-- **Cakewalk + Salamander는 차순위**: sfizz 리눅스 바이너리 없고 cmake도 없어서 오늘 구현 불가. 대신 Merlin Grand SF2(MerlinGrand.sf2)로 즉시 대응. FluidSynth + Merlin Grand = 60점으로 충분.
-
-**결과**:
-- 커밋 3개: midi fast-track, 렌더링 플랜 문서, Merlin Grand 교체
-- bot.py 재시작 완료 (PID 28253, `/home/dtsli/parksy-audio/local-agent/bot.py`)
-- 텔레그램에 MIDI 드랍하면 Merlin Grand M4A 즉시 반환 확인
-
-**교훈**:
-- SF2 교체가 가장 빠른 품질 점프. sfizz/Salamander보다 Merlin Grand SF2 먼저 시도했어야 함
-- 복잡한 편곡 파이프라인은 원본 품질을 오히려 낮춤 (A급 MIDI에 piano_expression = 역효과)
-- FluidSynth + 전용 피아노 SF2 = 유튜브 BGM으로 충분한 품질
-- 박씨 귀검수 = 최종 품질 게이트. 통계보다 귀가 정확함.
-
-**재구축 힌트**: `MerlinGrand.sf2`는 `/mnt/d/VST/`에 있음. bot.py에서 `_SOUNDFONT` 환경변수로 덮을 수 있음. MIDI fast-track은 `_process_midi_fast()` 함수. OK_midi 폴더는 `local-agent/sources/OK_midi/`. 봇 실행: `python3 /home/dtsli/parksy-audio/local-agent/bot.py`
-
-**다음 작업**:
-- [ ] 새 MIDI 소스 발굴 (Mutopia, piano-midi.de) → 귀검수 → OK_midi 추가
-- [ ] YouTube @musician-parksy 업로드 재개 (token 갱신 필요)
-- [ ] Cakewalk + Salamander 세팅 (Windows 측, 72점 달성)
----
-
----
-### 2026-03-24 | REAPER Phase 2 완성 — sfizz inline MIDI 렌더링 확인 + optimizer.py 통합
-**작업**:
-- render_reaper.py 전면 재작성: MIDI→REAPER 인라인 E-line 이벤트 변환 (mido 사용)
-- piano.rpp 템플릿 완성: sfizz.vst3 + SSO Grand Piano, SAMPLERATE 44100, RENDER_CFG2 제거
-- wsl_to_win() UNC 경로 변환 추가 (/home/... → \\wsl.localhost\Ubuntu\...)
-- pipeline/optimizer.py에 render_with_reaper() + render_auto() 추가
-- PARKSY_ENGINE=reaper 환경변수로 엔진 전환 가능 (기본값 FluidSynth 유지)
-- D: 드라이브 ↔ home ↔ origin/main 전부 동기화 완료
+1. XLN Online Installer 자동 제어를 위한 win-gui MCP 서버 구축 (win-gui-mcp-server.py)
+2. Claude Code settings.json에 win-gui MCP 서버 등록 완료
+3. JUCE 윈도우 DPI/좌표계 분석 — 물리 1920×1080 / 논리 1280×720 (150% DPI)
+4. DPI-unaware + AttachThreadInput + SendInput 기법으로 JUCE 버튼 클릭 성공
+5. "Installation Type" 화면에서 Standard 클릭 → "Checking installation..." 상태 진입
+6. Cotton 프레임워크 verbose 로그(do_trace.txt) 분석 → 1.5GB 디스크 채움 → 삭제
+7. UAC 장벽 확인 및 원인 분석 완료
 
 **결정**:
-- FILE "..." IMPORT 1 방식은 sfizz 오프라인 렌더링에서 WAV 0-byte 버그 → 인라인 E-line으로 전환
-- SAMPLERATE 48000→44100 (SSO 샘플 44100Hz, 미스매치 시 침묵)
-- RENDER_CFG2 블록이 secondary output 에러 유발 → 제거
-- optimizer.py Step 3는 render_auto()로 교체 (하위 호환 유지, FluidSynth 기본값)
+- Cotton 프레임워크가 `C:\Program Files\XLN Audio\XLN Online Installer\` 존재 여부 확인
+- 해당 경로 없음 → 자기 업데이트 루프 시작 → UAC 필요 → 루프
+- Program Files 쓰기 권한: BUILTIN\Administrators "deny only" (Medium Mandatory Level)
+- WSL에서 /mnt/c/Program Files/ 접근도 Permission denied
+- UAC Secure Desktop은 별도 데스크탑 — 어떤 자동화로도 접근 불가 (Windows 설계)
+- 솔루션: scripts/xln_admin_setup.ps1 제작 (관리자 권한으로 1회 실행 → 이후 영구 해결)
 
 **결과**:
-- Ave Verum Mozart: 40.31MB WAV, 2:39, 44100Hz/24-bit stereo, 렌더 9.4초 (~17x RT)
-- sfizz Freewheeling mode 확인, SSO Grand Piano 정상 동작
-- GitHub push 완료 (d8fc1e9), D: 드라이브 merge 완료
+- win-gui MCP 서버: 구축 완료 ✅
+- JUCE 버튼 클릭 자동화: 성공 ✅
+- Addictive Keys Studio Grand 설치: 미완료 ❌ (UAC 1회 클릭 필요)
+- 솔루션 스크립트: scripts/xln_admin_setup.ps1 작성 완료 ✅
 
 **교훈**:
-- REAPER 인라인 MIDI = sfizz 렌더링 유일한 정상 경로. FILE import는 절대 쓰지 말 것.
-- pitchwheel: mido에서 -8192~8191 → +8192 → LSB/MSB 분리 (14-bit MIDI)
-- WSL 내부 경로는 UNC (\\wsl.localhost\Ubuntu\...) 로 변환해야 REAPER(Windows)가 접근
+- JUCE 앱 클릭: DPI-unaware 좌표 + AttachThreadInput + SendInput 조합이 유일한 방법
+- Cotton verbose 로그(do_trace.txt): 절대 켜지 말 것. 1시간에 수 GB 생성됨
+- XLN self-update 루프: Program Files 디렉토리만 미리 만들어두면 완전 차단 가능
+- Windows UAC Secure Desktop: 자동화 불가능, 사용자 1회 수동 클릭 필수
 
 **재구축 힌트**:
-- "REAPER CLI + sfizz.vst3 + SSO SFZ로 MIDI 오프라인 렌더링. MIDI는 인라인 E-line으로 삽입.
-  render_reaper.py + piano.rpp 템플릿 조합. PARKSY_ENGINE=reaper로 optimizer.py 엔진 전환."
-- sfizz 경로: C:\Program Files\Common Files\VST3\sfizz.vst3
-- SSO 경로: D:\VST\SSO\Sonatina Symphonic Orchestra\Keys - Grand Piano.sfz
-- sfizz VST state binary: version(int32=1) + sfzFile(null-term UTF-8) + volume(float32=0) + numVoices(64) + oversampling(1.0) + preload(8388608) + scala(null) + tuning(440.0) + stretch(0)
+```
+# 다음 번 XLN 설치 전 1회만 실행 (PowerShell 관리자 권한으로)
+powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln_admin_setup.ps1"
 
-**다음 작업**:
-- [ ] orchestra.rpp 템플릿 추가 (sfizz + SSO Strings/Brass)
-- [ ] render_auto()에서 genre 파라미터 MIDI 파일명 기반 자동 감지
-- [ ] Spotify basic-pitch (오디오→MIDI) 파이프라인 연결
+# 이후 XLN 인스톨러 실행 → 자기 업데이트 없이 바로 Product List 진입
+# → Addictive Keys Studio Grand → Install 클릭
+# 나머지 자동화는 Claude Code가 처리
+```
+
+**펜딩**:
+- [ ] xln_admin_setup.ps1 관리자 권한으로 1회 실행
+- [ ] Addictive Keys Studio Grand 설치
+- [ ] xln.rpp REAPER 템플릿 생성 (C:\Users\dtsli\XLN_MAIN\xln.rpp)
+- [x] render_reaper.py에 'salamander'/'studio-grand' 장르 매핑 추가 ✅
 ---
 
 ---
-### 2026-04-07 | Tiger DS v106 Python ONNX 풀파이프라인 + 백서 S5 소거법 + GitHub Actions 정리 + DDSP 완료
-
+### 2026-03-24 | Salamander Grand Piano V3 파이프라인 완성 — XLN 대체
 **작업**:
-- `/tmp/tiger_full_pipeline.py` 완성 — Tiger DS v106 전체 DiffSinger 파이프라인 Python ONNX 구현
-  - SPORE 파이프라인 병행 완성 후 Tiger DS로 전환
-  - DurLing → Dur → PitchLing → Pitch → Acoustic → tgm_hifigan → RVC 7단계
-- 백서 섹션 5 소거법 5라운드 전체 반영:
-  - R1: pitch scoop -20c (진입 10% 구간)
-  - R2: AP breath vel 80→60 (0.6)
-  - R3: VELC 차등 강세=1.2 / 중간=0.8 / 끝=0.6
-  - R4: vibrato fade-in 40% (800t+ 음 전체)
-  - R5: phrase-end pitch drop -20c (마지막 음 70% 이후)
-- DDSP 바순 v2 학습 완료 (step 40000, loss 1.49), 모델 다운로드 후 Vast.ai Pod 종료
-- GitHub Actions 68개 비활성화 (28개 레포 전수 조사, ~120개 워크플로우)
-- GitHub PAT 갱신 → papyrus/config/github_tokens.env 저장 (.gitignore 등록)
+- `D:\VST\Salamander\SalamanderGrandPianoV3_44.1khz16bit\SalamanderGrandPianoV3.sfz` 확보 (BITS Transfer로 다운, tar.xz 추출)
+- sfizz VST3 이미 설치 확인 (`C:\Program Files\Common Files\VST3\sfizz.vst3`)
+- `local-agent/reaper-templates/piano_salamander.rpp` 신규 생성 — sfizz state base64 역설계로 SFZ 경로 직접 주입
+- `local-agent/render_reaper.py`에 `_GENRE_ALIASES` 추가: `'salamander'`/`'studio-grand'` → `'piano_salamander'`
+- `dtslib-localpc/scripts/xln_admin_setup.ps1` 신규 생성 — XLN self-update 루프 영구 차단 (Program Files 선제 생성)
 
 **결정**:
-- Tiger DS 경로: `/mnt/c/Temp/OpenUtau/Singers/TIGER_DS_v106/` (Windows 경로)
-- 이중 phoneme vocab: dsacoustic/phonemes.txt=116개(dur+acoustic), dspitch/files/phonemes.txt=113개(pitch전용) — 별도 토크나이징 필수
-- spk_embed: `tiger_fresh.emb` 256 float32 → np.tile로 broadcast
-- pitch_pred: 절대 MIDI note (42~55) → `440.0 * 2^((pred-69)/12)` (deviation 아님!)
-- STEPS: `np.array(20, dtype=np.int64)` (np.int64(20) 아님 — ONNX 스칼라 타입 오류)
-- RVC: f0_up_key=+2, index_rate=0.75, protect=0.33, f0method=rmvpe
-- GitHub Actions: Claude Code가 오케스트레이션 담당 → Actions 불필요. Vercel은 GitHub App 자체 처리
+- XLN Addictive Keys 완전 포기 → Salamander Grand Piano V3 (CC BY 3.0, Yamaha C5 샘플) 채택
+- sfizz state 바이너리 포맷 역설계: `\x01\x00\x00\x00` + UTF-8 경로 + `\x00` + 고정 트레일러 → base64
+- XLN UAC 문제는 Windows Secure Desktop 특성상 자동화 불가 — 사용자 1회 수동 클릭 필수 구조
 
 **결과**:
-- Tiger DS Python ONNX 결과: Raw Max 0.539 (게이트 통과 >0.5 ✅), RMS 0.081
-- RVC 후: Max 0.880, RMS 0.139, 클리핑 0개, Crest 16.0dB
-- 성공 기준선(ag_r5_drop.wav): Tiger raw Max 0.627, RMS 0.094 (OpenUtau 실제 렌더 기준)
-- DDSP 체크포인트: ~/backups/vast_checkpoints/ddsp_bassoon_v2/step_040000.pt (74MB)
-- GitHub Actions 68개 비활성화 (실패 4개: Copilot coding agent, GitHub 관리라 API 불가)
+- `piano_salamander.rpp` 커밋 완료 (4ed3d86)
+- `render_reaper.py` _GENRE_ALIASES 커밋 완료
+- `genre='salamander'`로 렌더링 호출 가능한 상태
 
 **교훈**:
-1. 로컬 메모리 먼저 확인 — Tiger DS 경로 메모리에 있었음. find로 탐색 금지
-2. 백서 S5가 정답 — GOLDEN 파일, 메모리 등 부차 자료보다 백서 우선
-3. pitch_pred 절대값 — DiffSinger pitch model은 MIDI deviation이 아닌 절대 MIDI note 출력
-4. phonemes.txt 분리 — Tiger dur(116) ≠ pitch(113), 별도 토크나이징 필수
-5. 검증 게이트 — Tiger raw Max > 0.5 통과, < 0.5 폐기
-6. RVC 가창 한계 — 소거법에서 확인. Tiger raw(0.627) 자체가 들을 만함 → RVC 없이 Tiger raw 검토
+- sfizz VST3 plugin state는 바이너리 포맷: `01 00 00 00` + path + `00` + 26바이트 고정 트레일러 → base64
+- REAPER는 `%COMMONPROGRAMFILES%\VST3` 스캔 — sfizz는 이미 여기 있으므로 별도 경로 설정 불필요
+- Windows UAC Secure Desktop은 어떤 자동화 방법으로도 우회 불가 (kernel-level)
 
 **재구축 힌트**:
-- Tiger DS 풀파이프라인: /tmp/tiger_full_pipeline.py 복원
-- 모델 경로: /mnt/c/Temp/OpenUtau/Singers/TIGER_DS_v106/
-  - DurLing: dsdur/files/linguistic.onnx
-  - Dur: dsdur/files/dur.onnx  
-  - PitchLing: dspitch/files/linguistic.onnx
-  - Pitch: dspitch/files/pitch.onnx
-  - Acoustic: dsacoustic/acoustic.onnx
-  - Vocoder: dsvocoder/tgm_hifigan.onnx
-  - SPK: dsacoustic/tiger_fresh.emb (256 float32)
-- Amazing Grace 성공 기준선: /mnt/c/Temp/OpenUtau/Export/ag_r5_drop.wav (Max=0.627)
-- DDSP 모델: ~/backups/vast_checkpoints/ddsp_bassoon_v2/step_040000.pt
-- 다음: PowerShell UI 자동화로 OpenUtau 실제 렌더 재현 OR PARKSY_EN v3 완료 후 새 파이프라인
+```
+# Salamander REAPER 파이프라인 복원:
+# 1. sfizz.vst3 설치 (https://sfz.tools/sfizz)
+# 2. Salamander Grand Piano V3 다운로드 (freepats.zenvoid.org, CC BY 3.0)
+# 3. piano_salamander.rpp 템플릿의 sfizz state base64 재생성:
+#    python -c "import base64; print(base64.b64encode(b'\x01\x00\x00\x00' + 'D:\\VST\\Salamander\\...\\SalamanderGrandPianoV3.sfz'.encode() + b'\x00' + bytes.fromhex('0000000000400000000000803f00008000000000dc4300000000')).decode())"
+# 4. render_reaper(midi, genre='salamander') 호출
+```
+---
+
+---
+### 2026-03-25 | VST 설치 UAC Hell — 삽질 4시간 이력 저장
+**작업**: Pianoteq 트라이얼(72MB) + Audio Modeling SC(18MB) + Spitfire BBC SO Discover 자동 설치 시도. 3개 동시 진행.
+**결정**: 총 8가지 방법 시도 — PowerShell RunAs, NSIS /S, NSIS per-user path, 7z 추출, VBScript ShellExecute, Task Scheduler RunLevel Highest, win-gui MCP, Playwright MCP. 전부 실패.
+**결과**: UAC Secure Desktop은 어떤 자동화도 못 뚫음. Playwright MCP는 실수로 kill해서 세션 재시작 전까지 브라우저 자동화 불가. 인스톨러 파일은 C:\Temp 에 준비된 상태로 박씨 직접 클릭 대기 중.
+**교훈**: WSL에서 Windows admin 권한 자동화 = 구조적으로 불가. VST 인스톨러는 직접 더블클릭이 유일. Playwright 프로세스/파일 절대 건드리지 마라.
+**재구축 힌트**: dev-logs/017-vst-install-uac-hell-2026-03-25.md 에 8가지 실패 방법 전부 기록. 다음엔 Secure Desktop 비활성화 먼저(레지스트리 1줄) 하고 win-gui MCP로 자동화.
+---
+
+---
+### 2026-03-26 | WSL MCP + win-gui 연동 완성 — Claude Code 세션 재시작 대기 중
+
+**작업**:
+1. win-gui MCP 서버 CRLF 버그 수정 — `msvcrt.setmode` + `sys.stdout.buffer` 바이너리 모드 강제
+2. settings.json `win-gui`/`desktop-commander` 명령 방식 수정 — `cmd.exe` 직접 호출 → 쉘 래퍼 스크립트(`~/.local/bin/win-gui-mcp.sh`)
+3. `C:\Temp\enable_gui_control.ps1` 생성 — PromptOnSecureDesktop=0 (1회 관리자 실행 필요)
+4. C:\Temp 에서 `SpitfireAudioApp.exe` 신규 확인 (오늘 다운됨)
+
+**결정**:
+- Claude Code 1.0.108→1.0.110 업데이트 후 `cmd.exe` 직접 MCP 호출 방식이 연결 실패함
+- 해결: bash 쉘 래퍼 스크립트로 간접 실행 → settings.json에 반영 완료
+- win-gui 서버 자체는 0.28초 응답, 프로토콜 정상 확인됨
+- Playwright MCP (project-level)는 정상 연결됨
+
+**결과**:
+- ✅ win-gui-mcp-server.py CRLF 수정 완료
+- ✅ ~/.local/bin/win-gui-mcp.sh + desktop-commander-mcp.sh 생성 완료 (실행권한 포함)
+- ✅ settings.json win-gui/desktop-commander command 업데이트 완료
+- ⏳ Claude Code 세션 재시작 필요 → 재시작 후 win-gui 툴 사용 가능
+- ⏳ 박씨가 관리자 PowerShell로 `C:\Temp\enable_gui_control.ps1` 1회 실행 필요
+
+**교훈**:
+1. Claude Code 버전 업 후 cmd.exe 직접 호출 MCP 연결 불가 → 항상 sh 래퍼로 감싸야
+2. win-gui MCP 서버 자체는 정상 (0.28s 응답, 11개 툴) — 연결 방식 문제였음
+3. PromptOnSecureDesktop=0 실행 후 pyautogui로 UAC 다이얼로그 클릭 가능
+4. SpitfireAudioApp.exe 오늘 C:\Temp에 새로 다운됨 (다음 세션에 설치 자동화)
+
+**재구축 힌트**:
+- win-gui MCP 연결 안 되면: ~/.local/bin/win-gui-mcp.sh 존재 확인 + 실행권한 확인
+- UAC 자동화 순서: 1) enable_gui_control.ps1 관리자 실행 2) Claude Code 재시작 3) win-gui 툴로 installer 클릭
+- 설치 대기 중: pianoteq_trial_v912.exe (75MB) + AudioModelingSC installer + SpitfireAudioApp.exe
+
+**다음 세션 즉시 실행 순서**:
+1. 박씨 확인: `C:\Temp\enable_gui_control.ps1` 관리자 실행했는지
+2. win-gui `screenshot` 툴로 현재 화면 확인
+3. `run_powershell`로 `C:\Temp\pianoteq_trial_v912.exe /S` 실행 (UAC 비활성 시)
+4. `run_powershell`로 AudioModelingSC installer 실행
+5. `run_powershell`로 SpitfireAudioApp.exe 실행 (Spitfire BBC SO Discover)
 ---

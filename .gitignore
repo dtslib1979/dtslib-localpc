@@ -24,3 +24,11 @@ node_modules/
 
 # Session markers (transient, created by hooks)
 .sessions/
+
+# YouTube 자동화 — 토큰/시크릿
+tools/youtube/client_secret.json
+tools/youtube/accounts/token_*.json
+tools/youtube/uploads/done/*
+!tools/youtube/uploads/done/.gitkeep
+tools/youtube/community/done/*
+!tools/youtube/community/done/.gitkeep

@@ -446,3 +446,50 @@ ls -lh build/app/outputs/flutter-apk/app-debug.apk
 **교훈**: Flutter/Android 빌드는 환경 의존성 높음. SDK 버전, Gradle 설정, libc++_shared.so 충돌 등 해결 과정을 반드시 기록. C드라이브 클론(C:\Users\dtsli\dtslib-apk-lab)은 D:\1_GITHUB로 통합 권고.
 **재구축 힌트**: 이 파일의 섹션 4(ChronoCall)를 Claude에게 읽히면 STT 앱 재구축 가능. 섹션 6(빌드 환경)이 SDK/Gradle 설정의 마스터.
 ---
+---
+### 2026-03-27 | Parksy Glot v2.0 Axis-shell 전면 재설계 + 방송 시리즈 기획안 확정
+
+**작업**:
+- `apps/parksy-glot/` 전면 재작성: 4334줄 온디바이스 STT → Axis-shell 패턴(245줄)
+  - `lib/main.dart`: overlayMain() + main() 이중 진입점. WebView → `http://PC_IP:8766/subtitle` 로드
+  - `pubspec.yaml`: v1.0.0 → v2.0.0, flutter_overlay_window + webview_flutter + shared_preferences
+  - `AndroidManifest.xml`: SYSTEM_ALERT_WINDOW + OverlayService + overlayMain 엔트리포인트
+  - `android/app/build.gradle`: namespace com.parksy.glot, minSdk 21
+- WSL MCP 정비: playwright-mcp.sh 전역 설치 경로 직접 지정. win-gui MCP 14개 도구 정상 확인
+- `docs/TARGETING-PROGRAMS-PC-ONLY.md` 신규: PC전용×Android공백 26개 장르 3티어 분류
+- `docs/EPISODE-PLAN-SERIES.md` 신규: 방송 시리즈 기획안 — 유튜버 지망생 타겟 확정
+
+**결정**:
+- Glot v1(폰이 두뇌) → v2(PC가 두뇌, 폰은 WebView 껍데기) 구조 전환. Axis-shell 패턴 확정.
+- 타겟 고객: 유튜버 지망생, 구매력 16만원/월. EP.01 = OBS급 방송 믹서 파일럿.
+- DAW 세션은 별도 세션에서 진행 중 → 이 세션에서 건들지 않음 (박씨 지시)
+- Claude Desktop config 잘못 건드렸다가 박씨 지적으로 원상복구. WSL settings.json이 진짜 설정 위치.
+
+**결과**:
+- 커밋 6개 (Glot v2.0, MCP 설정, 세션 로그, 타겟팅 프로그램, 에피소드 기획안 등)
+- 학원비 4개 장르 합산 월 130만 → Claude Code Max 1개로 대체 포인트 확정
+- Glot APK 빌드는 박씨 직접 필요: `cd apps/parksy-glot && flutter build apk --debug`
+
+**교훈**:
+- Axis-shell 패턴: `@pragma('vm:entry-point') void overlayMain()` + FlutterActivity MainActivity 필수
+- overlayMain = 별도 Flutter 엔진 인스턴스. AndroidManifest OverlayService 필수.
+- 박씨는 mosh+Tailscale+ADB 환경에서 원격 제어 중 → Claude Desktop 절대 건들지 말 것
+- playwright wrapper는 npx 매번 다운로드 대신 전역 설치 경로 직접 지정이 빠름
+
+**재구축 힌트**: `apps/parksy-glot/lib/main.dart` + `docs/EPISODE-PLAN-SERIES.md` 읽으면 전체 파악 가능.
+방송 시리즈 기획은 `docs/TARGETING-PROGRAMS-PC-ONLY.md` (26개 장르 티어 분류) 참조.
+
+---
+### 2026-03-27 | PC 런처 완성 — 태블릿 탭 → ADB 터널 → PC 프로그램 실행
+**작업**: 
+- PowerShell로 Windows 설치 프로그램 목록 파싱 (레지스트리 HKLM:\Software\...\Uninstall\*)
+- 10개 핵심 앱 exe 경로 확인 (REAPER, Excel, Word, PowerPoint, Chrome, Focusrite, Pianoteq, Spitfire, FileZilla, RustDesk)
+- tools/pc-launcher/server.py: Python HTTP 서버 (port 7777), GET /apps, GET /launch?app=ID
+- dashboard/pc-launcher.html: 태블릿 런처 UI — 다크 골드 테마, 카테고리 탭, 실행 피드백 애니메이션
+- deploy_tablet.sh: ADB reverse tcp:7777 + adb push + Chrome 자동 오픈
+- C:\Temp\pc-launch-server.py + start-pc-launcher.bat 복사 완료
+**결정**: file:// 방식으로 HTML 태블릿 직접 배포 (서버 없이 UI 로드, fetch만 서버 필요)
+**결과**: 태블릿 배포 성공 (adb push 28.6MB/s), git push main 완료
+**교훈**: ADB reverse tcp:PORT tcp:PORT — 태블릿 localhost가 PC 서버로 터널링됨. 매 세션 재설정 필요.
+**재구축 힌트**: "PC에 설치된 프로그램 파싱 → PowerShell Get-ItemProperty HKLM:\...Uninstall\* → server.py HTTP로 launch → adb reverse → 태블릿 HTML 런처" 로 Claude에게 시켜라. C:\Temp\에 서버 파일 있음.
+---

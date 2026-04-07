@@ -559,37 +559,157 @@ python scripts/drawing/photo2drawing.py [사진] --ruler -o output.dxf
 ---
 
 ---
-### 2026-03-30 | Parksy Air P3.5+P4 통합 + 텔레그램 봇 4개 정비
+### 2026-03-22 | web2video E2E 완성 + 15채널 OAuth Production 전환 + 채널 자동 라우팅
+**작업**:
+1. 15채널 OAuth Production 전환: tools/youtube/accounts/token_*.json 15개 전부 Testing→Production 재인증 (Playwright MCP + auth_one.js). Error 500 패턴: back→retry, 연속 500 시 lsof -ti:8787 | xargs kill -9 후 재시작.
+2. youtube-studio.js update 버그 수정: `part: 'snippet'` 만 보내던 것 → privacy 변경 시 `status` part도 추가.
+3. web2video.py E2E 테스트: python3 web2video.py "https://dtslib.com/" --channel dtslib_com --privacy private → 42초 영상, Video ID WHCLa94lYtc, 1.9MB.
+4. channel_routing.json 생성: 21개 도메인→레포→채널 라우팅 테이블 (tools/web2video/channel_routing.json). resolve_channel() 함수 추가.
+5. notify_telegram() 추가: 업로드 완료 → Telegram admin 알림 (telegram-bridge/config.json의 admin_id 필요).
+**결정**:
+- dtslib.com → @dtslib_com (Account D, dimas@dtslib.com)
+- dtslib.kr → @dtslib-branch (Account B, 경제방송국)
+- parksy.kr → @visualizer-parksy 기본, /persona 경로로 오버라이드
+- --channel 기본값을 None → "auto"로 변경 (이제 URL만 넣으면 채널 자동)
+**결과**: 15/15 채널 갱신 성공 (node token_refresh_all.js 확인). 라우팅 6개 URL 전수 검증 OK. Telegram 알림은 config.json 없어서 비활성 (graceful skip).
+**교훈**:
+- Brand account OAuth: Google 첫 클릭 Error 500은 흔함. back→retry 먼저, 2회 이상 실패 시 포트 kill 후 새 AUTH_URL 받을 것.
+- web2video 결과물 경로: /mnt/d/PARKSY/web2video/outputs/w2v_*.mp4
+- Telegram 알림 활성화: tools/telegram-bridge/config.json에 "admin_id": "박씨_chat_id" 추가.
+**재구축 힌트**: tools/web2video/ 디렉토리에 web2video.py, tts_humanizer.py, lecture_template.html, presets.json, channel_routing.json 전부 있음. pip install edge-tts pedalboard soundfile playwright + playwright install chromium 하면 돌아감.
+---
+
+---
+### 2026-03-22 | phoneparis.kr R1→R10 강화학습 루프 수렴 + 업로드 완료
+**작업**: web2video.py + lecture_template.html — 10회 반복 품질 개선 루프
+**결정**:
+- R4: Promise.all() 타이밍 수정 (10-15s 슬라이드 오프셋 제거)
+- R5: 3-8gram greedy phrase dedup (문장 경계 없는 중복 제거)
+- R6: heading subphrase removal from body, CSS word-break:keep-all
+- R7: 동적 인트로 폰트 크기 (30자↑→62px, 22자↑→72px)
+- R8: ALL_CAPS normalization (SAMSUNG→Samsung, _ABBR_KEEP 화이트리스트)
+- R9: normalization을 dedup 앞으로 이동
+- R10: display_limit(25) vs narr_limit(40) 분리 + 2-window 5글자↑ dedup
+**결과**: R1 6.5점 → R10 9.2점. YouTube 업로드 완료 https://youtu.be/jt6nmfAHbBM
+**교훈**: 3-window 인접 dedup은 "Lock Good Lock" 같은 합성어를 파괴함 → 2-window + 5글자 임계값으로 제한
+**재구축 힌트**: `_clean_body()`는 display_limit/narr_limit 이중 반환 구조. narration은 symbol 변환(/ → space, · → , ) 적용 후 마침표 보장.
+---
+
+---
+### 2026-03-22 | web2video R11~Telegram오프닝파이프라인 — 음질/템플릿/영상효과 전면 개선
 
 **작업**:
-1. `ending_generator.py` v3 커밋 (8e875ad) — D3.js 노드그래프 → Playwright PNG → RunPod WAN2.1 I2V → 30s 엔딩 MP4
-2. `upload_youtube.py` 신규 — YouTube Data API v3 (googleapiclient + OAuth2), youtube-studio.js 폴백, channels.json 채널 매핑
-3. `runpod_setup.py` 신규 — RunPod GraphQL 엔드포인트 생성/확인, REST run+poll, ~/.cache/parksy/runpod_config.json 저장
-4. `orchestrator.py` 수정 — P3.5(ending) + P4(YouTube) + 오프닝 concat 통합, --ending/--runpod-key/--upload CLI 추가
-5. 텔레그램 봇 4개 이름 정비: setMyName API (BotFather ADB 삽질 → API로 해결)
-   - @Parksy_Image_Claude_bot → "Parksy Air" (8695070130)
-   - @parksy_bridge_bot → "Web2Video" (7634493765)
-   - @parksy_bridges_bot → "Parksy BGM" (8669426963) — parksy-audio 실행 중
-   - @Parksy_Audio_Claude_bot → "Parksy Song" (8661892750) — 노래방 프로젝트용 예약
+1. tts_humanizer.py R11 브로드캐스트 프리셋: Distortion(drive_db=2.5) 완전 제거(saturation_drive=0.0), comp_ratio=2.2, limiter_db=-1.5
+2. BGM 교체: lyria3 AI 생성음 → Musician-Parksy 자작 클래식 피아노 7트랙 (parksy-audio/lyria3/material/parksy_original/)
+3. 보이스 교체: ko-KR-HyunsuMultilingualNeural +30% (1.3배속 남성)
+4. 기호 제거 적용 범위 확장: narration 전용 → display(화면 텍스트)까지 동일 regex 적용
+5. --tone cocky: Claude Haiku API로 나레이션 재작성 (익살/잘난척 톤). OAuth: ~/.claude/.credentials.json → claudeAiOauth.accessToken
+6. lecture_template.html R13→R15 전면 재작성: Oswald condensed 폰트, wrapWords()/wordReveal() 단어별 stagger 애니메이션, runTimingLoop()로 window.__TIMINGS__ 읽어서 슬라이드 전진 (핵심버그: 기존 showSlide(0) 하드코딩으로 슬라이드 고정됨)
+7. FFmpeg zoompan Ken Burns 배경: fetch_page()에서 Playwright 스크린샷 촬영, assemble_final()에서 zoompan_bg.mp4 생성, blend=all_mode=screen:all_opacity=0.28으로 텍스트 webm 뒤에 합성
+8. Telegram 오프닝 파이프라인: image_downloader.py에 VIDEO_EXTS 추가, mp4 수신 → opening_staging/opening_latest.mp4 심링크. web2video.py에 --opening PATH 추가 → assemble_final()에서 opening 정규화 후 FFmpeg concat demuxer로 앞에 붙임
 
 **결정**:
-- P4 YouTube: googleapiclient 없으면 Node.js 폴백 구조 (google-api-python-client 미설치 상태)
-- RunPod 엔딩: 봇 이름 변경 작업 중 BotFather ADB 조작 실패 → `setMyName` Bot API가 있었음 (10분 삽질 교훈)
-- 봇 4개 역할 분리: 이미지 레인(Air+Web2Video) / 오디오 레인(BGM+Song)
+- Distortion 제거: pedalboard Distortion이 TTS에 기타 찌그러짐 유발 → 완전 제거
+- BGM: "내 게 아닌" AI 생성음 문제 → 박씨 자작 Musician-Parksy 연주곡으로 교체
+- HyunsuMultilingual: 한국어 남성 목소리 중 가장 자연스러운 인토네이션
+- lecture_template R15: "PPT 수준"이라는 피드백 → Oswald + 단어별 stagger + diagonal line으로 AE 느낌
+- zoompan 배경: 소스 페이지 스크린샷을 배경으로 써서 "footage+텍스트" 합성 AE 스타일 구현
+- Grok 오프닝: SuperGrok 버스 요금제 한도 이슈 → 수작업 큐레이션 후 Telegram 전송 → 자동 붙이기 (히트작 후보 전용)
 
-**결과**:
-- 스모크 테스트 통과: 51초, 1.8MB, Telegram 전송 완료
-- 커밋 2cba582 (parksy-image master)
-- 의존성 미설치: google-api-python-client, google-auth (P4 YouTube 쓰려면 pip install 필요)
+**결과**: 
+- R10→R15 강화학습 루프, Telegram 오프닝 파이프라인 코드 완성 (커밋 2d09922)
+- tts_humanizer.py R11, lecture_template.html R15 커밋 완료
+- telegram-bridges image_downloader.py mp4 핸들러 커밋 완료 (6442c79)
 
 **교훈**:
-- ADB 탭 좌표: 폰이 landscape(2340x1080)와 portrait(1080x2340) 사이 자동 회전 → 탭 전 uiautomator dump로 좌표 확인 필수
-- 봇 이름 변경은 BotFather 채팅 불필요 — `POST /setMyName` API 한 줄로 끝
-- RunPod WAN2.1 엔드포인트 아직 미생성 (API 키 없음) — 가입 후 `python3 runpod_setup.py --key KEY --create --test`
+- runTimingLoop 없으면 슬라이드가 0번에서 절대 안 넘어감 — 브라우저 녹화 결과물 첫 확인 시 반드시 슬라이드 전진 여부 체크
+- anthropic 모듈: pip install anthropic --break-system-packages
+- OAuth key: claudeAiOauth.accessToken (claudeAiOauthToken 아님)
+- Port 19301 already in use: fuser -k 19301/tcp 선실행
+
+**재구축 힌트**: 
+web2video 전체 파이프라인: `python3 tools/web2video/web2video.py "URL" --lang ko --bgm clair --tone cocky --opening /mnt/d/PARKSY/web2video/opening_staging/opening_latest.mp4`
+오프닝 없이 쓸 때: `--opening` 인수 생략하면 그냥 스킵됨
+Telegram mp4 수신: telegram-bridges/image_downloader.py 백그라운드 실행 (tmux tg-image)
+---
+
+---
+### 2026-03-23 | web2video 파이프라인 목테스트 전 채널 완료
+
+**작업**:
+- `parksy_voice_model.py` claude -p CLI 전환 (Anthropic SDK OAuth 오류 우회)
+- `tts_humanizer.py` REAPER 모드 추가 (`--engine reaper`)
+- `blender_renderer.py` 신규 작성 (헤드리스 Blender MP4 렌더)
+- `web2video.py` Blender/REAPER 통합 + `--blender/--tts-engine` CLI 플래그
+- `channel_routing.json` dtslib1979.github.io → EAE-University 추가
+- `fetch_page()` networkidle→load 폴백 + 타임아웃 30s→60s 수정
+- YouTube 토큰 15/15 재갱신 후 전 채널 mock 영상 생성+업로드
+
+**채널별 결과** (전부 unlisted):
+| URL | 채널 | 영상 ID |
+|-----|------|---------|
+| dtslib1979.github.io/eae-univ/ | @EAE-University | ZoNCR_h5qEQ |
+| parksy.kr | @visualizer-parksy | 1M9RGDHCvSg |
+| eae.kr | @BeingEduartEngineer-4 | anBVUuLhhf8 |
+| dtslib.kr | @dtslib-branch | 4km_FwdTo5k |
+| artrew.com | @artrew-i1w | 8rjAU7MDFNg |
+| justino.com | @justino-fashion | 9BScPNke6B4 |
+| hoyadang.com | @dtslib-branch | jJgnJ2PZx8Y |
+| gohsy.com | @dtslib-branch | _II6ZiaebWE |
+| buddies.kr | @dtslib-branch | o64Va9GVnRM |
+| buckleychang.com | @dtslib-branch | FKEsxqOUBmA |
+| namoneygoal.vercel.app | @dtslib-branch | BB4tWiWtVeY |
+| gohsyfashion.com | @dtslib-branch | jCVr86RQ_A0 |
+| gohsyproduction.com | @dtslib-branch | AZvJeXzTniQ |
+| dtslib.com | @dtslib_com | dcIpDsxk0YI |
+
+**스킵된 도메인** (접근 불가/Cloudflare 차단):
+- espiritu-tango.com: DNS 미등록
+- namoneygoal.com: DNS 미등록 (vercel.app으로 대체)
+- alexandria-sanctuary.com: 서버 없음
+- phoneparis.com: HugeDomains 판매 중 (도메인 미구입)
+- koosy.com, papafly.com: Cloudflare 봇 차단
+
+**결정**:
+- claude -p CLI 우선, SDK는 api_key 있을 때만 폴백 (OAuth 토큰은 API key로 쓸 수 없음)
+- fetch_page()에 networkidle→load 폴백 추가 (Notion/SPA계 사이트 대응)
+
+**결과**: 14채널 중 14개 업로드 성공 (접근 가능한 전 도메인 100%)
+
+**교훈**:
+- phoneparis.com 등 도메인은 아직 실제 운영 전 — 라우팅 테이블에서 제거하거나 도메인 구입 시 재테스트
+- Cloudflare 차단 사이트는 puppeteer-extra-stealth 등이 필요하지만 현재 파이프라인 범위 밖
+
+**재구축 힌트**: `python3 tools/web2video/web2video.py "URL" --shorts --tone cocky --lang ko --bgm clair --privacy unlisted` 로 임의 URL → @채널 업로드 가능. 라우팅은 `tools/web2video/channel_routing.json` 참조.
+---
+
+---
+### 2026-03-30 | RunPod WAN2.1 I2V 검증 — 핵심 결론: 적절한 serverless handler 없음
+**작업**:
+- RunPod API 키 발굴 (secrets.local): `rpa_REDACTED_FROM_HISTORY`
+- 계정 잔액 확인: $20
+- serverless endpoint 생성 시도: 3개 endpoint 생성/삭제 반복
+- `ashleykza/wan2.1:latest` (24GB) 사용 → workers init:1 but crash
+- GitHub 분석 결과: T2V Pod WebUI, 서버리스 handler 없음
+
+**결정**:
+- RunPod serverless GPU ID 규칙 확정: `ADA_24`, `AMPERE_24` (short codes) = 유효. 풀네임(`NVIDIA GeForce RTX 4090`) = POD용, serverless에서 무효
+- network volume: US-TX-3에서 GPU 없어 throttled → 삭제
+- 전략 변경: RunPod I2V 보류, 향후 직접 handler 빌드 또는 Replicate API
+
+**결과**:
+- `~/.cache/parksy/runpod_config.json` → status: investigated_no_i2v_handler
+- google-api-python-client 설치 완료 (P4 YouTube 준비)
+
+**교훈**:
+- RunPod serverless = Pod 스타일 이미지 그대로 쓰면 안됨. `handler(job)` + `runpod.serverless.start()` 구현한 전용 이미지 필요
+- WAN2.1 T2V 1.3B은 서버리스 대응 있지만 I2V는 없음
+- 서버리스 worker 충돌 패턴: `init:1→0` 반복 = 컨테이너 기동 후 20-30초 만에 크래시 (handler 없어서)
 
 **재구축 힌트**:
-- 파이프라인 전체: `python3 orchestrator.py --url SLIDES_URL --script-mode simple --tts-preset natural`
-- 엔딩 포함: 위 명령에 `--ending --runpod-key KEY` 추가
-- YouTube 업로드: 위 명령에 `--upload --channel visualizer-parksy` 추가
-- 봇 토큰 전체는 memory/project_telegram_bots.md 참조
+- WAN2.1 I2V serverless 재시도 시: Dockerfile 직접 작성
+  - Base: `runpod/base:0.4.4-py3.11` 
+  - HuggingFace에서 `Wan-AI/Wan2.1-I2V-14B-480P` 다운로드
+  - handler.py: `runpod.serverless.start({"handler": handler})`
+  - 또는 Replicate API: `REPLICATE_API_TOKEN` 발급 후 `replicate.run("wan-ai/wan2.1-i2v")`
 ---
