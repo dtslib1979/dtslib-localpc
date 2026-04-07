@@ -713,3 +713,47 @@ Telegram mp4 수신: telegram-bridges/image_downloader.py 백그라운드 실행
   - handler.py: `runpod.serverless.start({"handler": handler})`
   - 또는 Replicate API: `REPLICATE_API_TOKEN` 발급 후 `replicate.run("wan-ai/wan2.1-i2v")`
 ---
+
+---
+### 2026-04-07 | Vast.ai ComfyUI 파이프라인 구축 + DiffSinger v4 학습 완료
+**작업**:
+1. `comfyui_ending.py` 완전 재작성 — WanVideoWrapper 실제 노드 6개 체인으로 교체
+   - `LoadWanVideoClipTextEncoder` (기존 CLIPVisionLoader 아님)
+   - `WanVideoClipVisionEncode` → `WanVideoImageToVideoEncode` → `WanVideoSampler` → `WanVideoDecode`
+   - **검증 완료**: 480×832 h264 16fps 2.8s mp4 생성 + Telegram 전송 ✅
+2. `orchestrator.py` `--ending` 플래그 연결: `--runpod-key` 제거 → `--ending-host/--ending-port` 추가
+3. `prompt_generator.py` 신규 생성: script.json → claude --print → opening_prompt.json + ending_prompt.json
+   - anthropic SDK 불필요 (pydantic/decimal 충돌 우회), claude --print subprocess 사용
+4. `comfyui_opening.py` 신규 생성: FLUX.1-schnell(text→image) + WAN 2.1 I2V(image→video) 통합 워크플로
+   - FLUX 노드 1~12 + WAN 노드 30~37, 512×896 → 480×832
+5. `vastai_setup_comfyui.sh` FLUX 모델 섹션(3.5) 추가
+6. DiffSinger PARKSY_EN v4 학습 완료 — step 20000, mel_loss 0.02 (MFA 강제정렬 적용)
+
+**결정**:
+- AnimateDiff = SD1.5 전용. FLUX와 호환 불가. WAN 2.1 I2V 선택이 정답
+- WanVideoWrapper torchaudio 충돌: `nodes_sampler.py` lines 10-13 try/except 패치로 해결
+- VideoHelperSuite libGL.so.1: `apt install libgl1-mesa-glx` 필수
+- WanVideoModelLoader 경로: models/diffusion_models/ 하위 심링크 필요
+- ae.safetensors HF gated(401): camenduru/FLUX.1-dev 미러에서 320MB 다운로드 성공
+- ComfyUI 최신 버전이 PyTorch 2.4+ 요구 (torch.uint64, add_safe_globals, comfy_kitchen)
+
+**결과**:
+- `comfyui_ending.py` E2E 검증 완료 ✅
+- `comfyui_opening.py` 코드 완성, 테스트 미완 (인스턴스 크래시)
+- DiffSinger v4 step 20000 체크포인트 생성됨 → **로컬 백업 실패** (인스턴스 크래시)
+- 인스턴스 34278605: pip install torch 2.4.0 중 크래시. 현재 인스턴스 0개.
+
+**교훈**:
+- Vast.ai 인스턴스에서 pip install torch (2GB 대용량) 실행 시 인스턴스 크래시 위험
+- ComfyUI 전용 인스턴스는 PyTorch 2.4+ 포함 이미지로 시작해야 함 (`pytorch/pytorch:2.4.0-cuda12.1-cudnn9-devel` 또는 ComfyUI 전용 도커 이미지)
+- DiffSinger 학습 완료 직후 즉시 ckpt SCP 백업할 것 (학습 완료 = 즉시 백업, 다른 작업 전에)
+- GPU 점유 중 다른 GPU 작업 동시 불가 → 학습 완료 전 ComfyUI 대기는 맞는 판단
+
+**재구축 힌트**:
+- ComfyUI 전용 새 인스턴스: Vast.ai 검색 시 `image=pytorch/pytorch:2.4.0-cuda12.1-cudnn9-devel` 사용
+- FLUX 모델: flux1-schnell-fp8(17GB) + clip_l(235MB) + t5xxl_fp8(4.6GB) + ae.safetensors(320MB, camenduru 미러)
+- WAN 모델: Wan2_1-I2V-14B-480P_fp8(16GB) + open-clip(1.1GB) + Wan2_1_VAE_bf16(243MB)
+- `vastai_setup_comfyui.sh` 한 번 실행하면 전부 자동 다운로드+ComfyUI 시작
+- DiffSinger v4 재학습: 약 55분, RTX 3090 $0.20, `/root/parksy_v4.yaml` max_updates:20000
+- comfyui_opening.py 테스트: SSH 터널 `ssh -p PORT -fNL 18188:localhost:8188` 후 실행
+---
