@@ -718,4 +718,36 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 - 기준선: /mnt/c/Temp/OpenUtau/Export/ag_r5_drop.wav (Max=0.627)
 - DDSP: ~/backups/vast_checkpoints/ddsp_bassoon_v2/step_040000.pt
 - 다음: PowerShell UI 자동화로 OpenUtau 실제 렌더 OR PARKSY_EN v3 완료 후 새 파이프라인
+### 2026-04-10 | DDSP/영어DiffSinger 전면 폐기 → RAVE + Tiger-ko 전환 확정
+**작업**:
+- Vast.ai RTX3090 (34347914, ssh5.vast.ai:13280) RAVE v2 바순 학습 중간 보고 (step 39,996/300,000)
+- v6 영어 DiffSinger 풀체인 최종 실행: singing_engine.py → RVC(parksy_rvc.pth, index_rate=0.3) → postchain.sh → 텔레그램 전송
+- 바순 A(VSCO단독)/B(DDSP단독)/C(VSCO+DDSP하이브리드) 3종 비교 판정
+- DEVLOG_20260410.md 작성, DEVPLAN_v3.md 기준 세션 정리
+
+**결정**:
+- 영어 DiffSinger v6 공식 폐기 — "이슬람 경전 소리", 비원어민 MFA alignment 구조적 한계
+- VSCO-2-CE 단독 폐기 — 싸구려 악기 소리
+- DDSP 48kHz 단독 폐기 — 갤러그(metallic noise), 300k steps에서도 동일
+- VSCO+DDSP 하이브리드 폐기 — DDSP 노이즈 전파
+- **유일한 희망: RAVE v2 (Sophie 35분)** → 내일 새벽 완료 후 3축 판정
+
+**결과**:
+- v6 풀체인 RMS 0.120, 텔레그램 message_id=348 전송 완료
+- RAVE step 39,996 (13%), GPU 72%, best.ckpt + last.ckpt 정상
+- 완료 예정: 2026-04-11 04:00 KST
+
+**교훈**:
+- rvc_infer.py 없음. rvc_python 패키지(/home/dtsli/rvc-venv/)로 대체. rvc_sweep.sh 참고.
+- postchain.sh 위치: ~/parksy-audio/ 루트 (scripts/ 아님)
+- RAVE 300k = default 6M의 5%. 품질 보장 불확실 → MIDI-DDSP 병행 준비 필수
+- 파이프라인 스크립트 자체는 작동. 엔진 교체(RAVE, Tiger-ko)가 핵심.
+
+**재구축 힌트**:
+"VSCO-2-CE Dry WAV에 RAVE v2 Sophie 음색 씌우는 바순 파이프라인. RAVE는 acids-rave 2.2.0, config v2, max_steps 300k, Vast.ai RTX3090. 가창은 Tiger-ko 한국어 fine-tune (박씨 40분 녹음 필요). RVC 필터는 /home/dtsli/rvc-venv/ rvc_python 패키지."
+
+**다음 세션 즉시 실행**:
+1. RAVE 완료 확인 (새벽 4시 전후) → TorchScript .ts export → 로컬 다운
+2. MIDI-DDSP 바순 pre-trained 모델 미리 다운 (병행 비교용)
+3. 3축 판정 (Sustain/Attack/MIDI) → 6.0+ 납품파이프라인 / 미만 MIDI-DDSP
 ---
