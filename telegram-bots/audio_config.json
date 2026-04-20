@@ -1,0 +1,21 @@
+{
+  "bot_token": "8669426963:AAGvsn8ZnWgkTccw2G2AqgxHbq9RVtmBZMA",
+  "chat_id": 6858098283,
+  "bot_name": "@parksy_bridges_bot",
+  "purpose": "오디오/비디오 양방향 브릿지 (PC <-> 핸드폰)",
+  "outbox_dir": "/home/dtsli/dtslib-localpc/telegram-bots/outbox",
+  "sent_dir": "/home/dtsli/dtslib-localpc/telegram-bots/sent",
+  "watch_dirs": [
+    {
+      "dir": "/mnt/d/tmp",
+      "pattern": "*_final.*"
+    },
+    {
+      "dir": "/mnt/d/5_YOUTUBE",
+      "pattern": "*"
+    }
+  ],
+  "poll_interval": 10,
+  "inbox_dir": "/mnt/d/tmp/audio_inbox",
+  "midi_dir": "/mnt/d/PARKSY/parksy-audio/local-agent/sources"
+}

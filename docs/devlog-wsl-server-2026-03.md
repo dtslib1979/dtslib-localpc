@@ -83,7 +83,7 @@ Windows 시작프로그램/wsl-autostart.vbs
 - 60초 간격 무한루프
 - 감시 대상: sshd, image_downloader.py, audio_bridge.py, tailscaled
 - 프로세스 죽으면 자동 재시작
-- 별도 스크립트 파일로 관리 (/home/dtsli/telegram-bridges/watchdog.sh)
+- 별도 스크립트 파일로 관리 (/home/dtsli/dtslib-localpc/telegram-bots/watchdog.sh)
 
 ## 네트워크
 

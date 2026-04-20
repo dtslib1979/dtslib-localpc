@@ -100,7 +100,7 @@ tmux has-session -t tg-audio 2>/dev/null || {
 # ── 6. watchdog ──
 tmux kill-session -t watchdog 2>/dev/null
 tmux new-session -d -s watchdog -n monitor
-tmux send-keys -t watchdog:monitor 'source ~/.bashrc && bash /home/dtsli/telegram-bridges/watchdog.sh' Enter
+tmux send-keys -t watchdog:monitor 'source ~/.bashrc && bash /home/dtsli/dtslib-localpc/telegram-bots/watchdog.sh' Enter
 log 'Watchdog started'
 
 WSL_IP=$(hostname -I | awk '{print $1}')

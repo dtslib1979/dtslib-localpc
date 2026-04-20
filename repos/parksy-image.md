@@ -619,7 +619,7 @@ python scripts/drawing/photo2drawing.py [사진] --ruler -o output.dxf
 **결과**: 
 - R10→R15 강화학습 루프, Telegram 오프닝 파이프라인 코드 완성 (커밋 2d09922)
 - tts_humanizer.py R11, lecture_template.html R15 커밋 완료
-- telegram-bridges image_downloader.py mp4 핸들러 커밋 완료 (6442c79)
+- dtslib-localpc/telegram-bots image_downloader.py mp4 핸들러 커밋 완료 (6442c79)
 
 **교훈**:
 - runTimingLoop 없으면 슬라이드가 0번에서 절대 안 넘어감 — 브라우저 녹화 결과물 첫 확인 시 반드시 슬라이드 전진 여부 체크
@@ -630,7 +630,7 @@ python scripts/drawing/photo2drawing.py [사진] --ruler -o output.dxf
 **재구축 힌트**: 
 web2video 전체 파이프라인: `python3 tools/web2video/web2video.py "URL" --lang ko --bgm clair --tone cocky --opening /mnt/d/PARKSY/web2video/opening_staging/opening_latest.mp4`
 오프닝 없이 쓸 때: `--opening` 인수 생략하면 그냥 스킵됨
-Telegram mp4 수신: telegram-bridges/image_downloader.py 백그라운드 실행 (tmux tg-image)
+Telegram mp4 수신: dtslib-localpc/telegram-bots/image_downloader.py 백그라운드 실행 (tmux tg-image)
 ---
 
 ---

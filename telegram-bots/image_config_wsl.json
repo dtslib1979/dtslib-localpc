@@ -1,0 +1,9 @@
+{
+  "bot_token": "7634493765:AAHDqmUmI5U3fqZWEUavpNLKR2yy6KeM7cw",
+  "chat_id": 6858098283,
+  "bot_name": "@parksy_bridge_bot",
+  "purpose": "이미지/도면 + MIDI 통합 브릿지 (WSL용)",
+  "download_dir": "/mnt/d/parksy-image/00_inbox",
+  "midi_dir": "/mnt/d/PARKSY/parksy-audio/local-agent/sources",
+  "poll_interval": 30
+}
