@@ -95,11 +95,11 @@ PC 앞 물리 필수:           1개  ( 8.3%)
 | 2 | E | ✅ 완료 | 2026-04-20 12:07 (파일 존재 가드 추가, 재기동 후 70초간 재시작 0회 검증) |
 | 3 | Task Scheduler 삭제 | ✅ 완료 | 2026-04-20 12:05 (`WSL-SSHD-AutoStart` Unregister, WSL_Init/WSL_SSHD 2개만 남음) |
 | 4 | watchdog 중복 kill | ✅ 완료 | 2026-04-20 12:07 (root 프로세스 정리, dtsli로 단일 재기동) |
-| 5 | 17번 커밋 | ⏳ 대기 | — |
-| 6 | B 텔레그램 훅 | ⏳ 대기 | — |
-| 7 | C 레인 규칙 | ⏳ 대기 | — |
-| 8 | D 치트시트 | ⏳ 대기 | — |
-| 9 | A 3중 방어 | ⏳ 대기 | — |
+| 5 | 17번 커밋 (+ push) | ✅ 완료 | 2026-04-20 12:18 (papyrus/localpc/bridges 3개 push 완료) |
+| 6 | B 텔레그램 훅 | ✅ 완료 | 2026-04-20 12:24 (notify_telegram 함수 + log_restart 확장 + 기동 알림) |
+| 7 | C 레인 규칙 | ✅ 초안 완료 | 2026-04-20 12:26 (project_lane_rules.md, 박씨 보완 대기) |
+| 8 | D 치트시트 | ✅ 완료 | 2026-04-20 12:26 (infra-history/18_MUTUAL_RECOVERY.md, 증상 A~J) |
+| 9 | A 3중 방어 | ✅ 완료 | 2026-04-20 12:18 (wuauserv Disabled + NoAutoUpdate=1 + ActiveHours 0~23) |
 | 10 | A 검증 재부팅 | ⏳ 대기 | — |
 | 11 | H 로그 조사 | ⏳ 대기 | — |
 | 12 | G WTG 테스트 | ⏳ 대기 | — |
