@@ -57,6 +57,33 @@ P6 DIRECT 패키지 / phoneparis 레포
 - Paris Edition 결제 플로우 (문의 앵커 연결)
 - PWA service worker 검증
 
+## 스캐폴드 판정 (세션 말미 대화)
+
+**Q: 스캐폴드 역할 했냐? Discord + GitHub Pages + YouTube 연결된 홈페이지 생태계 맞냐?**
+
+맞다. 85% 완성.
+
+| 채널 | 상태 |
+|------|------|
+| GitHub Pages (phoneparis.kr) | ✅ 라이브 |
+| Discord 실시간 채팅 (WidgetBot) | ✅ 작동 — 실제 문의 수신 확인 |
+| Discord Webhook 문의폼 | ✅ 작동 |
+| YouTube RSS 피드 | ✅ 파이프 연결, 영상 0개 대기 |
+| 오디오 플레이어 | ✅ 5트랙 |
+| 파리 구역 인터랙티브 맵 | ✅ |
+
+파이프는 다 연결됐다. YouTube 채널에 영상 올라오면 RSS 섹션 자동 채워짐.
+나머지 15% = 이미지 갤러리 콘텐츠 + 결제 앵커.
+
+**Q: 이 설정 다른 사이트에도 재사용 가능하도록 설정집 만들어놨냐?**
+
+아니다. phoneparis = 레퍼런스 구현체. 설정집은 없음.
+다음 사이트 착수할 때 동시에 만드는 게 낫다 — 그때 실제로 뭐가 필요한지 정확히 보임.
+변수는 4개: GUILD_ID / CHANNEL_ID / YT_CHANNEL_ID / WEBHOOK_URL.
+justino 레포에 보일러플레이트로 박을 것 (다음 사이트 착수 시).
+
+---
+
 ## 커밋 이력 (이번 세션)
 ```
 fa0eeac fix: 문의 섹션 052 설계도 원위치 복원 — PART5 직후, EPILOGUE 앞
