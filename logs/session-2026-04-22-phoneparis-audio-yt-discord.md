@@ -92,3 +92,32 @@ fa0eeac fix: 문의 섹션 052 설계도 원위치 복원 — PART5 직후, EPIL
 0e3babf feat: Discord 공지 피드 → YouTube RSS 피드 교체
 93425e6 style: 바텀 시트 다크 테마 + 문의 섹션 실시간 채팅 하단 이동
 ```
+
+---
+
+## 2차 작업 — OrbitPrompt 일괄 작업 (2026-04-22 후반)
+
+### 완료 커밋: fdf9a94
+
+### 1. PHL 인터랙티브 제너레이터 3개
+- `phl/PHL-Expansion.html` — 모듈 확장/견고화 (적용 범위 체크박스, 프롬프트 생성, 복사)
+- `phl/PHL-Hardening.html` — 보안 하드닝 (6개 점검 항목 선택형)
+- `phl/PHL-Reverse.html` — 역방향 검증 (정역 일관성 테스트 포커스)
+- 각 페이지: [복사] 버튼 + 스펙 접이식 하단 표시
+
+### 2. philosopher-parksy RSS 섹션 신설
+- 채널 ID: `UCJaGuXjxoNjFMqfYUSFjZVg`
+- api.rss2json.com CORS 프록시 → 최신 영상 6개 카드
+- fallback: "아직 업로드된 영상이 없습니다"
+
+### 3. index.html 스튜디오 저널 표지 개편
+- HERO: "도구 쇼케이스" → "철학자가 되어가는 과정"
+- 스튜디오 저널 섹션 신설 (최근 세션 로그 3개 인라인)
+- PHL 섹션: PHL-1/2/3 카드 → Expansion/Hardening/Reverse Generator 링크로 교체
+- NAV에 "저널" 링크 추가
+
+### 라이브 URL
+- https://dtslib1979.github.io/OrbitPrompt/
+- https://dtslib1979.github.io/OrbitPrompt/phl/PHL-Expansion.html
+- https://dtslib1979.github.io/OrbitPrompt/phl/PHL-Hardening.html
+- https://dtslib1979.github.io/OrbitPrompt/phl/PHL-Reverse.html
