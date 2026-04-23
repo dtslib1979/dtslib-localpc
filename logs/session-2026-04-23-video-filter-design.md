@@ -121,3 +121,29 @@ parksy-image/
 ├── pipeline/comfyui/           ← ComfyUI 워크플로
 └── PARKSY_2D_AI_TOOLMIX.md    ← 툴스택 + 박씨 LoRA 계획
 ```
+
+---
+### 2026-04-23 2차 | Style Engine Phase 1 구현 완료 — 31/31 pytest 통과
+
+**작업**:
+- `tools/style_engine/engine/` 전체 구현: errors.py / types.py / loader.py / resolver.py / linter.py / adapters 4종 / compiler.py
+- 11개 노드 YAML + 2개 프로필 YAML + JSON Schema 3개
+- CLI (Typer) + 31개 테스트 4파일
+- 버그 수정: linter.py `v` 미정의 → `_SCRUB_TABLE[k]`, loader `_snake` 부정확 → id 필드 직접 비교
+- 브랜치 `claude/style-engine-phase1` push → PR #33 생성
+
+**결정**:
+- `numbers.py` (repo root)가 stdlib `numbers` 모듈 shadowing → `/tmp`에서 pytest 실행 우회
+- conftest.py로 sys.path 통합 관리 (개별 test 파일에서 sys.path.insert 제거)
+- JSON Schema에 `format` 카테고리 + `external_refs` 필드 추가 (BD_LIGNE_CLAIRE 검증 통과)
+
+**결과**: 31/31 통과, 7개 커밋 (서사 구조), PR #33 오픈
+
+**교훈**:
+- repo root에 `numbers.py` 같은 동명 파일 있으면 pytest 자체가 임포트 불가 → CWD 주의
+- YAML id 필드와 파일명이 일치하지 않는 경우 loader가 id 직접 비교로 탐색해야 함
+
+**재구축 힌트**:
+  `cd /tmp && python3 -m pytest /home/dtsli/parksy-image/tools/style_engine/tests/ -v`
+  PR #33 브랜치: `claude/style-engine-phase1`
+---
