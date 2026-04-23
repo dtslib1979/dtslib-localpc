@@ -147,3 +147,45 @@ parksy-image/
   `cd /tmp && python3 -m pytest /home/dtsli/parksy-image/tools/style_engine/tests/ -v`
   PR #33 브랜치: `claude/style-engine-phase1`
 ---
+
+---
+### 2026-04-23 3차 | Style Engine Phase 1 완성 + 방향 전환 확정
+
+**작업**:
+- style_engine Phase 1 풀빌드 완료 (PR #33 main 머지)
+  - engine/: errors, types, loader, resolver, linter, compiler, adapters 4종
+  - nodes/ 11개 (actor3 / director_kr3 / director_global3 / cinematography1 / format1)
+  - profiles/ 2개 (KOccult_DarkComedy_v2_1, SymmetryNoir_v2_1)
+  - schema/ JSON Schema 3개
+  - CLI (Typer): list-nodes, list-profiles, compile, inspect-*
+  - tests/ 31개 전부 green (cd /tmp && python3 -m pytest ...)
+- 버그 수정 2개:
+  - linter.py: _compiled 리스트컴프리헨션 v 미정의 → _SCRUB_TABLE[k]
+  - loader.py: CamelCase→snake 변환 부정확 → YAML id 필드 직접 비교로 교체
+- JSON Schema: format 카테고리 + external_refs 필드 추가
+- conftest.py: numbers.py 그림자 회피 (repo root에 numbers.py 있어서 pytest /tmp에서 실행)
+
+**결정 (방향 전환)**:
+- 기존 Gemini 이미지 생성 워크플로우 → 폐기
+- style_engine → ComfyUI/FLUX via Vast.ai 파이프라인으로 교체 확정
+- 근거: parksy-image에 이미 ComfyUI 인프라 있음
+  - pipeline/comfyui/ (워크플로우 JSON 3개)
+  - tools/web2video/comfyui_opening.py (FLUX.1-schnell 구현)
+  - tools/web2video/vastai_setup_comfyui.sh (Vast.ai 자동 설치)
+  - Grok도 이미 ComfyUI로 교체됨 (커밋 7f45e11)
+- tools/video_filter/ → dead code, style_engine으로 대체됨, 삭제 대상
+
+**결과**:
+- Phase 1: 31/31 tests, PR #33 merged, 7개 서사 커밋
+- 다음 단계 명확화: style_engine 출력 → ComfyUI API JSON 브릿지 작성
+
+**교훈**:
+- repo root에 동명 파일(numbers.py) 있으면 pytest 자체가 stdlib 충돌로 뻗음
+- YAML 파일명이 CamelCase ID와 다를 때 loader는 id 필드 직접 비교로 탐색해야 함
+- "인프라 더 쌓기 전에 이미지 1장 먼저" 원칙 (이미지 없으면 검증 불가)
+
+**재구축 힌트**:
+  git clone parksy-image && cd /tmp
+  python3 -m pytest /home/dtsli/parksy-image/tools/style_engine/tests/ -v
+  → 31/31이면 Phase 1 정상
+---
