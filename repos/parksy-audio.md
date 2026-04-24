@@ -751,3 +751,46 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 2. MIDI-DDSP 바순 pre-trained 모델 미리 다운 (병행 비교용)
 3. 3축 판정 (Sustain/Attack/MIDI) → 6.0+ 납품파이프라인 / 미만 MIDI-DDSP
 ---
+
+---
+### 2026-04-24 | GCP GPU 쿼터 신청 + AI 모델 학습 자동화 스크립트 완성
+
+**작업**:
+1. TTS 3-Lane 아키텍처 확인 — Lane C = Chatterbox(영어 발음) + RVC(박씨 음색 필터). `scripts/tts_engine.py` commit 3d5ddcc 기준
+2. GCP Free Trial 크레딧($310, thomas.tj.park@gmail.com)으로 AI 모델 3종 학습 계획 수립
+3. `gcp_training/` 디렉토리에 스크립트 4개 작성:
+   - `01_create_vm.sh`: GCS 버킷 + a2-highgpu-1g A100 Preemptible VM 생성
+   - `02_upload_data.sh`: GPT-SoVITS segments(659파일/298MB), RVC 소스, DiffSinger 데이터 GCS 업로드
+   - `03_vm_train_all.sh`: RVC(30분) → GPT-SoVITS v2(90분) → DiffSinger v4+MFA(12시간) 순차 학습
+   - `04_download_models.sh`: GCS → 로컬 다운로드 + VM 종료
+4. GCP Compute Engine GPUS_ALL_REGIONS 쿼터 0→8 신청 완료 (Playwright MCP 직접 실행)
+   - Case ID: 23103ab3-a086-4fed-8cbe-fe9b8cdedbf7
+   - 승인 이메일: thomas.tj.park@gmail.com (영업일 1~3일)
+5. GPT-SoVITS v1 모델 로컬 부재 확인 — RunPod 종료 시 미다운로드로 유실 확정
+
+**결정**:
+- VM 이미지: `pytorch-2-9-cu129-ubuntu-2204-nvidia-580` (pytorch-latest-gpu 없음 확인 후 변경)
+- RVC 소스 오디오 경로: `~/parksy-diffsinger/raw_wavs/자료1_모노_48k_30m03s_44k.wav`
+- GPT-SoVITS segments(659파일)는 이미 GCS 업로드 완료
+- GCP quota 신청 방식: Playwright MCP → GCP Console 직접 클릭 (CLI 불가)
+
+**결과**:
+- GCP 쿼터 신청서 제출 완료 (승인 대기 중)
+- gcp_training/ 스크립트 4개 작성 완료 (미커밋)
+- GPT-SoVITS v1 유실 확정 → GCP v2 재학습 계획이 맞음
+
+**교훈**:
+- Free Trial GCP 계정은 GPU 쿼터 기본값 0 → 반드시 사전 신청 필요
+- GPUS_ALL_REGIONS = Compute Engine 글로벌 GPU. Vertex AI도 별도 쿼터 있음
+- RunPod Pod 종료 전 반드시 scp 다운로드 확인 (v1 유실 반복 방지)
+
+**재구축 힌트**:
+"GCP a2-highgpu-1g (A100), Preemptible SPOT, pytorch-2-9-cu129-ubuntu-2204-nvidia-580 이미지. 학습 순서: rvc-python RVC(30분) → GPT-SoVITS v2(90분) → DiffSinger v4+MFA(12시간). 전부 GCS gs://parksy-models-training/ 저장 후 로컬 다운. 스크립트: ~/parksy-audio/gcp_training/"
+
+**다음 세션 즉시 실행**:
+1. thomas.tj.park@gmail.com 이메일 확인 → GCP 쿼터 승인 여부
+2. 승인되면: bash ~/parksy-audio/gcp_training/01_create_vm.sh
+3. bash ~/parksy-audio/gcp_training/02_upload_data.sh (RVC 소스 업로드)
+4. VM SSH 접속 → 03_vm_train_all.sh 전송 → nohup 백그라운드 실행
+5. 완료 후 bash ~/parksy-audio/gcp_training/04_download_models.sh → VM stop
+---
