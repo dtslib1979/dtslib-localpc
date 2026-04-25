@@ -633,3 +633,348 @@ OPS 자동 실행:
 
 *§12 작성: ChatGPT 초안 (12.1~12.5) + Claude 보강 (12.6~12.12) + 박씨 메모리 통합*
 *AD Genesis: 2026-04-25 14:30 KST*
+
+---
+
+### 12.13 게이트 하강 로드맵 — "박씨 지랄받을 일 없는 구조"
+
+> **박씨 통찰 (2026-04-25):**
+> "이렇게 되면 네가 나한테 지랄할 게 없어지고 자동 네가 말했던 양산이 그냥 이루어지는 거 아니냐? 양산하면서 수정하는 거 아니야?"
+
+박씨가 정확히 짚음. **AD 모드의 본질 = 양산 + 자기수정이 한 루프 안에서.** 박씨 게이트 2회는 "AD 시대 1개월차 신뢰 형성용"이고, 최종 목표는 게이트 0회.
+
+#### Phase 1 — 게이트 2회 (지금, Month 1)
+
+```
+박씨 입력: 티켓 1줄
+  ↓
+OPS Explore → Plan ─── ★ 박씨 게이트 1
+  ↓ OK
+OPS Code → 자체 검증 → 자체 재시도 (3회)
+  ↓
+OPS Commit 제안 ─── ★ 박씨 게이트 2
+  ↓ OK
+push + INDEX 갱신
+```
+
+**박씨 부담:** 티켓당 ~2분 / 매일 1분 / 매주 5분
+**진입 조건:** 지금 즉시 (2026-04-25)
+
+#### Phase 2 — 게이트 1회 (Month 2~3)
+
+```
+박씨 입력: 티켓 1줄
+  ↓
+OPS Explore → Plan → Code → 자체 검증 → 자체 재시도
+  ↓
+OPS Commit 자동 ─── (게이트 없음)
+  ↓
+push 자동 + INDEX 갱신
+  ↓
+OPS 일괄 보고 (DAILY) ─── ★ 박씨 사후 검수 1회 (revert 권한만)
+```
+
+**박씨 부담:** 티켓 입력 1줄 + 매일 1분 사후 검수
+**진입 조건 (모두 충족):**
+- Phase 1 누적 처리 티켓 ≥ 10
+- 헌법 위반 0회 (Section 5 절대 금지)
+- 롤백 0회 (mock 함정/scope creep 없음)
+- 박씨 Plan 거부율 < 20% (OPS Plan 품질 검증)
+- 박씨 명시 승인: "Phase 2 진입해"
+
+#### Phase 3 — 게이트 0회 (Month 4+, MCP 완성 후)
+
+```
+박씨 입력: "오늘 펜딩 처리해" (1줄)
+  ↓
+OPS 가 펜딩 마스터 INDEX 읽기 → 자체 우선순위 결정
+  ↓
+N개 티켓 자율 양산 + 동시 수정 (병렬)
+  ↓
+각 티켓별 MCP 헌법 게이트 자동 통과 (코드로 박힌 룰)
+  ↓
+push 자동 + INDEX/DAILY/WEEKLY 자동 갱신
+  ↓
+박씨 매주 5분 WEEKLY_RETRO 확인 ─── (혹시 revert 결정만)
+```
+
+**박씨 부담:** 매주 5분 (WEEKLY_RETRO 확인 / revert 권한만)
+**진입 조건 (모두 충족):**
+- Phase 2 누적 처리 티켓 ≥ 30
+- MCP 헌법 강제 메커니즘 완성 (`feedback_mcp_development_law.md` 실제 구현)
+- 박씨 인큐베이터 코워커 6명 중 1명 이상 졸업 (시장 검증 신호)
+- Author-as-MCP 28레포 중 5개 이상 MCP화 완료
+- 박씨 명시 승인: "Phase 3 진입해"
+
+#### Phase 별 박씨 부담 비교표
+
+| Phase | 박씨 매일 부담 | 박씨 게이트 횟수/티켓 | OPS 자율도 |
+|:--:|:--:|:--:|:--:|
+| **BC** (지금까지) | 30분~수시간 | 무한 (모든 결정) | 0% |
+| **AD Phase 1** | 5~10분 | 2회 | 70% |
+| **AD Phase 2** | 1~3분 | 1회 (사후) | 90% |
+| **AD Phase 3** | 매주 5분 | 0회 | 99% |
+
+#### 양산 + 수정 동시 루프 (박씨가 짚은 핵심)
+
+기존 BC 사고:
+```
+양산 → 검수 → 수정 → 검수 → 양산 ...  (박씨 매번 개입)
+```
+
+AD 사고 (Phase 2~3):
+```
+[티켓 큐] ──→ [OPS 양산 루프]
+                  │
+                  ├── Code (양산)
+                  ├── 자체 검증 (수정 발견)
+                  ├── 자율 재시도 (수정 적용)
+                  ├── 다음 티켓 양산 (수정 결과 반영)
+                  │
+                  └── 양산 = 수정 = 한 루프
+```
+
+**핵심 메커니즘:**
+- 양산 1티켓 = 그 안에서 자체 mock 테스트 + 린터 + 타입체크
+- 실패 발견 = 동일 티켓 자율 재시도
+- 다음 티켓 = 이전 티켓 결과 반영해서 더 잘 양산
+- 박씨는 **결과물 흐름만** 모니터링 (GitHub commits / Papyrus INDEX)
+
+#### "박씨가 지랄받지 않는 시점" 정의
+
+| 박씨 받던 지랄 종류 | Phase 1 | Phase 2 | Phase 3 |
+|---|:--:|:--:|:--:|
+| "이 plan 어떠세요?" | 받음 | 안 받음 | 안 받음 |
+| "이거 커밋해도 됨?" | 받음 | 안 받음 | 안 받음 |
+| "이 변경 검수해주세요" | 받음 | 사후 1회 | 사후 옵션 |
+| "이 에러 어떻게 할까요?" | 받음 (재시도 3회 후) | 받음 (재시도 3회 후) | MCP 가 처리 |
+| "헌법 위반 같은데..." | 받음 | 받음 | MCP 가 차단 |
+| "다음에 뭐 할까요?" | 받음 | 박씨 큐만 보고 | OPS 자율 |
+
+→ **Phase 3 = 박씨가 받는 지랄 = 매주 5분 사후 검수 + revert 권한만.**
+
+#### 단, 단계 건너뛰기 금지 — 신뢰는 점진적
+
+박씨가 "당장 Phase 3 가자" 해도 **거부**. 이유:
+- Phase 1 메트릭 없으면 OPS 품질 검증 불가
+- MCP 헌법 강제 메커니즘 미완성 상태에서 게이트 0회 = 헌법 위반 누적 폭발
+- 박씨 신뢰는 데이터로만 형성 (말로 안 됨)
+
+→ 박씨가 Phase 건너뛰기 시도해도 OPS 가 차단. **이것 자체가 박씨 보호.**
+
+---
+
+*§12.13 추가: 박씨 통찰 ("양산하면서 수정") 인정 + 게이트 하강 로드맵 명문화*
+*최종 목표: Phase 3 (게이트 0회, 박씨 매주 5분, OPS 자율도 99%)*
+
+---
+
+## 13. 삼각형 실행 구조 — Claude(아키텍트) + DeepSeek(설계자) + Aider(집행자)
+
+> **박씨 제안 (2026-04-25):** "딥시크 에이더를 수행자로 두고 저 새끼를 인스트럭터로 두고 둘이 주고받게 하는 건 어떠냐. 토큰값도 아끼고."
+
+### 13.1 역할 매트릭스
+
+| 역할 | 담당 | 토큰 비용 (입력/출력) | 용도 |
+|---|---|---|---|
+| **디렉터** | **박씨** | — | 티켓 선택 / Plan 결재 / Commit 결재 |
+| **인스트럭터·아키텍트** | **Claude (Opus/Sonnet)** | $3 / $15 per M | 메타 사고 / 헌법 적용 / 티켓 쪼개기 / 결과 검수 |
+| **체인 설계자** | **DeepSeek-V3** | **$0.27 / $1.10 per M** | API/MCP 체인 / 상태머신 / 커뮤니티 패턴 조사 |
+| **코드 집행자** | **Aider (DeepSeek 백엔드)** | $0.27 / $1.10 per M | diff-edit 정밀 수정 / 파일 단위 리팩토링 / 테스트 실행 |
+
+### 13.2 비용 절감 시뮬레이션 (1 티켓 기준)
+
+**기존 (Claude 단독, BC 방식):**
+```
+Explore: Claude  10K 입력 + 2K 출력  = $0.06
+Plan:    Claude  5K + 5K              = $0.09
+Code:    Claude  20K + 10K            = $0.21
+검증:    Claude  10K + 3K             = $0.08
+─────────────────────────────────────────────
+티켓 1개 비용                        ≈ $0.44
+```
+
+**삼각형 (Claude 위임):**
+```
+Explore:        Claude   10K + 2K  = $0.06   ← 메타 판단
+설계 위임:      DeepSeek 5K + 5K   = $0.007  ← 체인 설계
+Plan 통합:      Claude   3K + 2K   = $0.04   ← 박씨용 정리
+Aider 인스트럭션: Claude  3K + 3K  = $0.05   ← 패치 지시 작성
+Code 실행:      Aider    20K + 10K = $0.016  ← 실제 편집
+검수:           Claude   10K + 2K  = $0.06   ← 결과물 검수
+─────────────────────────────────────────────
+티켓 1개 비용                       ≈ $0.23
+```
+
+**절감률 ~48%.** 1주 7 티켓 = $1.5 절약. 1년 = ~$80 절약.
+
+### 13.3 표준 루프 — Director → Architect → Designer → Executor
+
+```
+[Step 0] 박씨 발화 (1줄)
+   "T-0001 AD 처리. DeepSeek+Aider 수행자 모드."
+            ↓
+[Step 1] Claude (Architect) — Explore
+   - 관련 파일 grep
+   - 메모리/헌법 검색
+   - 현재 상태 NOTES.md 1문단 요약
+            ↓
+[Step 2] Claude → DeepSeek (Designer) 위임
+   "이 티켓의 API/MCP 체인을 설계해. 커뮤니티 패턴 2-3 소스 인용."
+            ↓
+[Step 3] DeepSeek 응답
+   - 체인: input → preproc → GPU 호출 → postproc → 저장
+   - 커뮤니티 소스 3개
+   - 충돌 요소 점검
+            ↓
+[Step 4] Claude (Architect) — Plan 통합
+   - DeepSeek 체인을 박씨용 Plan 으로 재구성
+   - 헌법 위반 자가 검사 (§ 5 절대 금지)
+   - NOTES.md "## Plan" 섹션 박음
+            ↓
+[Step 5] ★ 박씨 게이트 1 — Plan 결재
+   - 박씨 OK / 수정 / 거부
+            ↓ OK
+[Step 6] Claude (Architect) → Aider 인스트럭션 작성
+   - "다음 파일들에서 다음 변경을 적용해" 명세
+   - Aider 가 그대로 실행 가능한 형식
+   - NOTES.md "## Aider Instructions" 섹션
+            ↓
+[Step 7] Aider (Executor) 실행
+   - 박씨가 phone_aider/tab_aider tmux 세션에 인스트럭션 붙여넣음
+   - 또는 Claude 가 자동으로 tmux 에 send-keys
+   - Aider가 diff 생성 → 적용 → 테스트 실행
+            ↓
+[Step 8] Claude (Architect) — 검수 ★ 핵심
+   - Aider 가 만든 diff 읽고 검증
+   - 헌법 위반 / scope creep / mock 함정 자가 검출
+   - 자체 재시도 트리거 (3회 한도)
+            ↓
+[Step 9] BEFORE/AFTER 자동 캡처 (§ 12.4)
+   - git diff 자동 추출
+   - METRICS.json 자동 갱신
+            ↓
+[Step 10] ★ 박씨 게이트 2 — Commit 결재
+   - 변경 요약 3줄 + diff 링크
+   - 박씨 OK
+            ↓
+[Step 11] push + INDEX/DAILY 갱신
+   - 다음 티켓 (Loop 모드면 자율 진입)
+```
+
+### 13.4 컨텍스트 핸드오프 프로토콜 — 박씨 복붙 부담 0
+
+**ChatGPT 초안 빠진 것:** "박씨가 Aider 한테 어떻게 넘기나?"
+**해결:** Claude 가 직접 tmux send-keys 로 박음.
+
+#### 메커니즘
+
+```bash
+# Claude 가 Step 7 직전 자동 실행:
+INSTRUCTION_FILE="/tmp/aider_instr_T-0001.md"
+cat > $INSTRUCTION_FILE <<'EOF'
+[티켓 T-0001]
+대상 파일:
+- repos/X/file.py
+
+변경 사항:
+1. ...
+2. ...
+
+테스트:
+- pytest repos/X/tests/test_file.py
+EOF
+
+# tmux 에 직접 붙여넣기
+tmux send-keys -t phone_aider "/load $INSTRUCTION_FILE" Enter
+tmux send-keys -t phone_aider "위 인스트럭션 그대로 실행" Enter
+
+# Aider 결과 캡처
+sleep 60  # 또는 watch
+tmux capture-pane -t phone_aider -p > /tmp/aider_result_T-0001.md
+```
+
+→ 박씨는 **Plan 결재 + Commit 결재 2번** 만. Claude 가 Aider 인스트럭션 넘기는 노가다 자동.
+
+### 13.5 검수 게이트 — Claude 가 Aider 결과 자가 검증
+
+**ChatGPT 초안 빠진 것:** "Aider 가 짠 코드 누가 검수?"
+**해결:** Claude 가 직접 git diff 읽고 6 항목 자가 검증.
+
+| 검증 항목 | 검출 방법 | 통과 기준 |
+|---|---|---|
+| **헌법 § 5 위반** | grep + 패턴 매칭 (GPU 1H 미만 / 상시 서버 / PWA-APK 등) | 0건 |
+| **Scope creep** | diff 파일 수 vs Plan 명시 파일 수 | Plan 의 ±1 이내 |
+| **Mock 함정** | mock/Mock 키워드 + 실행 테스트 누락 | mock < 30% |
+| **Linter 통과** | 해당 레포 린터 자동 실행 | 0 error |
+| **타입 체크** | mypy/tsc 등 | 0 error |
+| **유닛 테스트** | pytest/vitest 등 | 모두 통과 |
+
+**실패 시:**
+- 1회: Aider 한테 "이 부분 다시" 자동 재인스트럭션
+- 2회: 다른 접근 시도
+- 3회: 박씨 보고 + 티켓 보류
+
+### 13.6 박씨 발화 1줄 트리거 사전
+
+박씨가 외울 발화 5개:
+
+| 발화 | 의미 | OPS 동작 |
+|---|---|---|
+| **"AD 모드 발동"** | 삼각형 구조 활성화 | §13 적용 시작 |
+| **"T-NNNN 처리"** | 특정 티켓 시작 | Step 0~5 자율, Step 5 에서 박씨 결재 대기 |
+| **"OK 진행"** | Plan 또는 Commit 결재 통과 | 다음 Step |
+| **"NO 재설계"** | Plan 거부 | Step 2~4 재실행 (다른 접근) |
+| **"AD 일시정지"** | 자율 루프 중단 | 현재 티켓 종료 후 박씨 입력 대기 |
+
+이 5개만 외우면 박씨는 "디렉터" 역할 완수.
+
+### 13.7 헌법 정합성 — 박씨 메모리와 충돌 없음
+
+| 메모리 | §13 호환성 |
+|---|:--:|
+| `feedback_opus_vs_sonnet_role` (Opus=교차매핑, Sonnet=실행) | ✅ Architect=Opus 권장, Executor=DeepSeek/Aider |
+| `project_mcp_deepseek_5lane` | ✅ 5-Lane 그대로 활용 (phone/tab × claude/aider) |
+| `feedback_aider_deepseek_usage` (CLR 타이밍, 30턴 한도) | ✅ 티켓 단위 = 자연스러운 CLR 지점 |
+| `feedback_community_first_baseline` | ✅ DeepSeek 가 Step 3 에서 강제 |
+| `feedback_show_dont_explain` | ✅ Aider 결과물 = 보여주기 |
+| `feedback_mcp_development_law` (3레이어 표준) | ✅ Architect/Designer/Executor = 3레이어 |
+
+### 13.8 위험 요소 + 대응
+
+| 위험 | 대응 |
+|---|---|
+| **DeepSeek 한국어 부정확** | Claude 가 통역 (Step 4 에서 박씨용 한국어 정리) |
+| **Aider 컨텍스트 102K 한도** | 티켓당 1~3 파일 한정. Plan 단계에서 강제 |
+| **tmux send-keys 실패** | fallback: Claude 가 인스트럭션 파일 경로만 출력, 박씨가 수동 붙여넣기 |
+| **Aider 가 헌법 모름** | Claude 가 § 5 항목 인스트럭션에 매번 박음 |
+| **DeepSeek 환각** | Step 4 에서 Claude 가 커뮤니티 소스 URL 검증 |
+
+### 13.9 Phase 별 §13 적용도
+
+| Phase | 박씨 결재 | DeepSeek 위임 | Aider 위임 | Claude 검수 |
+|:--:|:--:|:--:|:--:|:--:|
+| **Phase 1** (지금) | 2회 | ✅ | ✅ | ✅ 매 티켓 |
+| **Phase 2** | 1회 (사후) | ✅ | ✅ | ✅ 매 티켓 |
+| **Phase 3** (MCP 완성 후) | 0회 | ✅ MCP화 | ✅ MCP화 | ✅ MCP가 자동 검수 |
+
+### 13.10 박씨 통찰 종합 답변
+
+> 박씨: "토큰값도 아끼고."
+
+**확인:**
+- 1 티켓 $0.44 → $0.23 (48% 절감)
+- 1년 누적 ~$80 절약
+- 더 큰 효과: **Claude 컨텍스트 보호** — 무거운 코드 편집을 Aider 한테 위임하면 Claude 메인 세션 컨텍스트 보존 → 더 많은 티켓 처리
+
+> 박씨: "둘이 주고받게."
+
+**확인:**
+- DeepSeek (체인 설계) ↔ Claude (메타 검토) ↔ Aider (실행) 3자 핑퐁
+- 박씨는 Plan/Commit 게이트 2번만 개입
+- §12.13 Phase 진행 시 박씨 게이트도 0 으로 수렴
+
+---
+
+*§13 작성: ChatGPT 초안 + Claude 보강 (컨텍스트 핸드오프 자동화 + 검수 6항목 + 박씨 발화 사전 5개)*
+*핵심 추가: tmux send-keys 자동 핸드오프, git diff 기반 자가 검증 게이트, 비용 시뮬레이션 데이터*
