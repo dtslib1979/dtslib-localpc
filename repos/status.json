@@ -43,19 +43,27 @@
       ]
     },
     "parksy-image": {
-      "local_path": "D:\\parksy-image",
+      "local_path": "/home/dtsli/parksy-image",
       "github": "dtslib1979/parksy-image",
-      "branch": "main",
-      "phase": "Phase 2 — PSE 한글 확장",
-      "telegram_bot": "@parksy_bridge_bot",
-      "bot_script": "tools/telegram-bridge/bot.py",
-      "bot_start": "tools/telegram-bridge/start_bridge.sh",
-      "tmux_session": "tg-image",
-      "status": "bot v2.0 배포 완료, config 필요",
+      "branch": "claude/style-engine-phase1",
+      "phase": "Parksy Air — 강의 영상 자동화 파이프라인",
+      "last_session": "2026-04-30",
+      "last_commit": "1cabdb1",
+      "last_commit_msg": "fix: CONCAT 경로 버그 + test mode P0.6 스킵 수정",
+      "pipeline_status": "✅ 풀 파이프라인 작동 확인 (2026-04-30)",
+      "pipeline_cmd": "python3 /home/dtsli/parksy-image/tools/web2video/orchestrator.py --url https://dtslib1979.github.io/termux-bridge/slides/ --test --script-mode simple --tts-preset natural",
+      "pipeline_output": "18.19s / 1.8MB / 1080x1920 / Telegram 전송 완료",
+      "key_fixes": [
+        "BUG-008: CONCAT 상대경로 → 절대경로(Path.resolve()) + 2단계 정규화(normalize+concat copy)",
+        "BUG-009: test mode P0.6 스킵 → timeout 45s로 실행",
+        "BUG-007: P2↔P1 순서 역전 수정 (TTS 먼저 → durationSec 확정 → 녹화)",
+        "teaching_goal + pause_after scene 필드 추가 (Perplexity 백서 구현)"
+      ],
       "pending": [
-        "tools/telegram-bridge/config.json 생성 (bot_token 입력)",
-        "tmux tg-image 세션 시작: bash tools/telegram-bridge/start_bridge.sh",
-        "00_inbox에 이미지 전송 테스트"
+        "인터랙티브 버튼 클릭 미구현 (Claude in Chrome → scenario → Playwright macro)",
+        "풀런 테스트 (3슬라이드 → 39슬라이드)",
+        "P4 YouTube 업로드 미제작 (upload_youtube.py)",
+        "Video QC: Gemini 2.0 Flash A/V 싱크 자동 검증"
       ]
     },
     "dtslib-localpc": {
