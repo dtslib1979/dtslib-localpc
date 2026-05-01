@@ -718,4 +718,79 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 - 기준선: /mnt/c/Temp/OpenUtau/Export/ag_r5_drop.wav (Max=0.627)
 - DDSP: ~/backups/vast_checkpoints/ddsp_bassoon_v2/step_040000.pt
 - 다음: PowerShell UI 자동화로 OpenUtau 실제 렌더 OR PARKSY_EN v3 완료 후 새 파이프라인
+### 2026-04-10 | DDSP/영어DiffSinger 전면 폐기 → RAVE + Tiger-ko 전환 확정
+**작업**:
+- Vast.ai RTX3090 (34347914, ssh5.vast.ai:13280) RAVE v2 바순 학습 중간 보고 (step 39,996/300,000)
+- v6 영어 DiffSinger 풀체인 최종 실행: singing_engine.py → RVC(parksy_rvc.pth, index_rate=0.3) → postchain.sh → 텔레그램 전송
+- 바순 A(VSCO단독)/B(DDSP단독)/C(VSCO+DDSP하이브리드) 3종 비교 판정
+- DEVLOG_20260410.md 작성, DEVPLAN_v3.md 기준 세션 정리
+
+**결정**:
+- 영어 DiffSinger v6 공식 폐기 — "이슬람 경전 소리", 비원어민 MFA alignment 구조적 한계
+- VSCO-2-CE 단독 폐기 — 싸구려 악기 소리
+- DDSP 48kHz 단독 폐기 — 갤러그(metallic noise), 300k steps에서도 동일
+- VSCO+DDSP 하이브리드 폐기 — DDSP 노이즈 전파
+- **유일한 희망: RAVE v2 (Sophie 35분)** → 내일 새벽 완료 후 3축 판정
+
+**결과**:
+- v6 풀체인 RMS 0.120, 텔레그램 message_id=348 전송 완료
+- RAVE step 39,996 (13%), GPU 72%, best.ckpt + last.ckpt 정상
+- 완료 예정: 2026-04-11 04:00 KST
+
+**교훈**:
+- rvc_infer.py 없음. rvc_python 패키지(/home/dtsli/rvc-venv/)로 대체. rvc_sweep.sh 참고.
+- postchain.sh 위치: ~/parksy-audio/ 루트 (scripts/ 아님)
+- RAVE 300k = default 6M의 5%. 품질 보장 불확실 → MIDI-DDSP 병행 준비 필수
+- 파이프라인 스크립트 자체는 작동. 엔진 교체(RAVE, Tiger-ko)가 핵심.
+
+**재구축 힌트**:
+"VSCO-2-CE Dry WAV에 RAVE v2 Sophie 음색 씌우는 바순 파이프라인. RAVE는 acids-rave 2.2.0, config v2, max_steps 300k, Vast.ai RTX3090. 가창은 Tiger-ko 한국어 fine-tune (박씨 40분 녹음 필요). RVC 필터는 /home/dtsli/rvc-venv/ rvc_python 패키지."
+
+**다음 세션 즉시 실행**:
+1. RAVE 완료 확인 (새벽 4시 전후) → TorchScript .ts export → 로컬 다운
+2. MIDI-DDSP 바순 pre-trained 모델 미리 다운 (병행 비교용)
+3. 3축 판정 (Sustain/Attack/MIDI) → 6.0+ 납품파이프라인 / 미만 MIDI-DDSP
+---
+
+---
+### 2026-04-24 | GCP GPU 쿼터 신청 + AI 모델 학습 자동화 스크립트 완성
+
+**작업**:
+1. TTS 3-Lane 아키텍처 확인 — Lane C = Chatterbox(영어 발음) + RVC(박씨 음색 필터). `scripts/tts_engine.py` commit 3d5ddcc 기준
+2. GCP Free Trial 크레딧($310, thomas.tj.park@gmail.com)으로 AI 모델 3종 학습 계획 수립
+3. `gcp_training/` 디렉토리에 스크립트 4개 작성:
+   - `01_create_vm.sh`: GCS 버킷 + a2-highgpu-1g A100 Preemptible VM 생성
+   - `02_upload_data.sh`: GPT-SoVITS segments(659파일/298MB), RVC 소스, DiffSinger 데이터 GCS 업로드
+   - `03_vm_train_all.sh`: RVC(30분) → GPT-SoVITS v2(90분) → DiffSinger v4+MFA(12시간) 순차 학습
+   - `04_download_models.sh`: GCS → 로컬 다운로드 + VM 종료
+4. GCP Compute Engine GPUS_ALL_REGIONS 쿼터 0→8 신청 완료 (Playwright MCP 직접 실행)
+   - Case ID: 23103ab3-a086-4fed-8cbe-fe9b8cdedbf7
+   - 승인 이메일: thomas.tj.park@gmail.com (영업일 1~3일)
+5. GPT-SoVITS v1 모델 로컬 부재 확인 — RunPod 종료 시 미다운로드로 유실 확정
+
+**결정**:
+- VM 이미지: `pytorch-2-9-cu129-ubuntu-2204-nvidia-580` (pytorch-latest-gpu 없음 확인 후 변경)
+- RVC 소스 오디오 경로: `~/parksy-diffsinger/raw_wavs/자료1_모노_48k_30m03s_44k.wav`
+- GPT-SoVITS segments(659파일)는 이미 GCS 업로드 완료
+- GCP quota 신청 방식: Playwright MCP → GCP Console 직접 클릭 (CLI 불가)
+
+**결과**:
+- GCP 쿼터 신청서 제출 완료 (승인 대기 중)
+- gcp_training/ 스크립트 4개 작성 완료 (미커밋)
+- GPT-SoVITS v1 유실 확정 → GCP v2 재학습 계획이 맞음
+
+**교훈**:
+- Free Trial GCP 계정은 GPU 쿼터 기본값 0 → 반드시 사전 신청 필요
+- GPUS_ALL_REGIONS = Compute Engine 글로벌 GPU. Vertex AI도 별도 쿼터 있음
+- RunPod Pod 종료 전 반드시 scp 다운로드 확인 (v1 유실 반복 방지)
+
+**재구축 힌트**:
+"GCP a2-highgpu-1g (A100), Preemptible SPOT, pytorch-2-9-cu129-ubuntu-2204-nvidia-580 이미지. 학습 순서: rvc-python RVC(30분) → GPT-SoVITS v2(90분) → DiffSinger v4+MFA(12시간). 전부 GCS gs://parksy-models-training/ 저장 후 로컬 다운. 스크립트: ~/parksy-audio/gcp_training/"
+
+**다음 세션 즉시 실행**:
+1. thomas.tj.park@gmail.com 이메일 확인 → GCP 쿼터 승인 여부
+2. 승인되면: bash ~/parksy-audio/gcp_training/01_create_vm.sh
+3. bash ~/parksy-audio/gcp_training/02_upload_data.sh (RVC 소스 업로드)
+4. VM SSH 접속 → 03_vm_train_all.sh 전송 → nohup 백그라운드 실행
+5. 완료 후 bash ~/parksy-audio/gcp_training/04_download_models.sh → VM stop
 ---

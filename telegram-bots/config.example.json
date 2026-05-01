@@ -1,0 +1,8 @@
+{
+  "_comment": "이 파일을 config.json으로 복사 후 실제 값 입력",
+  "bot_token": "YOUR_BOT_TOKEN_HERE",
+  "download_dir": "../../parksy-image/00_inbox",
+  "midi_dir": "",
+  "_midi_dir_note": "비워두면 ~/parksy-audio/local-agent/sources 자동 사용",
+  "poll_interval": 30
+}

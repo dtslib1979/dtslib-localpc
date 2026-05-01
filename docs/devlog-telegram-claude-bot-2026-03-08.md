@@ -13,7 +13,7 @@
 
 | 항목 | 상태 | 파일 |
 |------|------|------|
-| telegram_claude_bot.py | ✅ 배포 완료 | /home/dtsli/telegram-bridges/ |
+| telegram_claude_bot.py | ✅ 배포 완료 | /home/dtsli/dtslib-localpc/telegram-bots/ |
 | Claude 이미지 봇 config | ✅ 생성 | claude_image_config.json |
 | Claude 오디오 봇 config | ✅ 생성 | claude_audio_config.json |
 | REMOTE_WORK_MANUAL.md | ✅ 작성 | D:\PARKSY\parksy-audio\docs\ |
@@ -145,10 +145,10 @@ echo 'export CLAUDE_CODE_OAUTH_TOKEN="sk-ant-oat01-..."' >> ~/.bashrc
 
 | 파일 | 위치 |
 |------|------|
-| telegram_claude_bot.py | /home/dtsli/telegram-bridges/ |
-| watchdog.sh (수정됨) | /home/dtsli/telegram-bridges/ |
-| claude_image_config.json | /home/dtsli/telegram-bridges/ |
-| claude_audio_config.json | /home/dtsli/telegram-bridges/ |
+| telegram_claude_bot.py | /home/dtsli/dtslib-localpc/telegram-bots/ |
+| watchdog.sh (수정됨) | /home/dtsli/dtslib-localpc/telegram-bots/ |
+| claude_image_config.json | /home/dtsli/dtslib-localpc/telegram-bots/ |
+| claude_audio_config.json | /home/dtsli/dtslib-localpc/telegram-bots/ |
 | REMOTE_WORK_MANUAL.md | D:\PARKSY\parksy-audio\docs\ |
 | devlog-wsl-server-2026-03.md | dtslib-localpc/docs/ (이전 인프라 구축 로그) |
 

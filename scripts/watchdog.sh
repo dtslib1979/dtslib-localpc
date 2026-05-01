@@ -51,7 +51,7 @@ while true; do
     pgrep -f image_downloader.py > /dev/null || {
         tmux send-keys -t tg-image:bridge C-c 2>/dev/null
         sleep 1
-        tmux send-keys -t tg-image:bridge "cd /home/dtsli/telegram-bridges && python3 image_downloader.py" Enter 2>/dev/null
+        tmux send-keys -t tg-image:bridge "cd /home/dtsli/dtslib-localpc/telegram-bots && python3 image_downloader.py" Enter 2>/dev/null
         log_restart "image bridge"
     }
 
@@ -59,7 +59,7 @@ while true; do
     pgrep -f audio_bridge.py > /dev/null || {
         tmux send-keys -t tg-audio:bridge C-c 2>/dev/null
         sleep 1
-        tmux send-keys -t tg-audio:bridge "cd /home/dtsli/telegram-bridges && python3 audio_bridge.py" Enter 2>/dev/null
+        tmux send-keys -t tg-audio:bridge "cd /home/dtsli/dtslib-localpc/telegram-bots && python3 audio_bridge.py" Enter 2>/dev/null
         log_restart "audio bridge"
     }
 
@@ -67,7 +67,7 @@ while true; do
     pgrep -f "claude_image_config" > /dev/null || {
         tmux send-keys -t tg-image:work C-c 2>/dev/null
         sleep 1
-        tmux send-keys -t tg-image:work "cd /home/dtsli/telegram-bridges && python3 telegram_claude_bot.py --config claude_image_config.json" Enter 2>/dev/null
+        tmux send-keys -t tg-image:work "cd /home/dtsli/dtslib-localpc/telegram-bots && python3 telegram_claude_bot.py --config claude_image_config.json" Enter 2>/dev/null
         log_restart "image claude bot"
     }
 
@@ -75,7 +75,7 @@ while true; do
     pgrep -f "claude_audio_config" > /dev/null || {
         tmux send-keys -t tg-audio:work C-c 2>/dev/null
         sleep 1
-        tmux send-keys -t tg-audio:work "cd /home/dtsli/telegram-bridges && python3 telegram_claude_bot.py --config claude_audio_config.json" Enter 2>/dev/null
+        tmux send-keys -t tg-audio:work "cd /home/dtsli/dtslib-localpc/telegram-bots && python3 telegram_claude_bot.py --config claude_audio_config.json" Enter 2>/dev/null
         log_restart "audio claude bot"
     }
 

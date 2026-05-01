@@ -619,7 +619,7 @@ python scripts/drawing/photo2drawing.py [사진] --ruler -o output.dxf
 **결과**: 
 - R10→R15 강화학습 루프, Telegram 오프닝 파이프라인 코드 완성 (커밋 2d09922)
 - tts_humanizer.py R11, lecture_template.html R15 커밋 완료
-- telegram-bridges image_downloader.py mp4 핸들러 커밋 완료 (6442c79)
+- dtslib-localpc/telegram-bots image_downloader.py mp4 핸들러 커밋 완료 (6442c79)
 
 **교훈**:
 - runTimingLoop 없으면 슬라이드가 0번에서 절대 안 넘어감 — 브라우저 녹화 결과물 첫 확인 시 반드시 슬라이드 전진 여부 체크
@@ -630,7 +630,7 @@ python scripts/drawing/photo2drawing.py [사진] --ruler -o output.dxf
 **재구축 힌트**: 
 web2video 전체 파이프라인: `python3 tools/web2video/web2video.py "URL" --lang ko --bgm clair --tone cocky --opening /mnt/d/PARKSY/web2video/opening_staging/opening_latest.mp4`
 오프닝 없이 쓸 때: `--opening` 인수 생략하면 그냥 스킵됨
-Telegram mp4 수신: telegram-bridges/image_downloader.py 백그라운드 실행 (tmux tg-image)
+Telegram mp4 수신: dtslib-localpc/telegram-bots/image_downloader.py 백그라운드 실행 (tmux tg-image)
 ---
 
 ---
@@ -824,4 +824,134 @@ Telegram mp4 수신: telegram-bridges/image_downloader.py 백그라운드 실행
 - article_page.html 핵심 플레이스홀더: `{{SECTIONS_JSON}}`, `{{TITLE}}`, `{{uid}}`
 - 섹션 구조: `[{"heading": "...", "body": "3~5문장", "highlight": "**키워드** — 강조"}]`
 - 다음 작업: landing_page 타입 추가 테스트 / Railway HTTP 포팅 준비
+---
+
+### 2026-04-30 | Parksy Air 파이프라인 구조적 버그 3종 수정 + action_mapper 전면 재설계
+**작업**:
+- `extractor.py`: CSS 셀렉터 스코프 `.reveal .slides section.present` → `div.slide.active` (termux-bridge 실제 DOM 구조 대응)
+- `action_mapper.py`: claude CLI subprocess 방식 전면 폐기 → playwright DOM query_selector 방식으로 재작성
+- `orchestrator.py`: generate_tts_batch() audio_dir 절대경로 보장 (subprocess CWD 불일치 수정) + P0.6 asyncio.wait_for(120초) 타임아웃 추가
+- 커밋: `b5afce4` (bug 3종 수정), `e6b917d` (action_mapper DOM 방식 전환)
+- 브랜치: `claude/style-engine-phase1`
+
+**결정**:
+- claude CLI subprocess는 Claude Code 세션 내에서 실행하면 **전부 20초 타임아웃** (내부 인증 충돌). 병렬화(ThreadPoolExecutor), 타임아웃 조정 전부 무의미. 방식 자체를 버려야 함.
+- DOM 직접 쿼리로 전환: `_SELECTOR_PRIORITY` 리스트 순서대로 `div.slide.active {sel}` 탐지. 슬라이드당 < 300ms.
+- orchestrator에서 P0.6 전체를 120초 hard limit으로 감쌈 → P0.6 실패해도 파이프라인 계속.
+
+**결과**:
+- 풀런 339초(5분 40초) 완료. P0.6: 29/29 매핑 성공. 텔레그램 전송 완료.
+- 기존: P0.6에서 매번 20초×39회 타임아웃 → 5분 후 프로세스 전체 kill.
+- 현재 확정 실행 명령: `python3 orchestrator.py --url "https://dtslib1979.github.io/termux-bridge/slides/" --script-mode simple --skip-tts`
+
+**교훈**:
+- Claude Code 세션 안에서 `subprocess.run([claude, '--print', ...])` 호출 금지. 항상 타임아웃.
+- termux-bridge 슬라이드는 reveal.js 아님. DOM 구조: `div.slide.active` 내부.
+- GPT-SoVITS subprocess: CWD 상속 보장 안 됨 → `Path.resolve()` 절대경로 필수.
+
+**재구축 힌트**:
+- `tools/web2video/orchestrator.py --script-mode simple --skip-tts` 로 풀런 (~6분)
+- action_mapper.py는 playwright DOM 방식. claude CLI 의존성 없음.
+- 슬라이드 URL: `https://dtslib1979.github.io/termux-bridge/slides/`
+- P4 YouTube 업로드 미제작 상태 (upload_youtube.py 완성 필요)
+---
+
+---
+### 2026-04-30 | Parksy Air 파이프라인 프로세스 순서 변경: P1↔P2 스왑
+**작업**: orchestrator.py의 P1(영상 녹화)↔P2(TTS 생성) 순서를 뒤집음.
+- Before: P0→P0.6→**P1(녹화)**→**P2(TTS)**→P3 (역순, A/V 싱크 불가)
+- After: P0→P0.6→**P2(TTS)**→**P2.5(durationSec 업데이트)**→**P1(녹화)**→P3 (정순, 싱크 보장)
+- P2.5 추가: ffprobe로 TTS 오디오 실측 길이 측정 → script[i]["durationSec"] = tts_dur + 0.4 → script.json 업데이트 → P1이 그 값으로 슬라이드 녹화 시간 결정
+
+**결정**:
+- 커뮤니티 리서치 선행 (PurpleOwl 사례 검증): "The video and audio tracks are the same length because they're both derived from the same timing data." — 이 패턴이 업계 표준.
+- narractive(PyPI) 라이브러리보다 기존 파이프라인에 순서 변경이 더 빠름.
+- 0.4초 여유: 슬라이드 전환 애니메이션 시간 보정.
+
+**결과**:
+- 구조적 A/V 싱크 보장. renderer.py의 tpad freeze frame 패치 불필요.
+- skip_tts 모드에서는 기존 4.6초 기본값 유지 (하위 호환).
+- 최종 목표: 기업 IT 튜토리얼 영상 자동 생성기 (화면 클릭 + 성우 완전 싱크).
+
+**교훈**:
+- P2를 P1보다 먼저 실행해야 한다는 원칙은 커뮤니티에서 검증된 패턴 (PurpleOwl, narractive).
+- TTS 길이 = 단일 진실 소스(Single Source of Truth). 영상이 오디오에 맞춰야지, 오디오가 영상에 맞추면 안 됨.
+
+**재구축 힌트**:
+- orchestrator.py: P2 블록이 P1 블록보다 먼저 나와야 함.
+- P2.5: `ffprobe -v quiet -show_entries format=duration -of csv=p=0 step_NN.wav` → float → +0.4 → durationSec
+- P1 Extractor는 script의 durationSec을 읽어 슬라이드당 녹화 시간 결정.
+---
+
+---
+### 2026-04-30 | scene JSON 강화 — teaching_goal + pause_after
+**작업**: script_generator.py에 _teaching_goal() + _pause_after_ms() 추가. extractor.py에서 pause_after 처리.
+**결정**: Perplexity 백서 권고 중 즉시 적용 가능한 2개 필드만 선별. 나머지(selector fallback, 다국어) 보류.
+**결과**: 스모크 테스트 통과. 4.4s TTS + 1.0s pause → 슬라이드당 학습 리듬 확보. 텔레그램 전송 확인.
+**교훈**: pause_after는 ms로 저장, extractor에서 /1000으로 초 변환. TTS 길이와 별개로 화면 정지 시간 독립 제어.
+---
+
+---
+### 2026-04-30 | BUG-008 CONCAT 경로 버그 + BUG-009 test mode 판서 스킵 수정 — 파이프라인 완전 작동
+
+**작업**:
+1. CONCAT 버그(BUG-008) 근본 원인 추적 및 수정 (`orchestrator.py`)
+   - 증거 수집: `dist/` 파일 전부 1874457B 동일 → 오프닝만 재인코딩되고 있었음
+   - `ffprobe`: 최종 파일 10.083s = opening(10.042s)과 동일 → 강의 클립(8.044s) 누락 확정
+   - 원인 분석: `concat_list.txt`가 `build/{ts}/` 안에 생성되는데 강의 경로가 `dist/parksy_air_...mp4` (상대경로)
+     → ffmpeg가 `build/{ts}/dist/...`로 해석 → 파일 없음 → opening만 출력 → returncode 0 (무음 처리)
+   - 1차 수정: `Path.resolve()`로 모든 경로 절대경로 변환
+   - 2차 문제 발견: opening(1168×784 landscape, 24fps) vs lecture(1080×1920 portrait, 30fps) 해상도+fps 불일치
+     → `filter_complex concat` 실패 ("Error reinitializing filters!")
+   - 최종 수정: 2단계 방식
+     - Step1: 각 클립 1080×1920/30fps/AAC44100Hz 정규화 (`-vf scale+pad+fps+setsar`)
+     - Step2: `concat demuxer -c copy` (동일 스펙이므로 재인코딩 없음)
+   - CONCAT 실패 시 stderr[-800:] 출력 추가 (디버깅 용이)
+
+2. test mode P0.6 스킵(BUG-009) 수정 (`orchestrator.py`)
+   - 원인: `if not test_mode:` 블록으로 P0.6 완전 스킵 → pointer_target 없음 → 판서 없음
+   - 수정: test mode에서도 실행, timeout만 120초→45초로 단축
+
+**결정**:
+- concat demuxer vs filter_complex: filter_complex가 더 "우아"하지만 해상도 불일치에서 실패.
+  2단계(정규화 → copy) 방식이 더 견고. opening이 ComfyUI에서 생성되어 항상 다른 스펙일 수 있음.
+- opening_latest.mp4: 1168×784 landscape (2026-03-25 생성). 세로 포맷 재생성 필요하지만 지금은 정규화로 우회.
+- concat 실패 시 fallback: 강의 영상만 전송 (opening 없이). 이전에는 opening만 전송되던 것보다 낫다.
+
+**결과**:
+- 최종 검증: 18.19s (opening 10s + lecture 8s) / 1080×1920 / 30fps / stereo AAC 44100Hz / 1.8MB
+- Telegram 전송 완료 ✅
+- P0.6: pointer_target 2/2개 매핑 (test mode에서도 판서 작동) ✅
+- P2: GPT-SoVITS 박씨 AI 성우 2/2개 생성 ✅
+- 총 소요: 108초
+
+**교훈**:
+- `concat_list.txt` 경로는 항상 절대경로 사용. concat 파일 위치 기준 상대경로가 되면 함정.
+- opening 파일은 포맷 보장 안 됨 → 정규화 단계 필수 (해상도, fps, 샘플레이트 통일).
+- ffmpeg concat 실패 시 returncode가 항상 non-zero가 아님 → 출력 파일 크기/duration도 검증 필요.
+- test mode에서도 판서(P0.6) 실행해야 QC가 의미 있음.
+
+**재구축 힌트**:
+```bash
+# 스모크 테스트 (항상 이걸 먼저)
+cd /home/dtsli/parksy-image/tools/web2video
+python3 orchestrator.py --url "https://dtslib1979.github.io/termux-bridge/slides/" \
+  --test --script-mode simple --tts-preset natural
+
+# 풀런 (스모크 통과 후)
+python3 orchestrator.py --url "https://dtslib1979.github.io/termux-bridge/slides/" \
+  --script-mode simple --tts-preset natural
+```
+- CONCAT: orchestrator.py `_abs()` 함수로 모든 경로 절대화, norm_dir에 정규화 후 copy concat
+- P0.6: test mode timeout=45, full mode timeout=120
+- 브랜치: `claude/style-engine-phase1`
+
+**현재 파이프라인 확정 순서**:
+P0(스크립트) → P0.6(Claude Vision 판서 싱크, 45/120s) → P2(GPT-SoVITS TTS) → P2.5(durationSec sync) → P1(Playwright CDP 녹화) → P3(렌더링) → CONCAT(정규화+copy) → Telegram
+
+**미완 아키텍처 (다음 세션 착수 순서)**:
+1. 인터랙티브 버튼 클릭: Claude in Chrome → 시나리오 JSON → Playwright 매크로 재생
+2. 풀런 39슬라이드 테스트
+3. P4 YouTube 업로드 (upload_youtube.py)
+4. Video QC: Gemini 2.0 Flash로 A/V 싱크 자동 검증
 ---

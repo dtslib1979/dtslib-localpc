@@ -1,0 +1,8 @@
+{
+  "bot_token": "8695070130:AAEsVA2SbImKyzIN0hP5PHkhzAEOl-fEN2c",
+  "chat_id": 6858098283,
+  "bot_name": "이미지 Claude Bot (@Parksy_Image_Claude_bot)",
+  "work_dir": "/mnt/d/parksy-image",
+  "timeout": 300,
+  "offset_file": "claude_image"
+}

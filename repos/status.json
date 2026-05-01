@@ -43,13 +43,16 @@
       ]
     },
     "parksy-image": {
-      "local_path": "D:\\parksy-image",
+      "local_path": "/home/dtsli/parksy-image",
       "wsl_path": "/home/dtsli/parksy-image",
       "github": "dtslib1979/parksy-image",
       "branch": "main",
       "last_commit": "55fd4a0",
       "last_commit_msg": "feat: Voice-UI Translation OS v6.0 article + JSON repair",
       "phase": "parksy-webpage MCP — article 완성, Railway 포팅 대기",
+      "parksy_air_status": "✅ 풀 파이프라인 작동 (2026-04-30)",
+      "parksy_air_cmd": "python3 /home/dtsli/parksy-image/tools/web2video/orchestrator.py --url https://dtslib1979.github.io/termux-bridge/slides/ --test --script-mode simple --tts-preset natural",
+      "parksy_air_output": "18.19s / 1.8MB / 1080x1920 / Telegram 전송 완료",
       "mcp_server": "tools/mcp_slide_builder/mcp_server.py",
       "mcp_registered": "~/.claude.json parksy-webpage",
       "tools": [
@@ -82,14 +85,11 @@
         "dashboard"
       ],
       "dna_json": "tools/mcp_slide_builder/parksy_style_dna.json",
-      "known_issues": [
-        "landing_page build_page 타입 — 추가 테스트 필요",
-        "Railway HTTP 포팅 미완 (stdio → HTTP 래퍼)"
-      ],
       "pending": [
         "landing_page article 샘플 생성 테스트",
         "Railway HTTP 포팅: stdio → HTTP wrapper",
-        "Parksy Air P4 YouTube 업로드 모듈 미작성"
+        "Parksy Air P4 YouTube 업로드 미제작 (upload_youtube.py)",
+        "Parksy Air 풀런 테스트 (3슬라이드 → 39슬라이드)"
       ],
       "dirty_files": 0
     },
