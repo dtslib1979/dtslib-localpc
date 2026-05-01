@@ -1,5 +1,5 @@
 {
-  "updated": "2026-04-07T00:00:00+09:00",
+  "updated": "2026-05-01",
   "description": "4개 레포 크로스레포 상태 — 유레카 전환 후 PC-native v6.0 기준",
   "axiom": "PC 메인 / 핸드폰 SSH 클라이언트 (유레카 2026-03-16)",
   "repos": {
@@ -44,19 +44,54 @@
     },
     "parksy-image": {
       "local_path": "D:\\parksy-image",
+      "wsl_path": "/home/dtsli/parksy-image",
       "github": "dtslib1979/parksy-image",
       "branch": "main",
-      "phase": "Phase 2 — PSE 한글 확장",
-      "telegram_bot": "@parksy_bridge_bot",
-      "bot_script": "tools/telegram-bridge/bot.py",
-      "bot_start": "tools/telegram-bridge/start_bridge.sh",
-      "tmux_session": "tg-image",
-      "status": "bot v2.0 배포 완료, config 필요",
+      "last_commit": "55fd4a0",
+      "last_commit_msg": "feat: Voice-UI Translation OS v6.0 article + JSON repair",
+      "phase": "parksy-webpage MCP — article 완성, Railway 포팅 대기",
+      "mcp_server": "tools/mcp_slide_builder/mcp_server.py",
+      "mcp_registered": "~/.claude.json parksy-webpage",
+      "tools": [
+        "build_slide",
+        "build_deck",
+        "build_page",
+        "build_from_log",
+        "list_slides"
+      ],
+      "github_pages_live": [
+        "https://dtslib1979.github.io/parksy-image/slides/slide_whitepaper.html",
+        "https://dtslib1979.github.io/parksy-image/slides/article_whitepaper.html",
+        "https://dtslib1979.github.io/parksy-image/slides/slide_phl.html",
+        "https://dtslib1979.github.io/parksy-image/slides/slide_log.html",
+        "https://dtslib1979.github.io/parksy-image/slides/article_vouos.html"
+      ],
+      "templates": [
+        "accordion",
+        "flowchart",
+        "landing_page",
+        "matrix_grid",
+        "node_map",
+        "orbit_diagram",
+        "pipeline_stack",
+        "stat_counter",
+        "timeline",
+        "vs_compare",
+        "zoom_detail",
+        "article_page",
+        "dashboard"
+      ],
+      "dna_json": "tools/mcp_slide_builder/parksy_style_dna.json",
+      "known_issues": [
+        "landing_page build_page 타입 — 추가 테스트 필요",
+        "Railway HTTP 포팅 미완 (stdio → HTTP 래퍼)"
+      ],
       "pending": [
-        "tools/telegram-bridge/config.json 생성 (bot_token 입력)",
-        "tmux tg-image 세션 시작: bash tools/telegram-bridge/start_bridge.sh",
-        "00_inbox에 이미지 전송 테스트"
-      ]
+        "landing_page article 샘플 생성 테스트",
+        "Railway HTTP 포팅: stdio → HTTP wrapper",
+        "Parksy Air P4 YouTube 업로드 모듈 미작성"
+      ],
+      "dirty_files": 0
     },
     "dtslib-localpc": {
       "local_path": "D:\\PARKSY\\dtslib-localpc",

@@ -757,3 +757,71 @@ Telegram mp4 수신: telegram-bridges/image_downloader.py 백그라운드 실행
 - DiffSinger v4 재학습: 약 55분, RTX 3090 $0.20, `/root/parksy_v4.yaml` max_updates:20000
 - comfyui_opening.py 테스트: SSH 터널 `ssh -p PORT -fNL 18188:localhost:8188` 후 실행
 ---
+
+---
+### 2026-05-01 | parksy-webpage MCP article 템플릿 완성 + JSON repair + VOUOS 샘플 생성
+
+**작업**:
+1. `tools/mcp_slide_builder/templates/article_page.html` 전면 재작성 (인터랙티브 웹앱)
+   - scroll progress bar (상단 고정 2px, gold→yellow→green gradient)
+   - fixed TOC sidebar (우측 260px, 뷰포트 전체 높이, backdrop-filter blur)
+   - canvas particle system (80개 파티클, requestAnimationFrame, visibilitychange pause)
+   - IntersectionObserver 섹션 reveal + TOC active 자동 추적
+   - header shrink (scrollY > 60에서 .shrunk 클래스 토글)
+   - SVG fractalNoise film grain overlay
+   - reading time 자동 계산 (body 합산 chars / 350 wpm)
+   - expand/collapse highlight box (클릭 시 본문 전체 토글)
+   - 모바일 대응: @media(max-width:900px) → sidebar 숨김, margin-right:0
+
+2. `tools/mcp_slide_builder/page_service.py` — 5단계 강제 공정 확정
+   - read_source → plan_page → fill_page(force_sonnet=True) → validate_page_model → render_page
+   - validate: body < 60자 실패, 섹션 < 3개 실패, _BAD 리스트 체크, 재시도 1회
+   - timeout: subprocess 90s → 240s (sonnet 8000자 fill 타임아웃 방지)
+
+3. `tools/mcp_slide_builder/slide_service.py` — `_repair_json()` 추가
+   - 원인: 수식(Φ, ∘, ≅)·코드가 섞인 백서를 fill할 때 body 필드 내부에 unescaped 개행 포함됨
+   - 수정: 문자열 토큰 내 raw 개행→공백, trailing comma→제거, 2차 json.loads 재시도
+   - 적용 범위: haiku/sonnet 공통, force_sonnet 모두 통과
+
+4. `docs/slides/article_vouos.html` 생성 — Voice-UI Translation OS v6.0 Final 백서 샘플
+   - 소스: phoneparis/projects/vouos.html 텍스트 추출 (14,324자)
+   - 섹션 6개: 음성UI 번역 OS 개요 / 4계층 시스템 아키텍처 / STT·Park-LoRA 음성처리 / DTMF 신호 라우팅 / 시각장애인 음성UI 접근성 / SLA 모니터링과 운영정책
+   - 원문 키워드 유지: Φ = TTS ∘ S_c ∘ TranslationLayer ∘ LoRA ∘ SIP_decode, WER < 5%, DTMF 1~4번 매핑, P0 즉시 차단 SLA
+   - GitHub Pages 라이브: https://dtslib1979.github.io/parksy-image/slides/article_vouos.html
+
+5. `docs/slides/article_whitepaper.html` 재생성 — Parksy 2D 개발 백서
+   - 소스: PARKSY_2D_WHITEPAPER_20260406.md
+   - 섹션 7개, body 358~476자/섹션, validate 통과
+   - GitHub Pages 라이브: https://dtslib1979.github.io/parksy-image/slides/article_whitepaper.html
+
+**결정**:
+- article_page.html TOC는 fixed sidebar 방식 채택 (인라인 박스 방식 폐기)
+  이유: 스크롤 시 본문 가리는 문제, 모바일에서 겹침 이슈 해결
+- 파티클 80개 O(n²)=3,160회 프레임 연산 — 허용 범위 (CPU 사용률 테스트 통과)
+- JSON repair를 slide_service.py 공통 계층에 박은 이유:
+  특정 백서 땜질 아니라 "수식/코드 섞인 기술문서 전체"에 재현 가능한 케이스이기 때문
+
+**결과**:
+- GitHub Pages 4개 URL 전부 정상 확인 (Playwright 실시간 검증)
+  - slide_whitepaper.html ← pipeline_stack
+  - article_whitepaper.html ← article 7섹션+TOC ✅ (재생성)
+  - slide_phl.html ← flowchart 8단계
+  - slide_log.html ← orbit diagram
+  - **article_vouos.html ← article 6섹션+TOC (신규) ✅**
+- parksy-webpage MCP 툴 5개 전부 동작 확인:
+  build_slide / build_deck / build_page / build_from_log / list_slides
+
+**교훈**:
+- LLM fill 타임아웃: sonnet + 8,000자 입력 + 7섹션 계획 → 90초 초과 빈번
+  → timeout=240s 고정이 안정적
+- 수식 포함 기술백서는 json.loads 1차 실패 확률 높음 → repair 미리 박아둬야 함
+- article_page 구조: sidebar fixed + body margin-right 방식이 유일하게 겹침 없는 해법
+  overflow 분리(body/sidebar 독립 스크롤)는 TOC active 추적 로직 복잡도 올림 → 채택 안 함
+
+**재구축 힌트**:
+- MCP 서버 재시작: Claude Code 재시작하면 ~/.claude.json에 등록된 parksy-webpage 자동 로드
+- build_page 실행: `from page_service import build_page; html = build_page(text, page_type='article', title='...', source='whitepaper')`
+- article_page.html 핵심 플레이스홀더: `{{SECTIONS_JSON}}`, `{{TITLE}}`, `{{uid}}`
+- 섹션 구조: `[{"heading": "...", "body": "3~5문장", "highlight": "**키워드** — 강조"}]`
+- 다음 작업: landing_page 타입 추가 테스트 / Railway HTTP 포팅 준비
+---
