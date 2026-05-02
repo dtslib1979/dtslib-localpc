@@ -955,3 +955,38 @@ P0(스크립트) → P0.6(Claude Vision 판서 싱크, 45/120s) → P2(GPT-SoVIT
 3. P4 YouTube 업로드 (upload_youtube.py)
 4. Video QC: Gemini 2.0 Flash로 A/V 싱크 자동 검증
 ---
+
+---
+### 2026-05-02 | Parksy Air 양산 라인 1라인 완성 — M0 + M1 통과
+**작업**: 12시간 자율실행 — 4개 트랙 진단 + 리팩토링 마스터 플랜 + P0~P4 응급수술 + E2E 풀런 + YouTube 자동 업로드
+**결정**: 진단 결과 절반은 잘못된 정보였음 — action_mapper, GPT-SoVITS 디폴트, voice_filter v2 모두 이미 작동 중. 새 컴포넌트 작성보다 "연결" 정리가 본질이었음. SoVITS=박씨 본인 더빙 / Chatterbox=다국어 성우 / DiffSinger=가창·가상악기 (박씨 직접 정정). 영어 부분은 Whisper가 못 잡음 → Chatterbox 통합이 다음 단계.
+**결과**:
+- M0 (12:00): https://youtu.be/XBjdwZ00YRg — 베이스라인 1.9MB / 18.56s
+- M1 (12:15): https://youtu.be/7rLw67cfB_o — 풀런 4.8MB / 2분 10초 / 25분 13초 빌드
+- Layer2 한국어 CER 평균 22% (매우양호 38% / 양호 28%)
+- step 24 CER 0% (완벽 — "PC를 서버로 만든다 이게 다야")
+- 판서 29/29 매핑 (.cover-title, h2.slide-title, .card-title)
+- 커밋: f3061e6 → efbf1ac → f807d71
+**교훈**: 코드 직접 보기 전엔 외부 LLM 평가(Perplexity 포함)도 60% 신뢰도. 기존 시스템이 이미 거의 다 작동 중일 때는 베이스라인 빌드 1회로 검증 우선. tts_engine.py가 ~/parksy-audio/scripts/에 있고 orchestrator가 자동 import (실패 시 edge-tts fallback) — 이미 작동 중인 디폴트를 바꾸려고 시간 쓰지 말 것.
+**재구축 힌트**: 양산 라인 1라인 흐름 = (1) mcp_slide_builder build_page() → docs/slides/article_xxx.html → (2) orchestrator --url ".../article_xxx.html?mode=slide" → P0/P0.5/P2/P2.5/P1/P3/P3.7/P4 → (3) Telegram + YouTube. article_page.html에 ?mode=slide URL 파라미터 처리 추가 (헤더/TOC/푸터 자동 숨김), action_mapper 셀렉터에 양쪽 형식 지원 (.art-hero-title, h2.art-heading 등). upload_youtube.py는 youtube-studio.js subprocess 래퍼이며 channels.json에서 채널별 토큰 자동 갱신.
+
+**신규 파일**:
+- tools/youtube/upload_youtube.py (Python 래퍼)
+- tools/web2video/subtitle_generator.py (script.json → SRT)
+- _queue/REFACTORING_MASTER_PLAN.md (5 Phase 로드맵)
+- samples/test_numbers_squared_cubed.py (numbers.py stdlib 충돌 해결)
+- (termux-bridge) ParksyLog_20260502_ParksyAir_양산라인_M1통과.md
+
+**수정 파일**:
+- tools/web2video/orchestrator.py (P3.7 자막 통합, P4 import path)
+- tools/web2video/audio_qc.py (한국어 _cer + _detect_lang + run_layer2 다국어)
+- tools/web2video/action_mapper.py (양쪽 슬라이드 셀렉터 + h1/h2/p fallback)
+- tools/mcp_slide_builder/templates/article_page.html (?mode=slide 처리)
+
+**다음 펜딩**:
+- Chatterbox 다국어 통합 (영어 부분 박씨 한국식 발음 못 잡힘)
+- step_15, 16 CER 60%+ 음성 디그레이드 원인 분석
+- step_27 길이 비율 3.03 — Layer1 fail 케이스 처리
+- Phase 2 인터랙티브 깊이 (코드 실행 영역, 다음 단계 CTA, 변수 입력)
+- Phase 3 28레포 manifest.yaml + 배치 빌드
+---
