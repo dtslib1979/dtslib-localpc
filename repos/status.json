@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-01",
+  "updated": "2026-05-05T00:30:00+09:00",
   "description": "4개 레포 크로스레포 상태 — 유레카 전환 후 PC-native v6.0 기준",
   "axiom": "PC 메인 / 핸드폰 SSH 클라이언트 (유레카 2026-03-16)",
   "repos": {
@@ -44,54 +44,27 @@
     },
     "parksy-image": {
       "local_path": "/home/dtsli/parksy-image",
-      "wsl_path": "/home/dtsli/parksy-image",
       "github": "dtslib1979/parksy-image",
-      "branch": "main",
-      "last_commit": "55fd4a0",
-      "last_commit_msg": "feat: Voice-UI Translation OS v6.0 article + JSON repair",
-      "phase": "parksy-webpage MCP — article 완성, Railway 포팅 대기",
-      "parksy_air_status": "✅ 풀 파이프라인 작동 (2026-04-30)",
-      "parksy_air_cmd": "python3 /home/dtsli/parksy-image/tools/web2video/orchestrator.py --url https://dtslib1979.github.io/termux-bridge/slides/ --test --script-mode simple --tts-preset natural",
-      "parksy_air_output": "18.19s / 1.8MB / 1080x1920 / Telegram 전송 완료",
-      "mcp_server": "tools/mcp_slide_builder/mcp_server.py",
-      "mcp_registered": "~/.claude.json parksy-webpage",
-      "tools": [
-        "build_slide",
-        "build_deck",
-        "build_page",
-        "build_from_log",
-        "list_slides"
+      "branch": "claude/style-engine-phase1",
+      "phase": "Parksy Air — 강의 영상 자동화 파이프라인",
+      "last_session": "2026-04-30",
+      "last_commit": "1cabdb1",
+      "last_commit_msg": "fix: CONCAT 경로 버그 + test mode P0.6 스킵 수정",
+      "pipeline_status": "✅ 풀 파이프라인 작동 확인 (2026-04-30)",
+      "pipeline_cmd": "python3 /home/dtsli/parksy-image/tools/web2video/orchestrator.py --url https://dtslib1979.github.io/termux-bridge/slides/ --test --script-mode simple --tts-preset natural",
+      "pipeline_output": "18.19s / 1.8MB / 1080x1920 / Telegram 전송 완료",
+      "key_fixes": [
+        "BUG-008: CONCAT 상대경로 → 절대경로(Path.resolve()) + 2단계 정규화(normalize+concat copy)",
+        "BUG-009: test mode P0.6 스킵 → timeout 45s로 실행",
+        "BUG-007: P2↔P1 순서 역전 수정 (TTS 먼저 → durationSec 확정 → 녹화)",
+        "teaching_goal + pause_after scene 필드 추가 (Perplexity 백서 구현)"
       ],
-      "github_pages_live": [
-        "https://dtslib1979.github.io/parksy-image/slides/slide_whitepaper.html",
-        "https://dtslib1979.github.io/parksy-image/slides/article_whitepaper.html",
-        "https://dtslib1979.github.io/parksy-image/slides/slide_phl.html",
-        "https://dtslib1979.github.io/parksy-image/slides/slide_log.html",
-        "https://dtslib1979.github.io/parksy-image/slides/article_vouos.html"
-      ],
-      "templates": [
-        "accordion",
-        "flowchart",
-        "landing_page",
-        "matrix_grid",
-        "node_map",
-        "orbit_diagram",
-        "pipeline_stack",
-        "stat_counter",
-        "timeline",
-        "vs_compare",
-        "zoom_detail",
-        "article_page",
-        "dashboard"
-      ],
-      "dna_json": "tools/mcp_slide_builder/parksy_style_dna.json",
       "pending": [
-        "landing_page article 샘플 생성 테스트",
-        "Railway HTTP 포팅: stdio → HTTP wrapper",
-        "Parksy Air P4 YouTube 업로드 미제작 (upload_youtube.py)",
-        "Parksy Air 풀런 테스트 (3슬라이드 → 39슬라이드)"
-      ],
-      "dirty_files": 0
+        "인터랙티브 버튼 클릭 미구현 (Claude in Chrome → scenario → Playwright macro)",
+        "풀런 테스트 (3슬라이드 → 39슬라이드)",
+        "P4 YouTube 업로드 미제작 (upload_youtube.py)",
+        "Video QC: Gemini 2.0 Flash A/V 싱크 자동 검증"
+      ]
     },
     "dtslib-localpc": {
       "local_path": "D:\\PARKSY\\dtslib-localpc",
@@ -102,6 +75,57 @@
       "pending": [
         "bash scripts/start-bots.sh 실행 (PC에서 1회)",
         "Tailscale SSH 연결 확인"
+      ]
+    },
+    "parksy-actor": {
+      "local_path": "/home/dtsli/parksy-actor",
+      "github": "dtslib1979/parksy-actor",
+      "branch": "main",
+      "phase": "v3.1 — 4 레이어 분리 + Editor 신설 완료",
+      "last_session": "2026-05-05",
+      "last_commit": "751acb0",
+      "mcp_sse_port": 8012,
+      "mcp_tools": [
+        "parksy_actor_render",
+        "parksy_actor_compile_timeline",
+        "parksy_actor_scout",
+        "parksy_actor_capability_matrix",
+        "parksy_actor_list_engines"
+      ],
+      "core_axiom": "target_duration_sec=900 (박씨 15분 RPM 최적). 매직 넘버 0개.",
+      "layers": {
+        "1_director": "lecture_compiler::DurationAllocator",
+        "2_choreographer": "lecture_compiler::build_section_actions + scout/claude_in_chrome",
+        "3_performer": "timeline_runner + executors + studio_mode",
+        "4_editor": "editor/editor.py (신설)",
+        "5_distributor": "Telegram manual curl (다음: YouTube/Discord MCP)"
+      },
+      "latest_render": {
+        "render_id": "v14",
+        "duration_sec": 900.0,
+        "target_duration_sec": 900.0,
+        "actions_executed": 51,
+        "actions_failed": 0,
+        "chapters": 6,
+        "size_mb": 19,
+        "telegram_msg_id": 765
+      },
+      "completed": [
+        "v1.3 SSE async + esm.sh + recorder 풀길이",
+        "v1.4 perfect_freehand 연필 트래킹",
+        "v1.5 lecture_compiler 변수화",
+        "v1.6 scout/Claude vision wire up + capability matrix",
+        "v1.7 lecture_compiler에 vision 통합",
+        "v1.8 bbox_hint priority resolver 우회",
+        "v1.9+v2.0 per-slide vision + whitespace + density",
+        "v3.0 4 레이어 분리 + Editor 신설",
+        "v3.1 Editor target duration cap (mp4 정확히 900s)"
+      ],
+      "pending": [
+        "Performer wait 누적이 webm을 ~32s 초과 (Editor cap이 커버)",
+        "vision JSON 파싱 fail 시 retry 로직",
+        "Layer 5 Distributor MCP (YouTube/Discord)",
+        "voice MCP ↔ actor MCP 핸드오프 정식화"
       ]
     }
   },
