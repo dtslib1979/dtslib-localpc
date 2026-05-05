@@ -900,3 +900,27 @@ P0(스크립트) → P0.6(Claude Vision 판서 싱크, 45/120s) → P2(GPT-SoVIT
 재학습 비용 0원. 어느 슬라이드에서나 "그러니까", "~거든", "~잖아" 박씨 시그니처 자동 삽입.
 **재구축 힌트**: `parksy_voice_model.py` = `~/parksy-logs/00_TRUTH/local/`. sys.path에 추가 후 `rewrite_chunks(chunks)` 호출.
 ---
+
+---
+### 2026-05-05 | parksy-actor v3.3 E2E 파이프라인 완주 — whitepaper_v2_ko 900초 Telegram 전송
+**작업**:
+1. `html_remodel.py:311` SVG 데몬 스레드 join timeout 10s→180s (DeepSeek 실패 ~10s + claude CLI fallback ~60s = 70s)
+2. `wrapper/llm.py:115` DeepSeek API max_tokens=8192 추가 (기본 4096 → JSON 4258자에서 잘림 근본 수정)
+3. `compile/lecture_compiler.py:471-483` timeline section에 `slide_index`, `slide_match.slide_idx` 필드 추가
+4. `compile/lecture_compiler.py:330-340` build_section_actions()에서 nav click 완전 제거 (bbox_hint 좌표 불안정)
+5. `timeline_runner.py` slide_idx 직접 읽기 + target_idx=0도 처리하도록 수정
+6. timeline_fixed.json 직접 패치 (14섹션 slide_idx 0-13 주입, 12min compile_timeline 재실행 절약)
+**결정**:
+- SVG 0/13 근본 원인: DeepSeek JSON이 4096토큰에서 잘려 JSON parse 실패, 스레드 타임아웃으로 None 반환
+- nav click 제거 이유: bbox_hint 좌표가 슬라이드마다 달라 12/13 verified=False. ArrowRight는 100% 신뢰
+- slide_idx=0 처리: `if target_idx is not None` (기존 `if target_idx` → idx=0이면 False로 스킵되던 버그)
+**결과**:
+- 렌더링: 114액션 전부 실행, 슬라이드 0→13 순차 방문 확인 (trace URL: #0, #1, #/1 … #/13)
+- 영상: 900.0초(15분) 정확 달성, mp4 17.2MB
+- Telegram msg_id=771 전송 완료 (15:09:23)
+**교훈**:
+- DeepSeek 토큰 기본값 4096은 SVG/HTML JSON에 항상 부족 → max_tokens=8192 필수
+- compile_timeline에서 slide_match를 반드시 주입해야 timeline_runner가 ArrowRight 쓸 수 있음
+- cur_slide=1 초기화 (timeline_runner.py:194) — idx=0이면 nav 스킵됨. 현재는 slide_idx 읽어서 우회
+**재구축 힌트**: `python3 run_actor_pipeline.py` 로 E2E 실행. 재렌더만 할 때는 `timeline_fixed.json` 패치 후 `rerender_fixed.py` 실행.
+---
