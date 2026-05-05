@@ -924,3 +924,26 @@ P0(스크립트) → P0.6(Claude Vision 판서 싱크, 45/120s) → P2(GPT-SoVIT
 - cur_slide=1 초기화 (timeline_runner.py:194) — idx=0이면 nav 스킵됨. 현재는 slide_idx 읽어서 우회
 **재구축 힌트**: `python3 run_actor_pipeline.py` 로 E2E 실행. 재렌더만 할 때는 `timeline_fixed.json` 패치 후 `rerender_fixed.py` 실행.
 ---
+
+---
+### 2026-05-05 | actor SSE 핸드오프 버그 수정 + :8012 기동
+**작업**:
+1. `tools/mcp_actor/mcp_server_sse.py` — `parksy_actor_compile_timeline` 파라미터 수정
+   - 버그: `duration_per_section_sec`, `enable_slide_nav`, `max_writes_per_section`, `max_draws_per_section` → CompileOptions에 없는 필드 → TypeError 발생
+   - 수정: `target_duration_sec=900.0`, `rpm_optimization=True`, `use_claude_vision=True`로 교체 (CompileOptions 실제 필드)
+2. `tools/web2video/record_lecture.py` — nth-child(N) 인덱스 추출 + ArrowRight 스텝 네비게이션 추가
+3. `tools/web2video/renderer.py` — 오디오>비디오 길이 시 tpad freeze-frame 패딩 (짧은 비디오 블랙 컷 방지)
+4. `run_actor_pipeline.py` — voice MCP `_lecture_timeline` 통합, wav_paths 헤딩 매칭, E2E 완주 로직 정리
+5. actor SSE :8012 tmux 세션(`actor_sse`)으로 기동 완료
+**결정**:
+- compile_timeline이 MCP SSE에서 호출 불가했던 근본 원인 = 파라미터 이름 불일치 (v2 리팩토링 때 CompileOptions 바뀌었는데 SSE 툴 미동기화)
+- voice→actor 핸드오프 정식화: lecture_timeline() → sections[].wav_path 추출 → compile_timeline(wav_paths=[]) → render
+**결과**:
+- actor SSE 포트 8012 LISTEN 확인 (PID 500923)
+- CompileOptions 호환성 복원 → parksy_actor_compile_timeline 정상 호출 가능
+- 커밋: 410df29 (fix), 6bdba04 (chore: slides/blueprints), f6648c1 (chore: cleanup)
+**교훈**:
+- SSE 서버 파라미터는 반드시 CompileOptions 필드명과 1:1 매핑. MCP 리팩토링 시 두 곳 동시 수정.
+- actor SSE는 세션 시작 시 `tmux new-session -d -s actor_sse -c ~/parksy-image/tools/mcp_actor 'PARKSY_ACTOR_DISABLE_HOST_CHECK=1 python3 mcp_server_sse.py'` 로 기동
+**재구축 힌트**: actor SSE 재기동 → 위 tmux 명령. compile_timeline 파라미터 → CompileOptions dataclass 필드(target_duration_sec/rpm_optimization/use_claude_vision).
+---
