@@ -842,3 +842,49 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
   - 박씨 1분 레퍼런스 입력 → 한국어 합성 → 박씨 A/B 들어봄
   - 통과 시 NPU 직행 (며칠) / 실패 시 Vast.ai 1회 파인튜닝 ($5~10) → NPU
 ---
+
+---
+### 2026-05-08 | NPU 워커 인터페이스 v1.0 + streaming 클라이언트
+**작업**:
+- `docs/NPU_WORKER_INTERFACE_v1.md` 신설 — HTTP 인터페이스 명세 v1.0 (영구 호환 약속)
+- `scripts/npu_worker.py` 신설 — NPU 워커 v1.0-skeleton, 포트 7768
+  - ThreadingHTTPServer (synth 중에도 health 즉시 응답)
+  - Backend 추상화: SovitsFallbackBackend(지금) / ZipVoiceBackend(예정) / Coqui(예정)
+  - GET /health
+  - POST /synth — sovits_worker /synth와 100% 응답 호환
+  - POST /synth_batch — NDJSON streaming (start/progress/done/error)
+  - POST /synth_batch?async=1 + GET /jobs/<id>/{status,result} — polling 백업
+  - 개별 슬라이드 fail = 결과에만 기록, 전체 중단 X
+  - X-Accel-Buffering: no (proxy 버퍼링 회피)
+- `mcp_voice/parksy_voice/streaming_client.py` 신설
+  - synth_batch_streaming() — NDJSON line iterator, on_progress 콜백
+  - synth_batch_polling() — fallback
+  - worker_health() — 빠른 체크
+  - 환경변수: NPU_WORKER_BASE / TTS_WORKER_BASE
+
+**결정**:
+- 진단된 진짜 병목 = voice MCP의 lecture_timeline 단일 SSE 블로킹 응답 → mcp 라이브러리 RPC default timeout (~7분)
+- 해결: 워커 측 streaming + 클라이언트 측 line iterator → 각 progress 이벤트가 keepalive 역할
+- v1.0 = sovits 위임 backend로 인터페이스 먼저 박음. ZipVoice 통합은 phone_aider DeepSeek 검증 후 backend swap만으로
+- 호환성 약속: /synth schema, NDJSON event 포맷, TTS_WORKER_BASE 환경변수 = 영구 안정
+
+**결과**:
+- npu_worker 7768 LISTEN, /health=200, sovits-fallback backend 정상
+- /synth 단일: 박씨 음성 32kHz/RMS 0.115, 8.95s
+- /synth_batch streaming 3슬라이드: NDJSON 정상, done 이벤트, 24.99s, 박씨 음색 RMS 0.10~0.12
+- streaming_client.py 모듈: 2슬라이드 e2e 13.2s, on_progress 6 이벤트 수신
+
+**교훈**:
+- ThreadingHTTPServer + 클라이언트 line iterator = mcp RPC timeout 회피의 정석
+- SovitsFallbackBackend로 ZipVoice 통합 전에 인터페이스만 검증 가능 → 통합 리스크 격리
+- /synth_batch?async=1 polling 모드는 Cloudflare/proxy 환경 대응 옵션 (현재 미사용, 인터페이스만 박음)
+
+**재구축 힌트**:
+"npu_worker는 ~/parksy-audio/scripts/npu_worker.py — 7768. tmux 세션 npu_worker로 띄움. NPU_BACKEND=sovits|zipvoice|coqui 환경변수로 백엔드 선택. 응답 schema는 sovits_worker와 호환. /synth_batch는 NDJSON streaming. 명세서 ~/parksy-audio/docs/NPU_WORKER_INTERFACE_v1.md. voice MCP의 lecture_timeline 내부에서 streaming_client.synth_batch_streaming() 호출로 교체하면 39슬라이드 RPC timeout 우회."
+
+**다음 세션 즉시 실행 (병렬)**:
+- 메인: voice MCP lecture_timeline 내부를 streaming_client 호출로 교체 + 39슬라이드 e2e v4 검증
+- phone_aider DeepSeek: ZipVoice 한국어 zero-shot 5문장 검증 + 박씨 레퍼런스 1~2분 추출
+- 검증 통과 시 npu_worker.py의 ZipVoiceBackend 구현 + NPU_BACKEND=zipvoice 전환
+- 통과 실패 시 Vast.ai 1회 파인튜닝 ($5~10) 또는 Coqui XTTS v2 검토
+---
