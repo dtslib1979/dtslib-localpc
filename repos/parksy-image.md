@@ -947,3 +947,53 @@ P0(스크립트) → P0.6(Claude Vision 판서 싱크, 45/120s) → P2(GPT-SoVIT
 - actor SSE는 세션 시작 시 `tmux new-session -d -s actor_sse -c ~/parksy-image/tools/mcp_actor 'PARKSY_ACTOR_DISABLE_HOST_CHECK=1 python3 mcp_server_sse.py'` 로 기동
 **재구축 힌트**: actor SSE 재기동 → 위 tmux 명령. compile_timeline 파라미터 → CompileOptions dataclass 필드(target_duration_sec/rpm_optimization/use_claude_vision).
 ---
+
+---
+### 2026-05-07 | 3-Agent 분업 — TTS MCP 전환 + actor MCP 4개 최적화 + fill rate 87% 달성
+
+**작업 (Sonnet — 맥락 검증/마감)**:
+1. `warmup_tts.py` — MCP :8001 /health 우선 체크로 warmup 27초 → 0.1초 (커밋 4424885)
+2. `tools/web2video/orchestrator.py` — tts_engine 직접 import → MCP :8001 SSE `synthesize` 호출 전환, asyncio fallback 포함 (커밋 75f4863)
+3. `tools/mcp_actor/parksy_actor/compile/lecture_compiler.py` — `probe_wavs()` ThreadPoolExecutor 병렬화, max_workers=4, 8~25초 절감 (커밋 0ea384a)
+4. `tools/mcp_actor/parksy_actor/recorder/__init__.py` — WAV trim/pad `_process_one()` ThreadPoolExecutor 병렬화, 3~5초 절감 (커밋 0ea384a)
+5. `tools/mcp_actor/parksy_actor/timeline_runner.py` — nav hash `location.hash` + `wait_for_function` DOM 확인 (4~5초 절감) (커밋 0ea384a)
+6. `tools/mcp_actor/parksy_actor/live_director/dispatcher.py` — vision call MD5 캐싱 (screenshot bytes → `hashlib.md5[:12]:intent[:40]`), max 30 entries, 50~170초 절감 (커밋 0ea384a)
+7. `tools/mcp_actor/mcp_server_sse.py` — `/health` 엔드포인트 추가 (커밋 29a4f99)
+
+**작업 (DeepSeek phone_aider — 공격적 초안)**:
+1. `dtslib-cloud-appstore/parksy-tts/server.py` — `/health` 엔드포인트(Starlette JSONResponse) + 백그라운드 워밍업 스레드 (커밋 c08fc8c)
+2. `parksy-tts/core/tts_pytorch.py` — `ParksyTTS` thread-safe singleton (`__new__` + `threading.Lock` double-checked)
+3. `parksy-tts/core/tts_chatterbox.py` — `ParksyChatterboxTTS` 동일 singleton 패턴
+4. `parksy-tts/core/router.py` — 모듈레벨 `_TTS_LANE_A/B` 싱글톤 게터 + `concurrency.py resource_lock` GPU 직렬화
+5. `dtslib-papyrus/tools/mcp_manager.sh` (신규) — 4개 MCP 서버 status/start/stop/restart/health/logs 원커맨드 통합 관리
+6. fill rate 41%→87% — `asyncio.run()` nested event loop 버그 수정 (커밋 55af716) + `scout_inventory` 누락 버그 (커밋 2447ff6) + MCP 핸들러 `compiled_meta` 포함 (커밋 df13fe0)
+
+**결정**:
+- 3-Agent 분업 패턴 확립: DeepSeek(공격적 초안) + Sonnet(맥락 검증/마감) + Phone Claude(통합/배포)
+- Perplexity = Opus 대체 리서치 역할 확정 ("할 일 없고 검증된 프로세스를 쓰겠다")
+- TTS warmup: MCP /health GET이 직접 합성보다 270배 빠름 → 파이프라인 시작점 변경
+- fill rate 원인 2개: ①asyncio 중첩 버그(주) ②스크립트 생성 제한(부) — 둘 다 수정됨
+- vision MD5 캐시: 같은 슬라이드 repeated must-action → vision call 1회만 실행
+- WAV 병렬화: I/O bound 작업이므로 GIL 무관, ThreadPoolExecutor 효과 최대
+
+**결과**:
+- TTS warmup: 27초 → 0.1초
+- actor render 예상: 300초 → 165초 (-45%)
+- fill rate: 41% → 87%
+- parksy-tts 싱글톤화: 매 호출 모델 재로딩 제거 (첫 로딩 후 캐싱 유지)
+- 4개 MCP 서버 /health 전부 커버: parksy-tts/:8001, parksy-scm/:8002, parksy-webpage/:8003, parksy-actor/:8012
+- 전체 파이프라인 예상 단축: 37분 → 23분 (TTS MCP 전환 기준)
+
+**교훈**:
+- DeepSeek 초안은 빠르고 공격적이나 맥락 오류(파라미터명 오타, ImportError, asyncio.run 충돌) 발생 → Sonnet 마감 필수
+- ASGI crash는 반환 타입 어노테이션(-> dict)이 FastMCP와 충돌 — JSONResponse 자체는 정상, 어노테이션 제거로 해결
+- asyncio 중첩 루프: MCP tool 내에서 `asyncio.run()` 호출 = 런타임 에러 → `nest_asyncio` 또는 직접 Python 코드로 우회
+- vision call 캐시: MD5로 "같은 화면" 판별 → 슬라이드 전환 시 자동 invalidate (슬라이드마다 screenshot이 달라짐)
+
+**재구축 힌트**:
+- TTS MCP 기동: `tmux new-session -d -s tts_mcp -c ~/dtslib-cloud-appstore/parksy-tts 'source ~/GPT-SoVITS/.venv/bin/activate && python3 server.py --sse'`
+- actor SSE 기동: `PARKSY_ACTOR_DISABLE_HOST_CHECK=1 python3 tools/mcp_actor/mcp_server_sse.py`
+- 4개 MCP 상태 일괄: `bash ~/dtslib-papyrus/tools/mcp_manager.sh status`
+- fill rate 확인: orchestrator.py 풀런 후 로그에서 `fill_rate` 검색
+- vision 캐시 히트 확인: timeline_runner 로그에서 `vision_cached` 레이어 문자열 검색
+---
