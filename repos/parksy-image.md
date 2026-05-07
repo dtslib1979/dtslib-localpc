@@ -997,3 +997,35 @@ P0(스크립트) → P0.6(Claude Vision 판서 싱크, 45/120s) → P2(GPT-SoVIT
 - fill rate 확인: orchestrator.py 풀런 후 로그에서 `fill_rate` 검색
 - vision 캐시 히트 확인: timeline_runner 로그에서 `vision_cached` 레이어 문자열 검색
 ---
+
+---
+### 2026-05-07 | Air pipeline sse_read_timeout 1800 (TTS 워커 트랙)
+**작업**:
+- `tools/mcp_air/pipeline.py` `sse_read_timeout` 600→1800 패치
+- 본진 39슬라이드 e2e 3회 (v1 600s, v2 1800s, v3 worker timeout 패치까지)
+- 매번 15슬라이드 처리 후 SSE 끊김 — pipeline 측 timeout 패치만으로는 부족
+- 진단: voice MCP의 lecture_timeline = 단일 SSE 세션 안에 39슬라이드 블로킹 처리 → mcp 라이브러리 RPC default timeout (~7분) 일관 충돌
+
+**결정**:
+- 클라이언트 측 sse_read_timeout 늘림은 한계 — 서버 측 streaming 응답 필수
+- 그러나 voice MCP 재설계는 본진 트랙 NPU 워커로 미룸
+- 메인 인프라 (pipeline.py / actor MCP / renderer / distributor)는 TTS 백엔드와 무관 → NPU 트랙 가도 그대로 재활용
+
+**결과**:
+- 1차 voice 단계 통과율: 38% (15/39 슬라이드)
+- mp4 산출: 0건 (voice 단계 막힘)
+- 박씨 음성 WAV 5개 검증 (32kHz / RMS 0.11) → 워커 라인 자체는 정상
+
+**교훈**:
+- voice MCP의 lecture_timeline 같은 long-blocking SSE 응답은 mcp default RPC timeout 위반 → 슬라이드별 streaming 응답 또는 polling 인터페이스로 재설계 필요
+- pipeline.py의 SectionAudio 인터페이스는 TTS 엔진(GPT-SoVITS / ZipVoice / etc) 무관 contract → NPU 트랙 가도 그대로
+- 오늘 박은 timeout/재시도 가드레일 = NPU 워커 신설 시 동일 패턴 재사용
+
+**재구축 힌트**:
+"pipeline.py는 voice→actor→render→distributor 4단 오케스트레이션. voice 단만 NPU 워커로 교체하면 나머지 그대로. SectionAudio = sections + wav_paths contract. NPU 워커는 long-blocking 대신 슬라이드별 streaming 응답 또는 polling으로 만들 것 (오늘 mcp RPC timeout으로 막힌 교훈)."
+
+**다음 세션 (병렬)**:
+- 메인: NPU 워커 인터페이스 설계 (ZipVoice 기준)
+- phone_aider: ZipVoice 한국어 zero-shot 검증 + onnxruntime-qnn 폰 NPU 포팅
+- 통과 시 voice MCP의 lecture_timeline을 ZipVoice 워커 streaming 호출로 교체
+---

@@ -794,3 +794,51 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 4. VM SSH 접속 → 03_vm_train_all.sh 전송 → nohup 백그라운드 실행
 5. 완료 후 bash ~/parksy-audio/gcp_training/04_download_models.sh → VM stop
 ---
+
+---
+### 2026-05-07 | sovits_worker 신설 + tts_engine 라우팅 (GPU 안 쓰고 양산 가능선 진단)
+**작업**:
+- `scripts/sovits_worker.py` 신설 — GPT-SoVITS 모델 상주 HTTP 워커
+  - ThreadingHTTPServer (synth 추론 중 health/warmup 동시 응답 가능)
+  - POST /synth: text/lang/output_path/speed_factor JSON
+  - core.synthesize 응답에 status/output 키 자동 보강
+  - 기본 포트 7766 (RVC=7755 다음)
+  - GPT-SoVITS .venv (~/GPT-SoVITS/.venv/bin/python) 필수
+- `scripts/tts_engine.py` 워커 라우팅 변경
+  - Path 1 워커 직접 synth (health 체크 생략 — GIL 경합 false negative 회피)
+  - Path 2 워커 죽음 감지 시 자동 부트 (1회만)
+  - Path 3 subprocess fallback (레거시)
+  - _WORKER_SYNTH_TIMEOUT 180→1800 (긴 슬라이드 보호)
+  - 재시도 로직 제거 (큐 도미노 차단)
+- 5슬라이드 실측: 콜드 31.2s + 워밍 12.05s 평균
+- 본진 39슬라이드 e2e 3회 시도 (v1/v2/v3) — 매번 15슬라이드 처리 후 voice MCP SSE 끊김
+
+**결정**:
+- 병목 = voice MCP가 매 슬라이드마다 subprocess 새로 띄움 (39번 콜드 = 36분, DeepSeek 측정 55.7s/slide)
+- 워커 1회 로드 + N회 재사용 = 콜드 31s + 워밍 12s/slide → 39슬라이드 ~8분 추정
+- 그러나 voice MCP의 lecture_timeline은 단일 SSE 세션 안에 39슬라이드 묶음 → mcp 라이브러리 RPC default ~7분 timeout에서 일관되게 끊김
+- voice MCP 자체 streaming 응답 재설계 = 박씨 본진 NPU 트랙으로 이관 결정
+
+**결과**:
+- 콜드 31.2s, 워밍 12.05s/slide, 5/5 WAV 32kHz/RMS 0.11 (박씨 v2ProPlus 정상)
+- 39슬라이드 e2e: 항상 15슬라이드 통과 후 SSE 끊김 (mcp RPC default timeout)
+- mp4 산출: 0개 (voice 단계에서 막힘)
+- 진단 자산: voice MCP 단일 SSE 블로킹 구조가 진짜 병목, NPU 워커 streaming 설계 필수
+
+**교훈**:
+- subprocess.run 매번 띄우는 구조 = CPU 추론 N배 패널티. HTTP 워커로 전환 필수
+- ThreadingHTTPServer가 GIL 풀어주지만 long inference 중에는 health 1초 timeout 부족 → 클라이언트가 health 체크 생략하는 게 정답
+- voice MCP의 lecture_timeline = 39슬라이드 한 번에 처리 = SSE/MCP RPC default timeout 위반. NPU 워커는 streaming 응답으로 설계
+- 박씨 자산 분리: v2ProPlus 가중치(.pth, NPU 변환 어려움) vs 박씨 음성 데이터(1~2분 → ZipVoice zero-shot 레퍼런스 재사용)
+- ZipVoice (k2-fsa, ⭐972, Flow Matching, ONNX 기본 지원) = NPU 트랙 진짜 답. GPT-SoVITS 5컴포넌트 ONNX 지옥 우회 가능
+- onnxruntime-qnn v2.1.0 (2026-04-20, MIT) = Qualcomm NPU 공식 ONNX backend. Termux 우회 단순화
+
+**재구축 힌트**:
+"sovits_worker는 ~/parksy-audio/scripts/sovits_worker.py — GPT-SoVITS .venv로 실행하는 HTTP 워커. tmux 세션 sovits_worker로 띄움. tts_engine.py가 워커에 POST /synth 호출. 워커 죽으면 자동 부트. 39슬라이드 통과는 voice MCP 측 streaming 응답 재설계 후 가능 — NPU 트랙 ZipVoice 워커 신설 시 streaming 인터페이스로 만들 것."
+
+**다음 세션 즉시 실행 (병렬)**:
+- 메인: 정리 완료 (이 세션) + ZipVoice 워커 인터페이스 설계
+- phone_aider DeepSeek 트랙: ZipVoice 한국어 zero-shot 5문장 검증
+  - 박씨 1분 레퍼런스 입력 → 한국어 합성 → 박씨 A/B 들어봄
+  - 통과 시 NPU 직행 (며칠) / 실패 시 Vast.ai 1회 파인튜닝 ($5~10) → NPU
+---
