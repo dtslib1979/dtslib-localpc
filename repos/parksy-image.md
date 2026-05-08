@@ -1073,3 +1073,41 @@ P0(스크립트) → P0.6(Claude Vision 판서 싱크, 45/120s) → P2(GPT-SoVIT
 - voice MCP 측 압축 로직 검토 (39슬라이드 → 15섹션 chunks 압축이 의도인지 확인)
 - actor render audio_dur=1733s vs video target=900s 차이 검증
 ---
+
+---
+### 2026-05-08 | 🏆🏆 Parksy Air 풀 양산 e2e 통과 (test_mode=False, 15.3분)
+**작업**:
+- v4 통과 후 즉시 풀 양산 검증
+- pipeline.py 그대로, 호출 인자만 test_mode=False
+- 15섹션 전체 박씨 음성 합성 + actor 61액션 + 풀 mp4 + Telegram
+
+**결과**:
+- TOTAL: 918.7s (15.3분)
+- voice 대본: ~30s (15섹션, skip_synth=True)
+- NPU 워커 합성 15/15 fail 0: 430.05s (7.2분)
+- actor compile: 61 액션 (15섹션 × 4액션, v4 12액션 대비 5배)
+- actor render: mp4 8.9MB / 900s / 1280x720
+- Telegram 전송: ✅ message_id 907
+- QA Gate: mp4=8.9MB / dur=900s / wav=15/15 ✅
+
+**editor log 발견 (다음 트랙 이슈)**:
+- audio_dur=1519.6s (15섹션 박씨 음성 합산 = 25분치)
+- target=900s (editor 강제 15분)
+- video_dur=900s (after stretch)
+- → 박씨 음성 1/3가 잘리거나 stretch됨. 영상-음성 길이 불일치
+- 본진 양산은 통과했으나, audio target 강제가 다음 본진 이슈
+
+**박씨 헌법 풀 충족**:
+- 양산 자동화 ✅
+- 박씨 음성 ✅ (15/15)
+- GPU 0 ✅
+- 단일 트랙 ✅
+
+**다음 트랙 (별도)**:
+- editor target=900s 강제 로직 검토 (15분 RPM 헌법 vs 음성 25분 충돌)
+- 옵션: 영상을 음성 길이에 맞추거나, 음성을 영상에 맞춰 압축
+
+**관련 커밋**:
+- A 트랙 풀 양산 통과: pipeline.py 변경 없음 (v4 코드 그대로)
+- mp4 산출: /tmp/parksy_air/20260508_110547/0cf73d0f80.mp4 (8.9MB)
+---
