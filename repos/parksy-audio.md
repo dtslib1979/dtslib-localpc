@@ -888,3 +888,42 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 - 검증 통과 시 npu_worker.py의 ZipVoiceBackend 구현 + NPU_BACKEND=zipvoice 전환
 - 통과 실패 시 Vast.ai 1회 파인튜닝 ($5~10) 또는 Coqui XTTS v2 검토
 ---
+
+---
+### 2026-05-08 | 🏆 NPU 트랙 가드레일 박음 + ⚠️ 양산 품질 미해결
+**작업**:
+- 박씨 v2ProPlus → Genie ONNX 320MB 변환 (3.6초, 박씨 IP 클린, 라이선스 OK)
+- 폰 proot Ubuntu + Python 3.12 + onnxruntime + genie-tts + 한국어 G2P 의존성 풀 셋업
+- `scripts/xtts_worker.py` 신설 — XTTS v2 한국어 검증 자산 워커 (포트 7770)
+- `scripts/phone_npu_control.sh` 신설 — 폰 디바이스 컨트롤 플러그
+- 폰 ONNX 풀 추론 PoC 작동 (CPU EP, RTF 0.79~0.95)
+- Telegram msg 910 박씨 평가: "한국말도 아님" — 운율 망가짐 확인
+- DeepSeek 파형 분석: 주파수 662Hz/566Hz (사람 음성 80~180Hz 아님), duration 비정상
+
+**결정**:
+- 양산 운영 = sovits_worker (PyTorch CPU) 그대로 (오늘 v4 + 풀 양산 통과 검증)
+- NPU 트랙 = 별도 R&D 트랙 (며칠~1주) — 가드레일 80% 박힘
+- 라이선스 정렬: GPT-SoVITS 박씨 IP 클린 / XTTS v2 CC-NC 양산 불가 / ZipVoice 한국어 미지원
+
+**결과**:
+- ✅ Genie ONNX 변환 성공 (박씨 5 컴포넌트 fp16/fp32)
+- ✅ 폰 풀 추론 인프라 작동 (proot CPU EP)
+- ⚠️ 양산 품질 운율 망가짐 (BERT zero-vector + ONNX 입력 처리 차이 의심)
+- 박씨 본진 PyTorch도 한국어 BERT zero-vector 사용 → ONNX 변환 자체 의심
+- 진짜 원인 미해결, B 트랙 디버그 필요
+
+**교훈**:
+- DeepSeek 의견 맹신 금지 — 박씨 본진 코드(inference_webui.py:562) 보면 한국어 BERT zero가 정상
+- ONNX 변환 후 input shape/sequence 처리 본진과 다를 수 있음 — 비교 디버그 필수
+- 메인은 결과 검증 안 하고 박씨에게 "들어보세요" 던지는 패턴 반성
+- 폰 proot Ubuntu에 onnxruntime-qnn 깔아도 Hexagon NPU EP 미활성 (Linux/Windows ARM64 wheel은 Android 시스템 호출 경로 없음)
+- 진짜 NPU 가동 = Android NDK 빌드된 onnxruntime-android-qnn AAR + 네이티브 앱 (3~5일)
+
+**재구축 힌트**:
+"박씨 NPU 트랙 자산: ~/parksy-audio/scripts/xtts_worker.py (Vast.ai GPU 검증), phone_npu_control.sh (폰 RAM/발열 관리). Genie ONNX는 박씨 v2ProPlus를 320MB로 변환 — Genie convert_to_onnx() 한 줄. 폰 proot debian + miniconda Python 3.12에 genie-tts 설치. 한국어 우회 = model_manager.load_character(language='Korean') 직접 호출 + monkey patch get_phones_and_bert (전 모듈)."
+
+**다음 트랙 (병렬)**:
+- B 트랙: 본진 PyTorch sovits_worker vs Genie ONNX 같은 텍스트 입력 dump 비교 → shape/seq/ssl_content 차이 잡기
+- C 트랙: Android NDK AAR 빌드 (Hexagon NPU 진짜 가동, 3~5일)
+- 양산 운영은 그대로 sovits_worker — 박씨 헌법 충족
+---
