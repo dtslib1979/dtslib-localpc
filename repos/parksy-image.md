@@ -1029,3 +1029,47 @@ P0(스크립트) → P0.6(Claude Vision 판서 싱크, 45/120s) → P2(GPT-SoVIT
 - phone_aider: ZipVoice 한국어 zero-shot 검증 + onnxruntime-qnn 폰 NPU 포팅
 - 통과 시 voice MCP의 lecture_timeline을 ZipVoice 워커 streaming 호출로 교체
 ---
+
+---
+### 2026-05-08 | 🏆 Parksy Air e2e v4 풀 통과 (TOTAL 10.6분)
+**작업**:
+- `tools/mcp_air/pipeline.py` `_voice_timeline` 2단계 패턴 교체
+  - Step 1: voice MCP `parksy_lecture_timeline` skip_synth=True (대본만 ~30s)
+  - Step 2: NPU 워커 `/synth_batch` NDJSON streaming (각 progress = keepalive)
+  - Step 3: sections에 wav_path / qc 보강
+- streaming_client.synth_batch_streaming() 사용, on_progress 콜백 진행률 표시
+- TTS_WORKER_BASE 환경변수로 백엔드 갈아끼움 (기본 7768 npu_worker)
+
+**결정**:
+- 진단된 진짜 병목 = voice MCP가 15섹션 합성 후 단일 응답 → mcp RPC default ~7분 timeout 일관 끊김
+- 해결 = voice MCP의 skip_synth 모드 활용 + 합성은 별도 워커로 분리
+- voice MCP는 빠른 작업(대본/액션/DOM 매칭)만 담당, 느린 작업(N슬라이드 합성)은 워커로
+- NDJSON streaming = mcp 응답 timeout 무관 (line iterator + 각 progress가 자체 keepalive)
+
+**결과**:
+- ✅ status: ok / Telegram message_id: 906
+- TOTAL: 637.4s (10.6분, test_mode=True 3섹션)
+- voice MCP 대본: ~30s (15섹션)
+- NPU 워커 합성 15/15 fail 0: 440.9s
+- actor compile_timeline: 12액션
+- actor render: mp4 4.4MB / 900s / 1280x720 / aac mono 44.1kHz
+- QA Gate: mp4=4.4MB / dur=900s / wav=3/3 ✅
+- Telegram 전송: ✅
+
+**교훈**:
+- mcp RPC default timeout (~7분)은 long-blocking tool 호출의 hard limit
+- 해법: tool은 빠른 작업만, 무거운 처리는 별도 워커 + streaming
+- voice MCP의 skip_synth 옵션이 결정타 (이미 박혀있던 옵션을 새 용법으로 활용)
+- npu_worker /synth_batch NDJSON streaming은 mcp RPC와 독립 → 시간 제약 없음
+- 12 actor 액션 = 3섹션 × 4액션(슬라이드 입장/판서/커서/이탈) 구조
+- actor render의 audio_dur=1733s vs target=900s 차이 → editor가 video stretch로 동기화
+
+**재구축 힌트**:
+"pipeline._voice_timeline은 2단계: ①voice MCP skip_synth=True로 대본만, ②streaming_client.synth_batch_streaming()으로 NPU 워커 호출. 합성 결과를 sections에 wav_path 보강. TTS_WORKER_BASE 환경변수로 워커 base 변경. test_mode=True면 actor 단계로 sections[:3] 전송."
+
+**다음 세션**:
+- ZipVoice 통합 (phone_aider DeepSeek 검증 통과 후): npu_worker.py의 ZipVoiceBackend.warmup/synth 구현, NPU_BACKEND=zipvoice 전환
+- 풀 39슬라이드 (test_mode=False) e2e 검증 (현재는 3섹션 검증만)
+- voice MCP 측 압축 로직 검토 (39슬라이드 → 15섹션 chunks 압축이 의도인지 확인)
+- actor render audio_dur=1733s vs video target=900s 차이 검증
+---
