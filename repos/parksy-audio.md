@@ -927,3 +927,25 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 - C 트랙: Android NDK AAR 빌드 (Hexagon NPU 진짜 가동, 3~5일)
 - 양산 운영은 그대로 sovits_worker — 박씨 헌법 충족
 ---
+
+---
+### 2026-05-12 저녁 | Phase 2 게이트 ❷ Salamander 4 트랙 재현 + visualizer mp4 박씨 자산 박음
+**작업**: 박씨 오전 SGM 시절 산출물 (11:14~11:23) 폐기 → Salamander 룰 정합 e2e 재실행 (18:41~18:55). 4 트랙 visualize 1280×720 HD + 저작권 자막 박음 (19:09~19:21). docs/box/midi/*_visualizer.mp4 4개 git 박씨 자산 commit + push. 리팩토링 6 파일 동시 (full/render/ambient/master/visualize/mcp_server).
+
+**결정**: 박씨 명시 위임 "이제 알아서 120점짜리 네가 해라" + "리팩토링하라" → Phase 내부 자율 풀림. publish 송출은 박지 않음 (박씨 결재 ❸ 외부 자산 노출).
+- D:/VST/ambient/ 폐기 발견 → local-agent/outputs/clips/{rain,fire,wind}_synth.wav 정합
+- D:/VST/TOH4.sf2 미박힘 → DARK SF2 Salamander 폴백
+- SGM-V2.01.sf2 옵션 코드 제거 (박씨 X "쓰레기" 룰)
+- full.py process_one return 키 매핑 fix (wav_path/m4a_path/total_time) + score_engine 직접 호출 박음
+
+**결과**: 박씨 룰 4 트랙 정확히 재현. clair 96A / consolation 100A / nocturne 79C / pavane 90B. 평균 91.3. SGM 평균 88.05 대비 +3.25점. mp4 사이즈 312MB 합계 (전부 100MB 한도 안). git push 6ebca38..2c1a076 (refactor af9b75b + 박씨 자산 2c1a076). 13분 처리.
+
+**교훈**: 
+1. 박씨 자산 풀스캔 우선 — D:/VST/ 디렉토리 폐기됐는데 코드는 D:/VST/ 박혀있음. 실행 전 경로 정합 필수.
+2. SGM 잔재 산출물 = 박씨 룰 위반. 박씨 룰 발효 시각 (11:35) 이전 산출물 전부 무효 처리.
+3. ffmpeg visualize medium preset = 곡 길이의 1:1 시간 → 4 트랙 ~17분. 다음 양산 시 preset=fast 또는 병렬화 검토.
+4. 박씨 결재 5번 룰 정합: 박씨 명시 위임 받으면 Phase 내부 자율, 외부 송출(publish)는 별도. Tool 9 풀체인 = 자율 / Tool 8 publish = 결재.
+5. 오전 Phase 3 송출 4 트랙은 SGM 시절 산출물 → 박씨 룰 정합 X. 재송출 필요 여부 박씨 결정.
+
+**재구축 힌트**: D: 유실 시 "parksy-music v0.1 11 도구. ambient 경로 = /mnt/d/PARKSY/parksy-audio/local-agent/outputs/clips/{rain,fire,wind}_synth.wav. Salamander SF2 = /mnt/c/Users/dtsli/Desktop/01_PARKSY/fluidsynth/SalamanderGrandPiano-SF2-V3+20200602/. WORK_BASE = /mnt/d/PARKSY/parksy-audio/local-agent/outputs/work/. visualize.py tech_line style 분기. full.py process_one return → wav_path/m4a_path/total_time 매핑 + score_engine.score_file() 직접 호출. SGM 옵션 박지 마라 (박씨 룰)" 라고 시키면 된다.
+---
