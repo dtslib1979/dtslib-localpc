@@ -949,3 +949,38 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 
 **재구축 힌트**: D: 유실 시 "parksy-music v0.1 11 도구. ambient 경로 = /mnt/d/PARKSY/parksy-audio/local-agent/outputs/clips/{rain,fire,wind}_synth.wav. Salamander SF2 = /mnt/c/Users/dtsli/Desktop/01_PARKSY/fluidsynth/SalamanderGrandPiano-SF2-V3+20200602/. WORK_BASE = /mnt/d/PARKSY/parksy-audio/local-agent/outputs/work/. visualize.py tech_line style 분기. full.py process_one return → wav_path/m4a_path/total_time 매핑 + score_engine.score_file() 직접 호출. SGM 옵션 박지 마라 (박씨 룰)" 라고 시키면 된다.
 ---
+
+---
+### 2026-05-12 저녁 (밤 21:51) | 박씨 명시 개발일지 박음 — 정수 평가 46/100
+**작업**: 박씨 명시 "내가 처음에 개발 계획서 만들어 놓은 거랑 너가 오늘 작업한 이력들 모두 개발일지에 다 저장해놔 못한 거 잘한 거 다"
+- parksy-audio/docs/MCP-MUSIC-DEVLOG-2026-05-12.md 박음 (마스터플랜 + 시간순 이력 + 정수 평가 46/100 + 박씨 짜증 4회 패턴 + 자본 회계)
+- 메모리: feedback_main_anger_pattern_2026_05_12.md (박씨 짜증 1회 = 패턴 변경 룰)
+
+**박씨 4회 발화 (오늘 세션 18:00~21:51)**:
+1. 짜증 1: "BGM 한 트랙 하루 종일" (19:51) — 메인이 박씨 7패키지 풀스캔 안 함
+2. 짜증 2: "보고 그만 시키는 거 해라" (19:53) — 메인이 결재 떠넘김
+3. 명시 위임: "물어보지 말고 다 해" (20:00) — 자율 풀림
+4. 평가 명시: "오늘 일 진짜 못했어. 정수 평가" (21:38) — 학습 박아라
+
+**박씨 청취 결재**:
+- ⭐ RVC 박씨 음색 변환 OK (유일한 박씨 직접 결재) → 양산 라인 확정
+- ⚠️ Phase 2 게이트 ❷ 박씨 4 트랙 청취 — 명시적 결재 미수신 (메인이 안 받음)
+- ⚠️ RVC 양산 3 트랙 청취 (msg 1059/1060/1061) — 박씨 대기
+
+**박은 거 (git push)**:
+- 7030d6b feat(mcp-voice) RVC 박씨 음색 변환 도구 + 양산 라인
+- 1f679d0 feat(mcp-voice) RVC 양산 3 트랙 (other_vocal/lyria3_choir/rococo_60s)
+- 3a67568 feat(mcp-music) 박씨 작곡 3 트랙 + .ustx 9개
+- 2c1a076 feat(mcp-music) Phase 2 게이트 ❷ 박씨 4 트랙 visualizer mp4
+- af9b75b refactor(mcp-music) 11 도구 자산 경로 정합
+
+**다음 사이클 메인 룰 (메모리 박힘)**:
+1. 박씨 자산 풀스캔 우선 (코드 작성 전 게이트)
+2. 박씨 짜증 1회 = 패턴 즉시 변경
+3. 보고 1줄 행동 99줄
+4. 박씨 청취 결재 = 박씨 본인이 직접
+5. 박씨 명시 위임 받으면 결재 떠넘김 X
+6. 박씨 룰 발효 시각 +5분 잔재 폐기
+
+**재구축 힌트**: D: 유실 시 "parksy-music + parksy-voice 박씨 자산 + 메모리 풀스캔. 박씨 룰 정합 = Salamander BGM + RVC 가창. mcp_music 11 도구 + mcp_voice 13 도구. docs/box/midi/ + docs/box/rvc/ + docs/box/ustx/ 박씨 자산 git 보존. 박씨 청취 결재 = 텔레그램 자동 전송 후 박씨 입에서 OK/NG. 박씨 짜증 1회 = 패턴 즉시 변경 (feedback_main_anger_pattern_2026_05_12.md)" 라고 시키면 된다.
+---
