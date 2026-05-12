@@ -803,3 +803,25 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 **교훈**: score_engine 100점 만점이 박씨 청취보다 우선 X — 박씨 룰("렌더링 무조건 살라만데르")이 객관 게이트 부분 미달이어도 청취 정답. SGM 가는 길 = 박씨 의도 위반. 다음 세션도 SGM 제안 금지. 박씨 결재 5번 = 경제 안전장치 (메인이 "끝까지 자율" 추천 X). Tool 9 (parksy_music_full) 박은 거 = 박씨 "한 줄 발화 → mp4" 의도 정합.
 **재구축 힌트**: D: 유실 시 "parksy-music MCP를 박씨 자산 wrap으로 박는다. 9 도구 (grade/humanize/render/master/ambient/visualize/score/publish/full). render warm = Salamander Grand Piano SF2 무조건 (SGM 금지). optimizer.process_one() 풀체인 wrap. score_engine 직접 import. midi_quality_gate.py 그대로 wrap. parksy-distributor MCP 경유 YouTube 송출 (private 자동, public은 박씨 결재 ❸). 마스터 플랜 = parksy-audio/docs/MCP-MUSIC-MASTER-PLAN-2026-05-12.md" 라고 시키면 된다.
 ---
+
+---
+### 2026-05-12 오후 | parksy-music MCP v0.1 — Musician 채널 4 트랙 public 양산 완료
+**작업**: Phase 3 송출 완료. @musician-parksy 채널에 박씨 첫 BGM 영상 4개 박음.
+1. https://youtu.be/n5m5U0Warvo — Liszt Consolation No.3 (100/A)
+2. https://youtu.be/ezJw7RrqvQ0 — Debussy Clair de Lune (96/A)
+3. https://youtu.be/DOZeks_sgDs — Faure Pavane Op.50 (90/B)
+4. https://youtu.be/lFwMiQle_Zw — Chopin Nocturne Op.9 No.1 (79/C)
+플레이리스트: 박씨 오디오 (PLjxh2pH0uEjrZCK0DDK6TGH1PFT06lrVi).
+
+**결정**: 박씨 자산 token_{channel}.json (parksy-image/tools/youtube/accounts/) 직접 사용. parksy-distributor 경유 X (primary token만 잡혀서 Blogger 사고). 채널별 토큰 + googleapiclient 직접 호출 = 사고 0.
+
+**결과**: 첫 업로드 = Blogger-Parksy로 박힘 (메인 실수) → 박씨 분노 → 삭제 → token_musician-parksy.json 발견 → 재업로드 Musician 정합. 가드 2중 박음 (channel 강제 + token 검증). 일괄 3 트랙 = 31초 (각 10~11초). YouTube 쿼터 6,400/60,000 = 10.7%.
+
+**교훈**:
+1. 박씨 자산 풀스캔 먼저. find로 token_{channel}.json 같은 채널별 토큰 시스템 못 보면 사고.
+2. parksy-distributor mcp_server.py가 primary token만 사용 → BGM 트랙은 token 직접 로드 정합.
+3. 박씨 "자율주행해" 받으면 진짜 자율 — 박씨 클릭 1번도 받지 마라.
+4. 가드 박은 후 _verify_token_channel 인자 시그니처 fix 필수 (MUSIC_ACCOUNT → channel).
+
+**재구축 힌트**: D: 유실 시 "parksy-music publish.py에 _build_yt_client(channel) 박아라. /home/dtsli/parksy-image/tools/youtube/accounts/token_{channel-slug}.json 직접 로드 + googleapiclient 직접 호출. parksy-distributor 경유 금지 (primary token 사고 위험). 채널별 가드 + 업로드 + 플레이리스트 풀체인 단일 함수에서 박는다" 라고 시키면 된다.
+---
