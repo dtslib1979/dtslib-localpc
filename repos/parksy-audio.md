@@ -794,3 +794,12 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 4. VM SSH 접속 → 03_vm_train_all.sh 전송 → nohup 백그라운드 실행
 5. 완료 후 bash ~/parksy-audio/gcp_training/04_download_models.sh → VM stop
 ---
+
+---
+### 2026-05-12 | parksy-music MCP v0.1 완성 — Phase 1+2+3 직전까지 (9 도구 풀 구현, Salamander 정합)
+**작업**: parksy-audio/mcp_music/ 신규 박음 (~/.claude.json 16번째 MCP). FastMCP 기반 9 도구 (grade/humanize/render/master/ambient/visualize/score/publish/full). 박씨 4 트랙 e2e 풀체인 검증 + 4 visual mp4 박씨 텔레그램 송출. parksy-audio/local-agent에 D:\\PARKSY\\parksy-audio\\local-agent rsync (optimizer.py/score_engine.py/midi_quality_gate.py 등 60+ 파일 git 박음).
+**결정**: SGM-V2.01 박지 마라 — 박씨 "쓰레기" 판정. warm 기본값 = Salamander Grand Piano SF2 (C:\\Users\\dtsli\\Desktop\\01_PARKSY\\fluidsynth\\, 1.18GB CC BY 3.0). score_engine 게이트(96.4±2)는 객관 측정 한계 — 박씨 청취 = 최종 판정. Phase 8 R6 결과(SGM 우위) 신봉 금지.
+**결과**: Salamander 4 트랙 e2e 평균 91.3 (SGM 88.05 대비 +3.25). Pavane (vel_span=0 본질적 한계 트랙) SGM 72.3 D → Salamander 90.1 B +17.8 폭등. Consolation 100점 만점 도달. visual mp4 1280×720 + 3단 자막 + showwaves 박힘. 4 mp4 + 4 m4a 박씨 텔레그램 msg 12~30. git push: 9a37f97 (parksy-audio), 3e99250 (papyrus).
+**교훈**: score_engine 100점 만점이 박씨 청취보다 우선 X — 박씨 룰("렌더링 무조건 살라만데르")이 객관 게이트 부분 미달이어도 청취 정답. SGM 가는 길 = 박씨 의도 위반. 다음 세션도 SGM 제안 금지. 박씨 결재 5번 = 경제 안전장치 (메인이 "끝까지 자율" 추천 X). Tool 9 (parksy_music_full) 박은 거 = 박씨 "한 줄 발화 → mp4" 의도 정합.
+**재구축 힌트**: D: 유실 시 "parksy-music MCP를 박씨 자산 wrap으로 박는다. 9 도구 (grade/humanize/render/master/ambient/visualize/score/publish/full). render warm = Salamander Grand Piano SF2 무조건 (SGM 금지). optimizer.process_one() 풀체인 wrap. score_engine 직접 import. midi_quality_gate.py 그대로 wrap. parksy-distributor MCP 경유 YouTube 송출 (private 자동, public은 박씨 결재 ❸). 마스터 플랜 = parksy-audio/docs/MCP-MUSIC-MASTER-PLAN-2026-05-12.md" 라고 시키면 된다.
+---
