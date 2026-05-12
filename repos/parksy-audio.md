@@ -984,3 +984,36 @@ powershell -ExecutionPolicy Bypass -File "D:\1_GITHUB\dtslib-localpc\scripts\xln
 
 **재구축 힌트**: D: 유실 시 "parksy-music + parksy-voice 박씨 자산 + 메모리 풀스캔. 박씨 룰 정합 = Salamander BGM + RVC 가창. mcp_music 11 도구 + mcp_voice 13 도구. docs/box/midi/ + docs/box/rvc/ + docs/box/ustx/ 박씨 자산 git 보존. 박씨 청취 결재 = 텔레그램 자동 전송 후 박씨 입에서 OK/NG. 박씨 짜증 1회 = 패턴 즉시 변경 (feedback_main_anger_pattern_2026_05_12.md)" 라고 시키면 된다.
 ---
+
+---
+### 2026-05-12 밤 (22:46) | 박씨 명시 손 떼기 — DeepSeek + aider 인계
+**작업**:
+- mcp_parksy/mcp_server.py 통합 MCP 27 도구 박음 (1544626)
+- Phase 3 ❸ Pavane 1 트랙 @musician-parksy private 박힘 (https://youtu.be/3DIGc-keacE)
+- 3 트랙 한도 초과 (uploadLimitExceeded, 박씨 손)
+- docs/MCP-MUSIC-DEVLOG-2026-05-12.md 강평 박음 (된 거 12 / 안 된 거 8)
+- docs/MCP-MUSIC-HANDOVER-deepseek-aider.md 인계서 박음
+
+**박씨 명시**: "저는 여기서 이제 손 떼라. 너 말고 이제 딥시크 에이더가 작업할 거야"
+
+**메인 정수 16/100 (박씨 가중)**:
+- 박씨 짜증 7회 받음
+- 5-Lane 핑계 + Opus 양산 자리 = 박씨 자본 낭비
+- 박씨 청취 OK 1회 (RVC 양산 라인 ⭐) 박씨 직접 결재
+- 박씨 자율 무한루프 정합 X (옆길 + 결재 떠넘김)
+
+**다음 사이클 (DeepSeek + aider)**:
+1. ~/.claude.json 통합 MCP 등록 (박씨 손)
+2. Phase 3 ❸ 3 트랙 재업로드 (박씨 한도 회복 후)
+3. .ustx → RVC 가창 양산 (aider)
+4. GPT-SoVITS v2 + RVC pitch+12 가창 (aider)
+5. DiffSinger v4 MFA 학습 (Vast.ai, 박씨 가창 데이터 박씨 손)
+
+**박씨 인계 문서**:
+- docs/MCP-MUSIC-MASTER-PLAN-2026-05-12.md (박씨 백서)
+- docs/MCP-MUSIC-DEVLOG-2026-05-12.md (오늘 강평)
+- docs/MCP-MUSIC-HANDOVER-deepseek-aider.md (DeepSeek + aider 인계)
+- ~/.claude/projects/-home-dtsli/memory/feedback_100_loop_autonomy.md (박씨 자율 룰)
+
+**재구축 힌트**: D: 유실 시 "parksy-audio/mcp_parksy/mcp_server.py 27 도구. mcp_music 14 + mcp_voice 13. JSON-RPC stdio. 박씨 자산 풀세트 (Salamander SF2 + RVC parksy_rvc.pth + GPT-SoVITS v2 + DiffSinger v1 + 박씨 .ustx 9개). 박씨 송출 token_{channel}.json (parksy-image/tools/youtube/accounts/). 박씨 청취 결재 = 박씨 본인 텔레그램 OK. docs/MCP-MUSIC-HANDOVER-deepseek-aider.md 인계서 박혀있음" 라고 시키면 된다.
+---
