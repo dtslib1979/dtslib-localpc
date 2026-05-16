@@ -7,6 +7,9 @@
 CLAUDE_BIN="/home/dtsli/.nvm/versions/node/v24.14.0/bin/claude"
 [ ! -f "$CLAUDE_BIN" ] && CLAUDE_BIN="/usr/bin/claude"
 
+_ENV="$(dirname "$0")/.env"
+[ -f "$_ENV" ] && source "$_ENV"
+
 LOG="/home/dtsli/server.log"
 log() { echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" >> "$LOG"; }
 log '=== Server Init Start ==='
@@ -111,8 +114,8 @@ log '=== Server Init Complete ==='
 # ── 7. 부팅 복구 완료 알림 (박씨 폰 텔레그램, 2026-04-20 추가) ──
 (
     sleep 2
-    curl -s -m 10 -X POST "https://api.telegram.org/bot8621929617:AAH-XpVJ4PKVJV8m9-qB2aLupMHO0nYfZLQ/sendMessage" \
-        --data-urlencode "chat_id=6858098283" \
+    curl -s -m 10 -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage" \
+        --data-urlencode "chat_id=${TG_CHAT_ID}" \
         --data-urlencode "text=✅ PC 부팅 복구 완료
 🕐 $(date '+%m-%d %H:%M')
 🖥 $(hostname)

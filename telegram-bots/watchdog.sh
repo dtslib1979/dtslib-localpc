@@ -11,8 +11,10 @@ CREDS_WSL=/home/dtsli/.claude/.credentials.json
 CREDS_WIN=/mnt/c/Users/dtsli/.claude/.credentials.json
 
 # ── 텔레그램 알림 (@parksy_bridge_bot 재활용) ──
-TG_BOT_TOKEN="8621929617:AAH-XpVJ4PKVJV8m9-qB2aLupMHO0nYfZLQ"
-TG_CHAT_ID="6858098283"
+_ENV_FILE="$(dirname "$0")/../.env"
+[ -f "$_ENV_FILE" ] && source "$_ENV_FILE"
+TG_BOT_TOKEN="${TG_BOT_TOKEN:-}"
+TG_CHAT_ID="${TG_CHAT_ID:-}"
 TG_COOLDOWN=3600   # 같은 이벤트 1시간 내 중복 억제 (스팸 방지)
 TG_STATE_DIR=/home/dtsli/.watchdog-state
 mkdir -p "$TG_STATE_DIR"
@@ -70,6 +72,15 @@ except:
 }
 
 while true; do
+    # 메모리 가드: 여유 메모리 2GB 미만이면 봇 재시작 보류
+    FREE_GB=$(free -g | awk '/^Mem:/ {print $7}')
+    if [ "$FREE_GB" -lt 2 ]; then
+        echo "[$(date)] WARNING: low memory (${FREE_GB}GB free) -- skipping restart" >> "$LOG"
+        notify_telegram "low_memory" "메모리 부족 경고: 여유 ${FREE_GB}GB -- 재시작 보류"
+        sleep 60
+        continue
+    fi
+
     # Claude credentials 갱신 체크 (매 루프)
     refresh_claude_creds
 
@@ -82,6 +93,7 @@ while true; do
     # 이미지 봇 감시 (@parksy_bridge_bot — 이미지+Claude 통합)
     BOT_IMAGE=/mnt/d/parksy-image/tools/telegram-bridge/bot.py
     if [ -f "$BOT_IMAGE" ]; then
+        tmux has-session -t tg-image 2>/dev/null || tmux new-session -d -s tg-image
         pgrep -f "telegram-bridge/bot.py" > /dev/null || {
             tmux send-keys -t tg-image:0 C-c 2>/dev/null
             sleep 1
@@ -93,6 +105,7 @@ while true; do
     # 오디오 봇 감시 (@parksy_bridges_bot — 오디오+Claude 통합)
     BOT_AUDIO=/mnt/d/PARKSY/parksy-audio/local-agent/bot.py
     if [ -f "$BOT_AUDIO" ]; then
+        tmux has-session -t tg-audio 2>/dev/null || tmux new-session -d -s tg-audio
         pgrep -f "local-agent/bot.py" > /dev/null || {
             tmux send-keys -t tg-audio:0 C-c 2>/dev/null
             sleep 1
