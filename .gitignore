@@ -35,4 +35,9 @@ tools/youtube/uploads/done/*
 !tools/youtube/uploads/done/.gitkeep
 tools/youtube/community/done/*
 !tools/youtube/community/done/.gitkeep
+VSCO-2-CE-1.1.0
 VSCO-2-CE-1.1.0/
+
+# SSH 키 — 절대 커밋 금지
+id_ed25519
+id_ed25519.pub
