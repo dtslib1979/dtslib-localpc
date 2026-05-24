@@ -55,13 +55,13 @@ while true; do
         log_restart "image bridge"
     }
 
-    # 오디오 브릿지 감시
-    pgrep -f audio_bridge.py > /dev/null || {
-        tmux send-keys -t tg-audio:bridge C-c 2>/dev/null
-        sleep 1
-        tmux send-keys -t tg-audio:bridge "cd /home/dtsli/dtslib-localpc/telegram-bots && python3 audio_bridge.py" Enter 2>/dev/null
-        log_restart "audio bridge"
-    }
+    # # 오디오 브릿지 감시 (비활성화)
+    # pgrep -f audio_bridge.py > /dev/null || {
+    #     tmux send-keys -t tg-audio:bridge C-c 2>/dev/null
+    #     sleep 1
+    #     tmux send-keys -t tg-audio:bridge "cd /home/dtsli/dtslib-localpc/telegram-bots && python3 audio_bridge.py" Enter 2>/dev/null
+    #     log_restart "audio bridge"
+    # }
 
     # 이미지 Claude 봇 감시
     pgrep -f "claude_image_config" > /dev/null || {
@@ -71,13 +71,13 @@ while true; do
         log_restart "image claude bot"
     }
 
-    # 오디오 Claude 봇 감시
-    pgrep -f "claude_audio_config" > /dev/null || {
-        tmux send-keys -t tg-audio:work C-c 2>/dev/null
-        sleep 1
-        tmux send-keys -t tg-audio:work "cd /home/dtsli/dtslib-localpc/telegram-bots && python3 telegram_claude_bot.py --config claude_audio_config.json" Enter 2>/dev/null
-        log_restart "audio claude bot"
-    }
+    # # 오디오 Claude 봇 감시 (비활성화)
+    # pgrep -f "claude_audio_config" > /dev/null || {
+    #     tmux send-keys -t tg-audio:work C-c 2>/dev/null
+    #     sleep 1
+    #     tmux send-keys -t tg-audio:work "cd /home/dtsli/dtslib-localpc/telegram-bots && python3 telegram_claude_bot.py --config claude_audio_config.json" Enter 2>/dev/null
+    #     log_restart "audio claude bot"
+    # }
 
     # Tailscale 감시
     if ! pgrep -x tailscaled > /dev/null 2>&1; then
