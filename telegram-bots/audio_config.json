@@ -3,7 +3,7 @@
   "chat_id": 6858098283,
   "bot_name": "@parksy_bridges_bot",
   "purpose": "오디오/비디오 양방향 브릿지 (PC <-> 핸드폰)",
-  "outbox_dir": "/home/dtsli/dtslib-localpc/telegram-bots/outbox",
+  "outbox_dir": os.environ.get("HOME") + "/dtslib-localpc/telegram-bots/outbox",
   "sent_dir": "/home/dtsli/dtslib-localpc/telegram-bots/sent",
   "watch_dirs": [
     {

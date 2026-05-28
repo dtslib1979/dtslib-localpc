@@ -5,7 +5,7 @@
 TABLET_IP="100.74.21.77"
 PHONE_IP="$(cat ~/.phone_ip 2>/dev/null || echo '100.103.250.45')"
 LAUNCH_PORT=7777
-LOG="/home/dtsli/dtslib-localpc/logs/adb-watchdog.log"
+LOG="$HOME/dtslib-localpc/logs/adb-watchdog.log"
 MAX_LOG=500  # 최대 줄 수
 
 mkdir -p "$(dirname "$LOG")"

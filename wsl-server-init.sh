@@ -10,7 +10,7 @@ CLAUDE_BIN="/home/dtsli/.nvm/versions/node/v24.14.0/bin/claude"
 _ENV="$(dirname "$0")/.env"
 [ -f "$_ENV" ] && source "$_ENV"
 
-LOG="/home/dtsli/server.log"
+LOG="$HOME/server.log"
 log() { echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" >> "$LOG"; }
 log '=== Server Init Start ==='
 
