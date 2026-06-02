@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <meta name="theme-color" content="#020404">
   <link rel="manifest" href="./assets/manifest.json">
   <link rel="icon" type="image/svg+xml" href="./assets/icons/favicon.svg">
-  <title>dtslib-localpc | DTSLIB Infra</title>
+  <title>dtslib-localpc | DTSLIB 인프라 관제탑</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html,body{width:100%;height:100%;overflow:hidden;background:#020404;font-family:system-ui,-apple-system,sans-serif;color:#F8FAF9}
@@ -63,11 +63,11 @@
 <div id="hud">
   <span class="hud-badge">PC TRAILER · LANE A+B</span>
   <div class="hud-title">dtslib-localpc</div>
-  <div class="hud-sub">Lane A+B Compute Node</div>
+  <div class="hud-sub">Lane A+B 연산 노드</div>
 </div>
 
 <button class="topbtn" id="btn-heat" title="Shake">⚡</button>
-<button class="topbtn" id="btn-fit"  title="Fit all">⊡ Fit</button>
+<button class="topbtn" id="btn-fit"  title="전체 맞춤">⊡ 맞춤</button>
 
 <div id="vp">
   <div id="canvas">
@@ -80,10 +80,10 @@
   <div id="info-title"></div>
   <div id="info-body"></div>
   <div id="info-tags"></div>
-  <a id="info-link" href="#" target="_blank" rel="noopener">Open →</a>
+  <a id="info-link" href="#" target="_blank" rel="noopener">열기 →</a>
 </div>
 
-<div id="hint">Drag nodes · Pinch zoom · Tap to open</div>
+<div id="hint">노드 드래그 · 핀치 줌 · 탭해서 열기</div>
 
 <script>
 /* ══════════════════════════════════════════════
@@ -91,14 +91,14 @@
 ══════════════════════════════════════════════ */
 const MAP = {
   nodes:[
-    {id:"hub",    type:"hub",     label:"DTSLIB\nLocal PC",       title:"DTSLIB Local PC — Infra Tower",      body:"On-premises PC running 24/7 via WSL2. Remote-controlled from anywhere via Tailscale SSH + tmux. Nerve center for all 28 repos. Claude Code runs here as the main driver.",         tags:["INFRA","WSL2","PC-MAIN","TMUX"]},
-    {id:"auto",   type:"regular", label:"Local\nAutomation",       title:"Local Automation",                   body:"Batch scripts and automation tools running natively on the PC. Playwright headless=false for browser automation (Kakao, Google, Tistory). CLI pipelines via SSH sessions.",        tags:["AUTOMATION","PLAYWRIGHT","BATCH","CLI"]},
-    {id:"exp",    type:"regular", label:"Experimental\nCode",      title:"Experimental Code",                  body:"Local-only prototypes and DTSLIB ecosystem experiments. No cloud dependencies. Offline-first workflow. Ideas land here before graduating to production repos.",                    tags:["PROTOTYPE","OFFLINE","EXPERIMENT"]},
-    {id:"infra",  type:"regular", label:"Infrastructure\nBridge",  title:"Infrastructure Bridge",              body:"Termux-bridge (mobile) ↔ dtslib-localpc (PC) bidirectional link. Snapshot scripts auto-capture installed tools and repo states. Cross-session bootstrap via repos/status.json.", tags:["SSH","TAILSCALE","SNAPSHOT","BOOTSTRAP"]},
-    {id:"stat1",  type:"stat",    label:"On-Premises",             title:"On-Premises First",                  body:"Home PC stays on 24/7. No cloud bill. All compute, storage and execution happen locally. Cloud is a last resort.",                                                               tags:["ONPREM","PC"]},
-    {id:"stat2",  type:"stat",    label:"CLI Batch",               title:"CLI Batch Execution",                body:"tmux sessions run long jobs autonomously. Telegram bot sends results to phone. Fire and forget workflow.",                                                                        tags:["TMUX","TELEGRAM"]},
-    {id:"stat3",  type:"stat",    label:"28 Repos",                title:"28 GitHub Repos",                    body:"dtslib-localpc acts as the control tower for all 28 repositories. One Claude Code session, full coverage.",                                                                     tags:["GITHUB","MONOREPO"]},
-    {id:"github", type:"link",    label:"GitHub →",                title:"GitHub — dtslib-localpc",            body:"Source repository on GitHub. Snapshots, hooks, scripts, and cross-repo status logs all live here.",                                                                             tags:["GITHUB"], href:"https://github.com/dtslib1979/dtslib-localpc"},
+    {id:"hub",    type:"hub",     label:"DTSLIB\n로컬 PC",         title:"DTSLIB 로컬 PC — 인프라 관제탑",    body:"WSL2로 24시간 가동 중인 온-프레미스 PC. Tailscale SSH + tmux로 어디서든 원격 제어. 28개 레포 전체를 관할하는 신경 중추. Claude Code가 메인 드라이버로 여기서 실행된다.",                tags:["INFRA","WSL2","PC-MAIN","TMUX"]},
+    {id:"auto",   type:"regular", label:"로컬\n자동화",             title:"로컬 자동화",                        body:"PC 네이티브 배치 스크립트 + 자동화 도구. 브라우저 자동화는 Playwright headless=false로 직접 실행(Kakao, Google, Tistory). CLI 파이프라인은 SSH 세션 경유.",                           tags:["AUTOMATION","PLAYWRIGHT","BATCH","CLI"]},
+    {id:"exp",    type:"regular", label:"실험(實驗)\n코드",          title:"실험 코드",                          body:"로컬 전용 프로토타입 + DTSLIB 에코시스템 실험. 클라우드 의존성 없음. 오프라인 퍼스트 워크플로. 아이디어가 여기 착지하고 프로덕션 레포로 졸업한다.",                              tags:["PROTOTYPE","OFFLINE","EXPERIMENT"]},
+    {id:"infra",  type:"regular", label:"인프라\n브릿지",            title:"인프라 브릿지",                      body:"Termux-bridge(폰) ↔ dtslib-localpc(PC) 양방향 연결. 스냅샷 스크립트가 설치 도구+레포 상태를 자동 기록. repos/status.json으로 크로스 세션 부트스트랩.",                          tags:["SSH","TAILSCALE","SNAPSHOT","BOOTSTRAP"]},
+    {id:"stat1",  type:"stat",    label:"온-프레미스",              title:"온-프레미스 퍼스트",                  body:"집 PC 24시간 가동. 클라우드 요금 없음. 연산/저장/실행 전부 로컬. 클라우드는 최후 수단.",                                                                                           tags:["ONPREM","PC"]},
+    {id:"stat2",  type:"stat",    label:"CLI 배치",                title:"CLI 배치 실행",                      body:"tmux 세션이 장시간 작업을 자율 처리. 텔레그램 봇이 결과를 폰으로 전송. 던져놓고 퇴근하는 워크플로.",                                                                            tags:["TMUX","TELEGRAM"]},
+    {id:"stat3",  type:"stat",    label:"28 레포",                 title:"GitHub 28개 레포",                   body:"dtslib-localpc가 전체 28개 레포의 관제탑 역할. Claude Code 세션 하나로 전체 커버.",                                                                                           tags:["GITHUB","MONOREPO"]},
+    {id:"github", type:"link",    label:"GitHub →",                title:"GitHub — dtslib-localpc",            body:"GitHub 소스 레포지토리. 스냅샷/훅/스크립트/크로스레포 상태 로그가 전부 여기에 있다.",                                                                                        tags:["GITHUB"], href:"https://github.com/dtslib1979/dtslib-localpc"},
   ],
   edges:[
     {from:"hub",  to:"auto",   color:"#D4AF37"},
