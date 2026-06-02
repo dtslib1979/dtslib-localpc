@@ -1,6 +1,9 @@
 {
   "repo": "dtslib-localpc",
   "status": "active",
-  "last_updated": "2026-05-30",
-  "health": "ok"
+  "role": "assist-trailer",
+  "last_updated": "2026-06-02",
+  "health": "degraded",
+  "health_reason": "C드라이브 85% — WSL 이전 필요",
+  "c_drive_pct": 85
 }
