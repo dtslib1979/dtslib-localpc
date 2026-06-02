@@ -1,0 +1,9 @@
+{
+  "id": "dtslib-localpc",
+  "name": "DTSlib Local PC",
+  "role": "assist-trailer",
+  "description": "PC 렌더링 트레일러 — 폰이 지시하고 PC가 실행",
+  "github": "https://github.com/dtslib1979/dtslib-localpc",
+  "pages": "https://dtslib1979.github.io/dtslib-localpc/",
+  "updated": "2026-05-30"
+}
