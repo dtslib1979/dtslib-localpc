@@ -109,25 +109,27 @@ async function startCallbackServer() {
     if (altLink) { await altLink.click(); await sleep(2000); }
   }
 
-  const body2 = await page.innerText('body').catch(() => '');
-  if (body2.includes('이메일') || body2.includes('Email') || body2.includes('email') || body2.includes('Sign in')) {
+  // 계정 선택 후 이메일 입력 화면이 실제로 뜨는지 확인 (이미 로그인된 계정은 동의 화면으로 바로 진행)
+  const emailInput = await page.$('input[type="email"], input#identifierId').catch(() => null);
+  const emailVisible = emailInput ? await emailInput.isVisible().catch(() => false) : false;
+
+  if (emailVisible) {
     console.log('이메일 입력...');
-    const emailInput = await page.$('input[type="email"], input#identifierId');
-    if (emailInput) {
-      await emailInput.fill(ACCOUNT_EMAIL);
-      await page.keyboard.press('Enter');
-      await sleep(3000);
-    }
+    await emailInput.fill(ACCOUNT_EMAIL);
+    await page.keyboard.press('Enter');
+    await sleep(3000);
     const body3 = await page.innerText('body').catch(() => '');
     if (body3.includes('비밀번호') || body3.includes('password') || body3.includes('Password')) {
       console.log('비밀번호 입력...');
-      const pwInput = await page.$('input[type="password"]');
+      const pwInput = await page.$('input[type="password"]').catch(() => null);
       if (pwInput) {
         await pwInput.fill(PASSWORD);
         await page.keyboard.press('Enter');
         await sleep(5000);
       }
     }
+  } else {
+    console.log('이메일 입력 화면 없음 — 동의/경고 화면으로 직행');
   }
 
   // 5. Allow/허용 버튼 대기 + 클릭
@@ -158,6 +160,31 @@ async function startCallbackServer() {
       break;
     }
 
+    // 브랜드/계정 선택 화면 처리 (YouTube OAuth 중간 계정 선택)
+    if (pageText.includes('계정 또는 브랜드 계정 선택') || pageText.includes('Select an account')) {
+      console.log('  📋 브랜드 계정 선택 화면 — 메인 계정 클릭...');
+      // dimas.thomas.sancho@gmail.com 항목 또는 첫 번째 항목 클릭
+      const brandAcct =
+        await page.$(`[data-email="${ACCOUNT_EMAIL}"]`).catch(() => null) ||
+        await page.$(`li:has-text("${ACCOUNT_EMAIL}")`).catch(() => null) ||
+        await page.evaluate((email) => {
+          const all = document.querySelectorAll('li, [role="listitem"], div.account-chooser-item, div[data-authuser]');
+          for (const el of all) {
+            if (el.innerText && el.innerText.includes(email)) return el;
+          }
+          // fallback: 첫 번째 항목
+          const first = document.querySelector('ul li:first-child, [role="list"] [role="listitem"]:first-child');
+          return first || null;
+        }, ACCOUNT_EMAIL).catch(() => null);
+      if (brandAcct) {
+        await page.evaluate(el => el.click(), brandAcct).catch(async () => {
+          await brandAcct.click({ force: true }).catch(() => {});
+        });
+        await sleep(3000);
+        continue;
+      }
+    }
+
     // consentsummary 페이지: 체크박스 먼저 선택
     if (currentUrlNow.includes('/consentsummary')) {
       // "액세스를 허용하지 않음" 다이얼로그가 떠있으면 "돌아가기" 클릭
@@ -185,38 +212,45 @@ async function startCallbackServer() {
     }
 
     // /signin/oauth/warning 페이지 전용 핸들러 (미인증앱 경고)
+    // 흐름: "고급" 클릭 → 숨겨진 "계속" 링크 노출 → 클릭
     const currentUrl = page.url();
-    if (currentUrl.includes('/signin/oauth/warning') || currentUrl.includes('/oauth/warning')) {
-      console.log('  ⚠️ warning 페이지 감지 — 계속 버튼 탐색...');
-      // Google warning 페이지는 button이 아닌 a/div 태그일 수 있음
-      const warnCont =
-        await page.$('button:has-text("계속")').catch(() => null) ||
-        await page.$('a:has-text("계속")').catch(() => null) ||
-        await page.$('[jsname="ozardib"]').catch(() => null) ||
-        await page.$('[data-action="proceed"]').catch(() => null) ||
-        await page.$eval('a', (els) => {
-          const el = [...els].find(e => e.innerText.trim() === '계속');
-          return el || null;
-        }).catch(() => null);
-      if (warnCont) {
-        console.log('  ✅ warning 계속 버튼 클릭');
-        await warnCont.click();
-        await sleep(3000);
-        continue;
+    if (currentUrl.includes('/signin/oauth/warning') || currentUrl.includes('/oauth/warning')
+        || pageText.includes('Google에서 확인하지 않은 앱') || pageText.includes('unverified app')) {
+      console.log('  ⚠️ warning 페이지 감지 — 고급 → 계속 시도...');
+
+      // Step 1: "계속" 이미 보이면 바로 클릭
+      let contVisible = await page.$('a:has-text("계속"), button:has-text("계속")').catch(() => null);
+      if (!contVisible) {
+        // Step 2: "고급" 버튼 클릭하여 숨겨진 링크 노출
+        const advBtn =
+          await page.$('a:has-text("고급")').catch(() => null) ||
+          await page.$('button:has-text("고급")').catch(() => null) ||
+          await page.$('[jsname="ozardib"]').catch(() => null) ||
+          await page.evaluate(() => {
+            const all = document.querySelectorAll('a, button, [role="button"]');
+            return [...all].find(e => e.innerText && (e.innerText.trim() === '고급' || e.innerText.includes('Advanced'))) || null;
+          }).catch(() => null);
+        if (advBtn) {
+          console.log('  🔽 고급 클릭...');
+          await page.evaluate(el => el.click(), advBtn).catch(() => advBtn.click({ force: true }).catch(() => {}));
+          await sleep(1500);
+        }
       }
-      // jsEval로 강제 클릭 시도
+
+      // Step 3: "계속" 링크 클릭 (고급 클릭 후 나타남)
       const clicked = await page.evaluate(() => {
-        const all = document.querySelectorAll('a, button, [role="button"]');
+        const all = document.querySelectorAll('a, button, [role="button"], span');
         for (const el of all) {
-          if (el.innerText && el.innerText.trim() === '계속') {
+          const t = el.innerText && el.innerText.trim();
+          if (t && (t === '계속' || t.startsWith('계속') || t === 'Continue' || t.includes('(안전하지 않음)'))) {
             el.click();
-            return true;
+            return t;
           }
         }
-        return false;
-      }).catch(() => false);
+        return null;
+      }).catch(() => null);
       if (clicked) {
-        console.log('  ✅ evaluate() 계속 클릭 성공');
+        console.log(`  ✅ warning 계속 클릭: "${clicked}"`);
         await sleep(3000);
         continue;
       }
