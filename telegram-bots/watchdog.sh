@@ -91,13 +91,14 @@ while true; do
     }
 
     # 이미지 봇 감시 (@parksy_bridge_bot — 이미지+Claude 통합)
-    BOT_IMAGE=/mnt/d/parksy-image/tools/telegram-bridge/bot.py
+    BOT_IMAGE=$HOME/parksy-image/tools/telegram-bridge/bot.py
+    IMAGE_VENV=$HOME/parksy-image/.venv-tg/bin/python
     if [ -f "$BOT_IMAGE" ]; then
         tmux has-session -t tg-image 2>/dev/null || tmux new-session -d -s tg-image
         pgrep -f "telegram-bridge/bot.py" > /dev/null || {
             tmux send-keys -t tg-image:0 C-c 2>/dev/null
             sleep 1
-            tmux send-keys -t tg-image:0 "python3 $BOT_IMAGE" Enter 2>/dev/null
+            tmux send-keys -t tg-image:0 "$IMAGE_VENV $BOT_IMAGE" Enter 2>/dev/null
             log_restart "image bot (parksy-image)"
         }
     fi
