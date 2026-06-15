@@ -1,7 +1,7 @@
 {
-  "bot_token": "8661892750:AAHeqyEvc1FEF8tRJnrwgw50FtTnTJxtaZE",
+  "bot_token": "8669426963:AAGvsn8ZnWgkTccw2G2AqgxHbq9RVtmBZMA",
   "chat_id": 6858098283,
-  "bot_name": "오디오 Claude Bot (@Parksy_Audio_Claude_bot)",
+  "bot_name": "@parksy_bridges_bot",
   "work_dir": "/mnt/d/PARKSY/parksy-audio",
   "timeout": 300,
   "offset_file": "claude_audio"
