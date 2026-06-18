@@ -160,14 +160,14 @@ C:\msys64\usr\bin\bash.exe --login -i -c "bash /c/Users/dtsli/triage.sh; exec ba
 | 항목 | 상태 |
 |---|---|
 | repo→GitHub push 경로 | 기존 워크플로, 명문화만 필요 |
-| **폰 Termux:Boot 설치 확인** | ✅ 설치됨 (package:com.termux.boot) |
+| **폰 Termux:Boot 설치 확인** | 미확인 — 선행조건 |
 | startup.sh git pull 반영 | 코드 완료, 폰 미배포 |
 | phone_aider 키 경로 | `~/.config/deepseek/api_key` (인벤토리 대조 확인됨) |
 | dedup_autossh 판정기준 | `ssh_cmd.txt` 검증시그니처 대조 (정정완료) |
 | triage.sh 작성 | 완료(읽기전용) |
-| **MSYS2 경유 실행 설정(신규)** | Command 작성완료, MSYS2 경로 확인 필요 |
+| **MSYS2 경유 실행 설정(신규)** | Command 작성완료, 정확한 MSYS2 설치경로 확인 + Termius 프로필 반영 미배포 |
 | L3 가드레일 문서화 | 완료 |
-| T6 물리테스트 | ✅ 통과 (md5 3곳 일치) |
+| T6 물리테스트 | 미완료 — 유일 최종 차단점 |
 | Windows native W1/W2/W4/W6 | 별도 스코프, 미완료 그대로 |
 
 T6 통과 + Termux:Boot 확인 + startup.sh 배포 + MSYS2 경로 확인 후 Termius Command 반영, 4개가 닫히면 평상시/응급시 전체 루프 완전종료.
