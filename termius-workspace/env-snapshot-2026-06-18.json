@@ -1,0 +1,41 @@
+{
+  "timestamp": "2026-06-18T19:00:00+09:00",
+  "windows": {
+    "tailscale_ip": "100.81.24.124",
+    "sshd_count": 8,
+    "port_2222": "0.0.0.0:2222 + 127.0.0.1:2222",
+    "gateway_ports": "clientspecified"
+  },
+  "wsl": {
+    "reverse_tunnel_service": "active since Jun 17 11:29",
+    "tmux_sessions": ["phone_claude", "phone_aider", "tab_claude", "tab_aider"],
+    "bots": {
+      "tg_image_running": false,
+      "tg_audio_running": false,
+      "audio_watchdog_loop_active": true
+    },
+    "canon_verified": true,
+    "deepseek_key_present": true,
+    "ssh_cmd_signature_present": true
+  },
+  "phone": {
+    "termux_boot_installed": true,
+    "widget_master_present": true,
+    "boot_script_deployed": true
+  },
+  "termius_workspace": {
+    "windows_path": "C:\\Users\\dtsli\\termius-workspace",
+    "repo_target": "dtslib-localpc/termius-workspace",
+    "files": [
+      "ARCHITECTURE.md",
+      "README.md",
+      "healthcheck.sh",
+      "env-snapshot-2026-06-18.json"
+    ]
+  },
+  "known_issues": [
+    "tg-audio bot restarts every 60s (watchdog loop)",
+    "tg-image bot process not running",
+    "~/.shortcuts/ on WSL has start_aider.sh but no 1.wsl_claude.sh / 2.wsl_aider.sh"
+  ]
+}
